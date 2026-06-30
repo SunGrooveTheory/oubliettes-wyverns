@@ -20,7 +20,7 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       h1 { color: var(--accent-color); text-align: center; margin-bottom: 20px; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+       h1 { color: var(--accent-color); font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
@@ -92,7 +92,10 @@
 <body>
 
    <div class="container">
-       <h1>Oubliettes & Wyverns</h1>
+       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+           <h1 style="margin: 0; text-align: left;">Oubliettes & Wyverns</h1>
+           <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;" onclick="confirmFinalize()">Finalize Game</button>
+       </div>
 
        <!-- Character Setup Stage -->
        <div class="section-box" id="setup-screen">
@@ -194,6 +197,20 @@
                        </div>
                    </div>
                </div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Synced Confirmation Modal Overlay -->
+   <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+       <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
+           <h3 style="color: var(--danger-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Finalize Game Session?</h3>
+           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 14px; color: var(--text-color); font-family: sans-serif;">
+               This will transcribe and lock the current run into the persistent archives and reset the multiplayer room back to level 1 setup. Do you proceed?
+           </p>
+           <div style="display: flex; justify-content: center; gap: 15px;">
+               <button class="danger" onclick="executeFinalize()" style="padding: 10px 20px;">Yes, Finalize</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" onclick="closeFinalizeModal()">Cancel</button>
            </div>
        </div>
    </div>
@@ -479,18 +496,15 @@
            if(tempPlayers.length === 0) { return; }
            document.getElementById('setup-screen').style.display = 'none';
            document.getElementById('rolling-screen').style.display = 'block';
-           let listHtml = "";
-           tempPlayers.forEach((p, idx) => {
-               listHtml += `<div class="rolling-row"><strong>${p.avatar} ( ${p.name} )</strong><div class="rolling-stats-grid">
-                   <div class="stat-roll-box"><span>⚔️ Brawn:</span><input type="number" id="roll_${idx}_brawn" value="0"><button onclick="rollStat(${idx}, 'brawn', 6)">d6</button></div>
-                   <div class="stat-roll-box"><span>🧠 Brains:</span><input type="number" id="roll_${idx}_brains" value="0"><button onclick="rollStat(${idx}, 'brains', 10)">d10</button></div>
-                   <div class="stat-roll-box"><span>🏃 Agility:</span><input type="number" id="roll_${idx}_agility" value="0"><button onclick="rollStat(${idx}, 'agility', 20)">d20</button></div>
-               </div></div>`;
-           });
-           document.getElementById('rolling-list').innerHTML = listHtml;
+           renderRollingListFromState();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
-       function rollStat(idx, stat, max) { document.getElementById(`roll_${idx}_${stat}`).value = Math.floor(Math.random() * max) + 1; }
+       function rollStat(idx, stat, max) { 
+           document.getElementById(`roll_${idx}_${stat}`).value = Math.floor(Math.random() * max) + 1; 
+           if (window.broadcastState) window.broadcastState();
+       }
 
        function finalizeStatsAndStart() {
            players = [];
@@ -519,6 +533,8 @@
            generateAdventureChoices();
 
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function getChallengeMapping() {
@@ -563,10 +579,7 @@
            let c1 = getChallengeMapping(), c2 = getChallengeMapping();
            currentOptions = [{ title: title1, type: c1.type, stat: c1.stat, header: c1.header }, { title: title2, type: c2.type, stat: c2.stat, header: c2.header }];
            
-           let choicesHtml = `<div class="choice-card" onclick="selectPath(0)"><h4>➡️ Descend into ${title1}</h4><p>Scouts register an active <strong>${c1.header}</strong>. Requires strong <strong>${c1.stat}</strong> profile.</p></div>
-                              <div class="choice-card" onclick="selectPath(1)"><h4>➡️ Route toward ${title2}</h4><p>Scouts register an active <strong>${c2.header}</strong>. Requires strong <strong>${c2.stat}</strong> profile.</p></div>`;
-           if(currentPartyHP < maxPartyHP) choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="selectCamp()"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
-           document.getElementById('direction-choices').innerHTML = choicesHtml;
+           renderSyncedChoices();
        }
 
        function selectPath(idx) {
@@ -596,6 +609,8 @@
            document.getElementById('encounter-stat').innerText = chosen.stat;
            
            updateHostDCReveal();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        // SAFE INFINITE CAMPING OPERATION
@@ -621,6 +636,8 @@
            document.getElementById('encounter-stat').innerText = currentEncounter.stat;
            
            updateHostDCReveal();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function updateHostDCReveal() {
@@ -683,25 +700,7 @@
                        logDice(`🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally to roll and sum...`);
 
                        document.getElementById('standard-roll-controls').style.display = 'none';
-                       
-                       // Populate backup selectors
-                       let backupSelect = document.getElementById('backup-player-select');
-                       let backupHtml = "";
-                       players.forEach((p, idx) => {
-                           // If only 1 player or solo, let them select themselves
-                           if (players.length === 1 || idx !== firstRollerIndex) {
-                               backupHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
-                           }
-                       });
-                       backupSelect.innerHTML = backupHtml;
-                       
-                       let backupBtn = document.getElementById('backup-roll-btn');
-                       if (stageCount >= 124) {
-                           backupBtn.innerText = "Roll and Combine (D30)";
-                       } else {
-                           backupBtn.innerText = "Roll and Combine";
-                       }
-
+                       populateBackupSelect();
                        document.getElementById('backup-roll-controls').style.display = 'block';
                    } else {
                        // Pre-58 Failures are immediate
@@ -710,6 +709,8 @@
                    }
                }
            }
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function attemptBackup() {
@@ -742,16 +743,7 @@
                    weyrRollActive = true;
                    
                    logDice(`🐲 <strong>Wyvern Weyr Triggered!</strong> Sum is still below the threshold. Nominate a third operator to join...`);
-                   
-                   let weyrSelect = document.getElementById('weyr-player-select');
-                   let weyrHtml = "";
-                   players.forEach((p, idx) => {
-                       // Allow selecting self/survivor if small party, otherwise avoid duplicating first and second
-                       if (players.length <= 2 || (idx !== firstRollerIndex && idx !== secondRollerIndex)) {
-                           weyrHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
-                       }
-                   });
-                   weyrSelect.innerHTML = weyrHtml;
+                   populateWeyrSelect();
                    document.getElementById('weyr-roll-controls').style.display = 'block';
                } else {
                    document.getElementById('standard-roll-controls').style.display = 'block';
@@ -761,6 +753,8 @@
                    resolveEncounterFailure();
                }
            }
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function declineBackup() {
@@ -771,6 +765,8 @@
            firstRollerIndex = null;
            secondRollerIndex = null;
            resolveEncounterFailure();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function attemptWeyr() {
@@ -778,7 +774,7 @@
            let weyrPlayer = players[weyrIdx];
            let modifier = weyrPlayer[currentEncounter.stat.toLowerCase()];
            
-           // Weyr checks always deploy $D_{30}$
+           // Weyr checks always deploy D30
            let roll = Math.floor(Math.random() * 30) + 1;
            let p3Total = roll + modifier;
 
@@ -800,6 +796,8 @@
            } else {
                resolveEncounterFailure();
            }
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function declineWeyr() {
@@ -811,6 +809,8 @@
            firstRollerIndex = null;
            secondRollerIndex = null;
            resolveEncounterFailure();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function resolveEncounterSuccess() {
@@ -898,10 +898,12 @@
                <hr style="border: 0; border-top: 1px dashed var(--danger-color); margin: 15px 0;">
                <p class="story-paragraph" style="font-style: italic; color: var(--danger-color);">The host forces absolute doom upon your vanguard. The ground crumbles beneath your feet, plunging the squad into a bottomless caldera filled with boiling sulfur.</p>
                <p class="story-paragraph" style="color: var(--danger-color); font-weight: bold;">💀 Unconditional Doom! Your party has been wiped out by host decree.</p>
-           `;
+         `;
            
            document.getElementById('encounter-interface').style.display = 'none';
            handleEnd();
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function undoTPK() {
@@ -934,6 +936,8 @@
            } else {
                generateAdventureChoices();
            }
+
+           if (window.broadcastState) window.broadcastState();
        }
 
        function logDice(msg) { const logBox = document.getElementById('dice-log'); logBox.innerHTML = `<div style='margin-bottom:6px;'>${msg}</div>` + logBox.innerHTML; }
@@ -948,11 +952,91 @@
        function handleEnd() {
            document.getElementById('navigation-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
+           showLocalEndScreen();
+       }
+
+       function handleWin() {
+           document.getElementById('navigation-block').style.display = 'none';
+           document.getElementById('encounter-interface').style.display = 'none';
+           showLocalWinScreen();
+       }
+
+       function renderRollingListFromState() {
+           const listContainer = document.getElementById('rolling-list');
+           if (listContainer.innerHTML !== "") return;
+           let listHtml = "";
+           tempPlayers.forEach((p, idx) => {
+               listHtml += `<div class="rolling-row"><strong>${p.avatar} ( ${p.name} )</strong><div class="rolling-stats-grid">
+                   <div class="stat-roll-box"><span>⚔️ Brawn:</span><input type="number" id="roll_${idx}_brawn" value="0"><button onclick="rollStat(${idx}, 'brawn', 6)">d6</button></div>
+                   <div class="stat-roll-box"><span>🧠 Brains:</span><input type="number" id="roll_${idx}_brains" value="0"><button onclick="rollStat(${idx}, 'brains', 10)">d10</button></div>
+                   <div class="stat-roll-box"><span>🏃 Agility:</span><input type="number" id="roll_${idx}_agility" value="0"><button onclick="rollStat(${idx}, 'agility', 20)">d20</button></div>
+               </div></div>`;
+           });
+           listContainer.innerHTML = listHtml;
+       }
+
+       function renderCharacterSheetsFromState() {
+           let html = "";
+           let dropDownHTML = "";
+           players.forEach((p, idx) => {
+               html += `<details class="sheet-row"><summary class="sheet-header"><span>${p.avatar.split(" ")[0]}</span> <strong>${p.name}</strong></summary>
+                   <div class="sheet-stats"><div class="stat-line"><span>Brawn Matrix:</span><strong>+${p.brawn}</strong></div>
+                   <div class="stat-line"><span>Brains Matrix:</span><strong>+${p.brains}</strong></div>
+                   <div class="stat-line"><span>Agility Matrix:</span><strong>+${p.agility}</strong></div></div></details>`;
+               dropDownHTML += `<option value="${idx}">${p.name}</option>`;
+           });
+           document.getElementById('sheets-list').innerHTML = html;
+           
+           const activeSelect = document.getElementById('active-player-select');
+           const prevVal = activeSelect.value;
+           activeSelect.innerHTML = dropDownHTML;
+           if (prevVal !== "" && parseInt(prevVal) < players.length) {
+               activeSelect.value = prevVal;
+           }
+       }
+
+       function populateBackupSelect() {
+           let backupSelect = document.getElementById('backup-player-select');
+           let backupHtml = "";
+           players.forEach((p, idx) => {
+               if (players.length === 1 || idx !== firstRollerIndex) {
+                   backupHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
+               }
+           });
+           backupSelect.innerHTML = backupHtml;
+       }
+
+       function populateWeyrSelect() {
+           let weyrSelect = document.getElementById('weyr-player-select');
+           let weyrHtml = "";
+           players.forEach((p, idx) => {
+               if (players.length <= 2 || (idx !== firstRollerIndex && idx !== secondRollerIndex)) {
+                   weyrHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
+               }
+           });
+           weyrSelect.innerHTML = weyrHtml;
+       }
+
+       function renderSyncedChoices() {
+           let choicesHtml = "";
+           if (currentOptions && currentOptions.length >= 2) {
+               let c1 = currentOptions[0];
+               let c2 = currentOptions[1];
+               choicesHtml += `<div class="choice-card" onclick="selectPath(0)"><h4>➡️ Descend into ${c1.title}</h4><p>Scouts register an active <strong>${c1.header}</strong>. Requires strong <strong>${c1.stat}</strong> profile.</p></div>
+                               <div class="choice-card" onclick="selectPath(1)"><h4>➡️ Route toward ${c2.title}</h4><p>Scouts register an active <strong>${c2.header}</strong>. Requires strong <strong>${c2.stat}</strong> profile.</p></div>`;
+           }
+           if (currentPartyHP < maxPartyHP) {
+               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="selectCamp()"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
+           }
+           document.getElementById('direction-choices').innerHTML = choicesHtml;
+       }
+
+       function showLocalEndScreen() {
            document.getElementById('location-name').innerText = "💀 The Long Goodnight";
-           setBoardImage("death");
+           document.getElementById('map-img').src = driveImages.death[Math.floor(Math.random() * driveImages.death.length)];
            document.getElementById('story-text').innerHTML = `
                <p class="story-paragraph"><strong>The Long Goodnight.</strong> The last of your torches sputters out, and the darkness consumes your party.</p>
-               <p class="story-paragraph">Your bones will join the thousands who failed before you in Scene <strong>${stageCount}</strong>. Refresh the terminal to forge a new lineage.</p>
+               <p class="story-paragraph">Your bones will join the thousands who failed before you in Scene <strong>${stageCount}</strong>. Finalize the session at the top of the interface to trigger a clean co-op reset.</p>
                <div id="tpk-undo-container" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--danger-color); border-radius: 8px; background: rgba(231, 111, 81, 0.05); text-align: center;">
                    <p style="color: var(--danger-color); font-size: 13px; font-family: sans-serif; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">👑 Host Intervention Console</p>
                    <p style="font-size: 13px; color: #bbb; margin-bottom: 15px; font-family: sans-serif;">Did the party carelessly stumble into their doom? You can rewind time to the last encounter and restore partial vitality.</p>
@@ -961,12 +1045,9 @@
            `;
        }
 
-       function handleWin() {
-           document.getElementById('navigation-block').style.display = 'none';
-           document.getElementById('encounter-interface').style.display = 'none';
+       function showLocalWinScreen() {
            document.getElementById('location-name').innerText = "🏆 Victory & Escape!";
-           setBoardImage("win");
-
+           document.getElementById('map-img').src = driveImages.win[Math.floor(Math.random() * driveImages.win.length)];
            let survivorNames = players.map(p => `<li><strong>${p.name}</strong> (${p.avatar})</li>`).join('');
 
            document.getElementById('story-text').innerHTML = `
@@ -981,17 +1062,38 @@
                        </ul>
                    </div>
                    <p class="story-paragraph" style="text-align: center; font-size: 14px; color: var(--accent-color); font-weight: bold;">Final Score: Stage ${stageCount} Cleared!</p>
-                   <button onclick="window.location.reload();" style="margin-top: 15px; padding: 12px 24px;" class="success">Forge a New Lineage</button>
+                   <button onclick="confirmFinalize()" style="margin-top: 15px; padding: 12px 24px;" class="success">Finalize and New Session</button>
                </div>
            `;
        }
+
+       // Synced Modal Confirmation Controls
+       function confirmFinalize() {
+           document.getElementById('finalize-modal').style.display = 'flex';
+       }
+       function closeFinalizeModal() {
+           document.getElementById('finalize-modal').style.display = 'none';
+       }
+       function executeFinalize() {
+           if (window.archiveAndFinalize) {
+               window.archiveAndFinalize();
+           }
+           closeFinalizeModal();
+       }
+
+       window.confirmFinalize = confirmFinalize;
+       window.closeFinalizeModal = closeFinalizeModal;
+       window.executeFinalize = executeFinalize;
    </script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { DiscordSDK } from "https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.5.0/+esm";
 
-    const firebaseConfig = {
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    let firebaseConfig = {
         apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw",
         authDomain: "oubliettes-and-wyverns.firebaseapp.com",
         projectId: "oubliettes-and-wyverns",
@@ -1001,44 +1103,258 @@
         measurementId: "G-7S1HJBPB2X"
     };
 
+    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } catch(e) {
+            console.error("Failed parsing __firebase_config environment variable", e);
+        }
+    }
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const discordSdk = new DiscordSDK("1521393614528450622");
+    const auth = getAuth(app);
 
-    let roomRef;
+    let discordSdk = null;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('frame_id')) {
+        try {
+            discordSdk = new DiscordSDK("1521393614528450622");
+        } catch (e) {
+            console.warn("Failed to instantiate Discord SDK:", e);
+        }
+    } else {
+        console.log("No frame_id query parameter detected. Standing by in Sandbox Mode.");
+    }
+
+    let roomRef = null;
+    let currentUser = null;
+
+    // Rule 3 Auth Implementation
+    async function initAuth() {
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (err) {
+            console.error("Authentication handshake failed:", err);
+        }
+    }
 
     async function init() {
-        await discordSdk.ready();
+        await initAuth();
         
-        // 1. Authenticate (This handles the Discord handshake)
-        const { code } = await discordSdk.commands.authenticate();
-        
-        // 2. Room Initialization: Use the unique Discord channel ID
-        // This ensures your group is in their own private room
-        const instanceId = discordSdk.instanceId;
-        roomRef = doc(db, "games", instanceId);
-
-        // 3. Real-time Multiplayer Sync: This listens for game changes
-        onSnapshot(roomRef, (doc) => {
-            if (doc.exists()) {
-                const gameState = doc.data();
-                console.log("Multiplayer State Updated:", gameState);
-                // CALL YOUR UI UPDATE FUNCTION HERE
-                // e.g., updateGameBoard(gameState);
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (!user) return; // Auth Guard
+            
+            let instanceId = "sandbox-local-channel";
+            if (discordSdk) {
+                try {
+                    await discordSdk.ready();
+                    const { code } = await discordSdk.commands.authenticate();
+                    instanceId = discordSdk.instanceId || "discord-activity-dev-room";
+                } catch (discordErr) {
+                    console.warn("Discord SDK offline or unavailable. Running in Sandbox Room Mode.", discordErr);
+                }
+            } else {
+                console.log("Discord SDK skipped. Running in Sandbox Room Mode.");
             }
+
+            // Rule 1: Strict paths
+            roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+
+            // Real-time Multiplayer Sync
+            onSnapshot(roomRef, (snapshot) => {
+                if (!currentUser) return; // Guard
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    syncFromFirebaseData(data);
+                } else {
+                    // Document doesn't exist (or was finalized/deleted) - reset back to setup screen
+                    playerCounter = 0;
+                    tempPlayers = [];
+                    players = [];
+                    maxPartyHP = 0;
+                    currentPartyHP = 0;
+                    stageCount = 0;
+                    currentEncounter = null;
+                    currentOptions = [];
+                    backupRollActive = false;
+                    weyrRollActive = false;
+                    firstRollerIndex = null;
+                    firstRollTotal = 0;
+                    secondRollerIndex = null;
+                    secondRollTotal = 0;
+                    
+                    document.getElementById('dynamic-player-container').innerHTML = '';
+                    for (let i = 0; i < 3; i++) {
+                        addPlayerSlot();
+                    }
+                    document.getElementById('setup-screen').style.display = 'block';
+                    document.getElementById('rolling-screen').style.display = 'none';
+                    document.getElementById('game-view').style.display = 'none';
+                    document.getElementById('dice-log').innerHTML = '';
+                }
+            }, (err) => {
+                console.error("Multiplayer Sync subscription failed:", err);
+            });
         });
     }
 
-    // 4. Update Game State: Call this whenever something happens in the game
-    window.updateGameState = async (newState) => {
-        await setDoc(roomRef, newState, { merge: true });
+    // Export Firebase broadcaster globally to standard script
+    window.broadcastState = async () => {
+        if (!roomRef || !currentUser) return;
+        try {
+            const screenName = document.getElementById('setup-screen').style.display !== 'none' ? 'setup' :
+                               (document.getElementById('rolling-screen').style.display !== 'none' ? 'rolling' : 'game');
+                               
+            const state = {
+                currentScreen: screenName,
+                tempPlayers,
+                players,
+                maxPartyHP,
+                currentPartyHP,
+                stageCount,
+                currentEncounter: currentEncounter || null,
+                currentOptions: currentOptions || [],
+                backupRollActive,
+                weyrRollActive,
+                firstRollerIndex,
+                firstRollTotal,
+                secondRollerIndex,
+                secondRollTotal,
+                currentActiveDC,
+                diceLogHTML: document.getElementById('dice-log').innerHTML,
+                storyTextHTML: document.getElementById('story-text').innerHTML,
+                locationName: document.getElementById('location-name').innerText,
+                mapImgSrc: document.getElementById('map-img').src,
+                lastUpdated: Date.now()
+            };
+            await setDoc(roomRef, state);
+        } catch (err) {
+            console.error("Error broadcasting multiplayer state:", err);
+        }
     };
 
-    // 5. Finalize: Wipes the room data
-    window.finalizeGame = async () => {
-        await deleteDoc(roomRef);
-        console.log("Game room destroyed.");
+    // Export finalization & archiving routine under Rule 1 & Rule 3
+    window.archiveAndFinalize = async () => {
+        if (!currentUser || !roomRef) return;
+        try {
+            const docSnap = await getDoc(roomRef);
+            if (docSnap.exists()) {
+                const activeRunData = docSnap.data();
+                const archiveId = `run_${Date.now()}`;
+                const archiveRef = doc(db, 'artifacts', appId, 'public', 'data', 'archives', archiveId);
+                await setDoc(archiveRef, {
+                    ...activeRunData,
+                    archivedAt: Date.now(),
+                    archivedBy: currentUser.uid
+                });
+            }
+            await deleteDoc(roomRef);
+        } catch (err) {
+            console.error("Error finalizing game session:", err);
+        }
     };
+
+    function syncFromFirebaseData(data) {
+        if (!data) return;
+        
+        // Sync logical parameters
+        tempPlayers = data.tempPlayers || [];
+        players = data.players || [];
+        maxPartyHP = data.maxPartyHP || 0;
+        currentPartyHP = data.currentPartyHP || 0;
+        stageCount = data.stageCount || 0;
+        currentEncounter = data.currentEncounter || null;
+        currentOptions = data.currentOptions || [];
+        backupRollActive = data.backupRollActive || false;
+        weyrRollActive = data.weyrRollActive || false;
+        firstRollerIndex = data.firstRollerIndex !== undefined ? data.firstRollerIndex : null;
+        firstRollTotal = data.firstRollTotal || 0;
+        secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
+        secondRollTotal = data.secondRollTotal || 0;
+        currentActiveDC = data.currentActiveDC || 0;
+
+        // Switch active interface panels
+        if (data.currentScreen === 'setup') {
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('rolling-screen').style.display = 'none';
+            document.getElementById('game-view').style.display = 'none';
+        } else if (data.currentScreen === 'rolling') {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('rolling-screen').style.display = 'block';
+            document.getElementById('game-view').style.display = 'none';
+            
+            renderRollingListFromState();
+        } else if (data.currentScreen === 'game') {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('rolling-screen').style.display = 'none';
+            document.getElementById('game-view').style.display = 'block';
+
+            // Sync status bar
+            document.getElementById('stage-counter').innerText = stageCount;
+            updateHPDisplay();
+
+            // Sync detailed sheets
+            renderCharacterSheetsFromState();
+
+            // Sync narration panels
+            document.getElementById('location-name').innerText = data.locationName || "";
+            document.getElementById('map-img').src = data.mapImgSrc || "";
+            document.getElementById('story-text').innerHTML = data.storyTextHTML || "";
+            document.getElementById('dice-log').innerHTML = data.diceLogHTML || "";
+
+            // Sync active encounters
+            if (currentEncounter) {
+                let encUI = document.getElementById('encounter-interface');
+                encUI.className = `encounter-box ${currentEncounter.type}`;
+                encUI.style.display = 'block';
+                document.getElementById('encounter-title').innerText = currentEncounter.title;
+                document.getElementById('encounter-stat').innerText = currentEncounter.stat;
+                
+                updateHostDCReveal();
+
+                if (backupRollActive) {
+                    document.getElementById('standard-roll-controls').style.display = 'none';
+                    document.getElementById('weyr-roll-controls').style.display = 'none';
+                    populateBackupSelect();
+                    document.getElementById('backup-roll-controls').style.display = 'block';
+                } else if (weyrRollActive) {
+                    document.getElementById('standard-roll-controls').style.display = 'none';
+                    document.getElementById('backup-roll-controls').style.display = 'none';
+                    populateWeyrSelect();
+                    document.getElementById('weyr-roll-controls').style.display = 'block';
+                } else {
+                    document.getElementById('standard-roll-controls').style.display = 'block';
+                    document.getElementById('backup-roll-controls').style.display = 'none';
+                    document.getElementById('weyr-roll-controls').style.display = 'none';
+                }
+            } else {
+                document.getElementById('encounter-interface').style.display = 'none';
+            }
+
+            // Sync Navigation Choices
+            if (currentPartyHP <= 0) {
+                document.getElementById('navigation-block').style.display = 'none';
+                document.getElementById('encounter-interface').style.display = 'none';
+                showLocalEndScreen();
+            } else if (stageCount >= 180) {
+                document.getElementById('navigation-block').style.display = 'none';
+                document.getElementById('encounter-interface').style.display = 'none';
+                showLocalWinScreen();
+            } else if (!currentEncounter) {
+                document.getElementById('navigation-block').style.display = 'block';
+                renderSyncedChoices();
+            } else {
+                document.getElementById('navigation-block').style.display = 'none';
+            }
+        }
+    }
 
     init();
 </script>
