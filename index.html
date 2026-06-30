@@ -15,9 +15,15 @@
            --danger-color: #e76f51;
            --magic-color: #a2d2ff;
        }
-async function clearOldData(userId) {
-    await deleteDoc(doc(db, "players", userId));
-    console.log("Old session cleared. Starting fresh.");
+// Inside your setup function
+const instanceId = discordSdk.instanceId; // This is the unique ID for this specific "launch"
+
+async function saveGameState(data) {
+    // Save data specifically for this current session/room
+    await setDoc(doc(db, "sessions", instanceId), {
+        ...data,
+        createdAt: new Date() // Used for the TTL policy
+    });
 }
 
       
