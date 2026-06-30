@@ -987,59 +987,60 @@
        }
    </script>
   <script type="module">
-  // 1. Import what you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { DiscordSDK } from "https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.5.0/+esm";
 
-  // 2. Your configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw",
-    authDomain: "oubliettes-and-wyverns.firebaseapp.com",
-    projectId: "oubliettes-and-wyverns",
-    storageBucket: "oubliettes-and-wyverns.firebasestorage.app",
-    messagingSenderId: "611704952225",
-    appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0",
-    measurementId: "G-7S1HJBPB2X"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw",
+        authDomain: "oubliettes-and-wyverns.firebaseapp.com",
+        projectId: "oubliettes-and-wyverns",
+        storageBucket: "oubliettes-and-wyverns.firebasestorage.app",
+        messagingSenderId: "611704952225",
+        appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0",
+        measurementId: "G-7S1HJBPB2X"
+    };
 
-  // 3. Initialize services
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app); // This is the piece you were missing!
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const discordSdk = new DiscordSDK("1521393614528450622");
 
-  // 4. Test function to confirm connection
-  async function testDatabase() {
-      try {
-          await setDoc(doc(db, "testCollection", "testDocument"), {
-              message: "Hello Firebase!",
-              timestamp: new Date().toISOString()
-          });
-          console.log("Success! Data written to Firestore.");
-      } catch (e) {
-          console.error("Error writing document: ", e);
-      }
-  }
+    let roomRef;
 
-  testDatabase();
-     const discordSdk = new DiscordSDK("1521393614528450622");
+    async function init() {
+        await discordSdk.ready();
+        
+        // 1. Authenticate (This handles the Discord handshake)
+        const { code } = await discordSdk.commands.authenticate();
+        
+        // 2. Room Initialization: Use the unique Discord channel ID
+        // This ensures your group is in their own private room
+        const instanceId = discordSdk.instanceId;
+        roomRef = doc(db, "games", instanceId);
 
-async function setupDiscordSdk() {
-    console.log("Initializing Discord SDK...");
-    await discordSdk.ready();
-    console.log("Discord SDK is ready!");
-    
-    // Auth code to identify the user
-    const { code } = await discordSdk.commands.authorize({
-        client_id: "1521393614528450622",
-        response_type: "code",
-        state: "",
-        prompt: "none",
-        scope: ["identify", "guilds"]
-    });
-    console.log("Authorization code received!");
-}
-setupDiscordSdk();
+        // 3. Real-time Multiplayer Sync: This listens for game changes
+        onSnapshot(roomRef, (doc) => {
+            if (doc.exists()) {
+                const gameState = doc.data();
+                console.log("Multiplayer State Updated:", gameState);
+                // CALL YOUR UI UPDATE FUNCTION HERE
+                // e.g., updateGameBoard(gameState);
+            }
+        });
+    }
+
+    // 4. Update Game State: Call this whenever something happens in the game
+    window.updateGameState = async (newState) => {
+        await setDoc(roomRef, newState, { merge: true });
+    };
+
+    // 5. Finalize: Wipes the room data
+    window.finalizeGame = async () => {
+        await deleteDoc(roomRef);
+        console.log("Game room destroyed.");
+    };
+
+    init();
 </script>
 </body>
 </html>
