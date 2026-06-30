@@ -94,15 +94,15 @@
    <div class="container">
        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
            <h1 style="margin: 0; text-align: left;">Oubliettes & Wyverns</h1>
-           <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;" onclick="confirmFinalize()">Finalize Game</button>
+           <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;" onclick="window.confirmFinalize()">Finalize Game</button>
        </div>
 
        <div class="section-box" id="setup-screen">
            <div class="section-title">Character Registry</div>
            <div class="setup-grid" id="dynamic-player-container"></div>
            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-               <button type="button" onclick="addPlayerSlot()" style="background: #2a2a35; color: white;">+ Add Character</button>
-               <button type="button" id="advance-to-rolling-btn" onclick="goToRollingScreen()" style="flex: 1;" class="success">Proceed to Attribute Allocation</button>
+               <button type="button" onclick="window.addPlayerSlot()" style="background: #2a2a35; color: white;">+ Add Character</button>
+               <button type="button" id="advance-to-rolling-btn" onclick="window.goToRollingScreen()" style="flex: 1;" class="success">Proceed to Attribute Allocation</button>
            </div>
        </div>
 
@@ -110,7 +110,7 @@
            <div class="section-title">Attribute Allocation Matrix</div>
            <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
            <div id="rolling-list"></div>
-           <button onclick="finalizeStatsAndStart()" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
+           <button onclick="window.finalizeStatsAndStart()" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
 
        <div id="game-view" style="display:none;">
@@ -155,16 +155,16 @@
                            <div id="action-area">
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
-                                   <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-                                   <button id="roll-check-btn" onclick="attemptEncounter()" style="width: 100%; margin-bottom: 10px;">Roll standard die</button>
+                                   <select id="active-player-select" onchange="window.updateHostDCReveal()" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <button id="roll-check-btn" onclick="window.attemptEncounter()">Roll standard die</button>
                                </div>
 
                                <div id="backup-roll-controls" style="display:none; background: rgba(244,162,97,0.05); border: 1px dashed var(--accent-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
                                    <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
                                    <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="backup-roll-btn" onclick="attemptBackup()" class="success" style="flex:1;">Roll and Combine</button>
-                                       <button onclick="declineBackup()" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="backup-roll-btn" onclick="window.attemptBackup()" class="success" style="flex:1;">Roll and Combine</button>
+                                       <button onclick="window.declineBackup()" class="danger" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
 
@@ -172,16 +172,16 @@
                                    <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
                                    <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="weyr-roll-btn" onclick="attemptWeyr()" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
-                                       <button onclick="declineWeyr()" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="weyr-roll-btn" onclick="window.attemptWeyr()" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
+                                       <button onclick="window.declineWeyr()" class="danger" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
                               
                                <label style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Host Overrides</label>
                                <div class="host-controls">
-                                   <button onclick="attemptEncounter(true)" class="success">Force Pass</button>
-                                   <button onclick="attemptEncounter(false)" class="danger">Force Fail</button>
-                                   <button id="tpk-btn" onclick="triggerHostTPK()" style="background: #7a1d1d; color: white;">Force TPK</button>
+                                   <button onclick="window.attemptEncounter(true)" class="success">Force Pass</button>
+                                   <button onclick="window.attemptEncounter(false)" class="danger">Force Fail</button>
+                                   <button id="tpk-btn" onclick="window.triggerHostTPK()" style="background: #7a1d1d; color: white;">Force TPK</button>
                                </div>
                            </div>
                        </div>
@@ -199,11 +199,11 @@
        <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
            <h3 style="color: var(--danger-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Finalize Game Session?</h3>
            <p style="line-height: 1.6; margin-bottom: 20px; font-size: 14px; color: var(--text-color); font-family: sans-serif;">
-               This will transcribe and lock the current run into the persistent archives and reset the multiplayer room back to level 1 setup. Do you proceed?
+               This will wipe the active room state instantly and reset the multiplayer configuration back to setup. Do you proceed?
            </p>
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="danger" onclick="executeFinalize()" style="padding: 10px 20px;">Yes, Finalize</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" onclick="closeFinalizeModal()">Cancel</button>
+               <button class="danger" onclick="window.executeFinalize()" style="padding: 10px 20px;">Yes, WIPE State</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" onclick="window.closeFinalizeModal()">Cancel</button>
            </div>
        </div>
    </div>
@@ -213,14 +213,14 @@
        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-       // Firebase App Configurations
+       // Firebase Config
        const firebaseConfig = { apiKey: "AIzaSyAs-FakeKeyForStructureOnly", authDomain: "oubliettes-wyverns.firebaseapp.com", projectId: "oubliettes-wyverns", storageBucket: "oubliettes-wyverns.appspot.com", messagingSenderId: "123456789", appId: "1:1234:web:abcd" };
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
        const auth = getAuth(app);
        const appId = "oubliettes-wyverns-v1";
 
-       // ELL Accessible Vocabulary Dictionaries
+       // Custom Dictionary Arrays
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -385,18 +385,15 @@
            return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
        }
 
-       // Global Session States Block
+       // Core Sync Variables
        let playerCounter = 0, tempPlayers = [], players = [], maxPartyHP = 0, currentPartyHP = 0, stageCount = 0, currentEncounter = null, currentOptions = [];
-       
-       // FIX 1: Defined alongside active multiplayer variables
        let currentActiveDC = 0; 
 
-       // Active Combined Effort States (Triple-Summed Wyvern Weyr)
        let backupRollActive = false, weyrRollActive = false;
        let firstRollerIndex = null, firstRollTotal = 0;
        let secondRollerIndex = null, secondRollTotal = 0;
 
-       // Embedded Graphics Catalog mapping via Google Drive proxy pathways
+       // Custom Hardcoded Drive Images Mapping Catalog
        const driveImages = {
            entrance: ["https://lh3.googleusercontent.com/d/1O9mZ6-2w3U7qHhbygC_96U-jN7693A4F"],
            combat: [
@@ -438,7 +435,82 @@
            "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
 
-       // FIX 4: Appended oninput to dynamic player input forms
+       // Multi-User Discord Activity Sync Handshakes
+       let discordSdk = null;
+       if (typeof DiscordSDK !== 'undefined') {
+           const params = new URLSearchParams(window.location.search);
+           if (params.has('frame_id')) {
+               try {
+                   discordSdk = new DiscordSDK({ clientId: "123456789012345678" });
+               } catch (e) {
+                   console.warn("Failed to instantiate Discord SDK:", e);
+               }
+           }
+       }
+
+       let roomRef = null;
+       let currentUser = null;
+
+       async function initAuth() {
+           try {
+               if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                   await signInWithCustomToken(auth, __initial_auth_token);
+               } else {
+                   await signInAnonymously(auth);
+               }
+           } catch (err) {
+               console.error("Authentication handshake failed:", err);
+           }
+       }
+
+       // State Broadcaster
+       window.broadcastState = async function() {
+           if (!currentUser || !roomRef) return;
+           
+           let currentSetupPlayers = [];
+           if (document.getElementById('setup-screen').style.display !== 'none') {
+               const slots = document.querySelectorAll('.player-slot');
+               slots.forEach(slot => {
+                   const name = slot.querySelector('.p-name-input').value.trim() || "";
+                   const avatar = slot.querySelector('.p-class-select').value;
+                   currentSetupPlayers.push({ name, avatar, brawn: 0, brains: 0, agility: 0, rolled: false });
+               });
+           }
+
+           try {
+               await setDoc(roomRef, {
+                   tempPlayers: currentSetupPlayers.length > 0 ? currentSetupPlayers : tempPlayers,
+                   players: players,
+                   maxPartyHP: maxPartyHP,
+                   currentPartyHP: currentPartyHP,
+                   stageCount: stageCount,
+                   currentEncounter: currentEncounter,
+                   currentOptions: currentOptions,
+                   backupRollActive: backupRollActive,
+                   weyrRollActive: weyrRollActive,
+                   firstRollerIndex: firstRollerIndex,
+                   firstRollTotal: firstRollTotal,
+                   secondRollerIndex: secondRollerIndex,
+                   secondRollTotal: secondRollTotal,
+                   lastUpdated: Date.now()
+               }, { merge: true });
+           } catch (err) {
+               console.error("State transmission failure:", err);
+           }
+       };
+
+       // Pure destruction routine: wipes active room state instantly
+       window.archiveAndFinalize = async () => {
+           if (!currentUser || !roomRef) return;
+           try {
+               await deleteDoc(roomRef);
+               console.log("Active session data securely erased.");
+           } catch (err) {
+               console.error("Error finalizing game session:", err);
+           }
+       };
+
+       // Exposed Global Action Wrappers
        window.addPlayerSlot = function() {
            playerCounter++;
            const container = document.getElementById('dynamic-player-container');
@@ -447,20 +519,20 @@
            slot.id = `slot_${playerCounter}`;
            let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
            slot.innerHTML = `
-               <button class="remove-btn" onclick="removePlayerSlot(${playerCounter})">X</button>
+               <button class="remove-btn" onclick="window.removePlayerSlot(${playerCounter})">X</button>
                <label>Identifier Name:</label>
                <input type="text" class="p-name-input" placeholder="Character label..." oninput="window.broadcastState()">
                <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
                <select class="p-class-select" onchange="window.broadcastState()">${classOptions}</select>
            `;
            container.appendChild(slot);
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.removePlayerSlot = function(id) {
            const element = document.getElementById(`slot_${id}`);
            if (element) element.remove();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.goToRollingScreen = function() {
@@ -472,7 +544,10 @@
                const avatar = slot.querySelector('.p-class-select').value;
                tempPlayers.push({ name, avatar, brawn: 0, brains: 0, agility: 0, rolled: false });
            });
-           if (window.broadcastState) window.broadcastState();
+           
+           stageCount = 0.5; // Half-step indicates rolling matrix setup state
+           renderRollingScreenFromState();
+           window.broadcastState();
        };
 
        function renderRollingScreenFromState() {
@@ -484,9 +559,9 @@
                    <div class="rolling-row">
                        <strong style="color:var(--accent-color); font-size:16px;">${p.name} (${p.avatar})</strong>
                        <div class="rolling-stats-grid">
-                           <div class="stat-roll-box"><span>Brawn (STR):</span><input type="number" id="roll_${idx}_brawn" value="0"><button onclick="rollStat(${idx}, 'brawn', 20)">d20</button></div>
-                           <div class="stat-roll-box"><span>Brains (INT):</span><input type="number" id="roll_${idx}_brains" value="0"><button onclick="rollStat(${idx}, 'brains', 20)">d20</button></div>
-                           <div class="stat-roll-box"><span>Agility (DEX):</span><input type="number" id="roll_${idx}_agility" value="0"><button onclick="rollStat(${idx}, 'agility', 20)">d20</button></div>
+                           <div class="stat-roll-box"><span>Brawn (STR):</span><input type="number" id="roll_${idx}_brawn" value="0"><button onclick="window.rollStat(${idx}, 'brawn', 20)">d20</button></div>
+                           <div class="stat-roll-box"><span>Brains (INT):</span><input type="number" id="roll_${idx}_brains" value="0"><button onclick="window.rollStat(${idx}, 'brains', 20)">d20</button></div>
+                           <div class="stat-roll-box"><span>Agility (DEX):</span><input type="number" id="roll_${idx}_agility" value="0"><button onclick="window.rollStat(${idx}, 'agility', 20)">d20</button></div>
                        </div>
                    </div>`;
            });
@@ -496,7 +571,12 @@
 
        window.rollStat = function(playerIdx, statField, die) {
            let r = Math.floor(Math.random() * die) + 1;
-           document.getElementById(`roll_${playerIdx}_${statField}`).value = r;
+           let modifier = 0;
+           if (r >= 1 && r <= 5) modifier = -1;
+           else if (r >= 6 && r <= 12) modifier = 0;
+           else if (r >= 13 && r <= 17) modifier = 1;
+           else if (r >= 18 && r <= 20) modifier = 2;
+           document.getElementById(`roll_${playerIdx}_${statField}`).value = modifier;
        };
 
        window.finalizeStatsAndStart = function() {
@@ -553,20 +633,20 @@
                currentOptions.push({ route: paths[indices[i]], type: ch.type, stat: ch.stat, header: ch.header });
            }
            renderSyncedChoices();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        }
 
        function renderSyncedChoices() {
            let choicesHtml = "";
            currentOptions.forEach((opt, idx) => {
                choicesHtml += `
-                   <div class="choice-card" onclick="selectPath(${idx})">
+                   <div class="choice-card" onclick="window.selectPath(${idx})">
                        <h4>🚪 ${opt.route}</h4>
                        <p>Scouts register signs of a potential <strong>${opt.type.toUpperCase()}</strong> risk needing high <strong>${opt.stat}</strong> metrics.</p>
                    </div>`;
            });
            choicesHtml += `
-               <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="selectCamp()">
+               <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="window.selectCamp()">
                    <h4>⛺ Deploy Temporary Encampment</h4>
                    <p>Halt tactical advances to recover group vitality. Watch checks are determined by baseline configurations.</p>
                </div>`;
@@ -594,8 +674,8 @@
            document.getElementById('story-text').innerHTML = dynamicStoryText;
            document.getElementById('encounter-title').innerText = chosen.header;
            document.getElementById('encounter-stat').innerText = chosen.stat;
-           updateHostDCReveal();
-           if (window.broadcastState) window.broadcastState();
+           window.updateHostDCReveal();
+           window.broadcastState();
        };
 
        window.selectCamp = function() {
@@ -615,11 +695,11 @@
            document.getElementById('story-text').innerHTML = campDescription;
            document.getElementById('encounter-title').innerText = `⛺ Camp Security`;
            document.getElementById('encounter-stat').innerText = currentEncounter.stat;
-           updateHostDCReveal();
-           if (window.broadcastState) window.broadcastState();
+           window.updateHostDCReveal();
+           window.broadcastState();
        };
 
-       function updateHostDCReveal() {
+       window.updateHostDCReveal = function() {
            if (!currentEncounter) return;
            const selectEl = document.getElementById('active-player-select');
            if (!selectEl || selectEl.value === "") return;
@@ -627,7 +707,7 @@
            let affinity = classAffinities[player.avatar] ? (classAffinities[player.avatar][currentEncounter.type] || 0) : 0;
            currentActiveDC = currentEncounter.dc + affinity;
            document.getElementById('encounter-dc').innerText = `${currentActiveDC} (Base ${currentEncounter.dc} + Affinity ${affinity})`;
-       }
+       };
 
        window.attemptEncounter = function(hostOverride = null) {
            let selectEl = document.getElementById('active-player-select');
@@ -663,7 +743,7 @@
                    }
                }
            }
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.attemptBackup = function() {
@@ -699,7 +779,7 @@
                    resolveEncounterFailure();
                }
            }
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.declineBackup = function() {
@@ -708,7 +788,7 @@
            document.getElementById('standard-roll-controls').style.display = 'block';
            backupRollActive = false; firstRollerIndex = null;
            resolveEncounterFailure();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.attemptWeyr = function() {
@@ -725,7 +805,7 @@
            document.getElementById('standard-roll-controls').style.display = 'block';
            backupRollActive = false; weyrRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
            if (success) resolveEncounterSuccess(); else resolveEncounterFailure();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.declineWeyr = function() {
@@ -734,7 +814,7 @@
            document.getElementById('standard-roll-controls').style.display = 'block';
            backupRollActive = false; weyrRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
            resolveEncounterFailure();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        function resolveEncounterSuccess() {
@@ -806,7 +886,7 @@
                <p class="story-paragraph" style="color: var(--danger-color); font-weight: bold;">💀 Unconditional Doom! Your party has been wiped out by host decree.</p>`;
            document.getElementById('encounter-interface').style.display = 'none';
            handleEnd();
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        window.undoTPK = function() {
@@ -824,7 +904,7 @@
            } else {
                generateAdventureChoices();
            }
-           if (window.broadcastState) window.broadcastState();
+           window.broadcastState();
        };
 
        function logDice(msg) {
@@ -836,7 +916,7 @@
        }
 
        function updateHPDisplay() {
-           document.getElementById('stage-counter').innerText = stageCount;
+           document.getElementById('stage-counter').innerText = Math.floor(stageCount);
            document.getElementById('party-hp').innerText = `${currentPartyHP} / ${maxPartyHP}`;
            if (stageCount >= 124) {
                document.getElementById('wyvern-alert').style.display = "inline";
@@ -894,7 +974,7 @@
                        <h2 style="color: var(--danger-color); font-size: 24px; margin-bottom: 10px;">Vanguard Fallen</h2>
                        <p class="story-paragraph" style="text-align: center;">Vitality levels reached absolute zero. Your bodies belong to the stones of the Oubliette.</p>
                        <p style="font-size:13px; color:#aaa; margin-top:10px;">The session room can be reset or time can be rewound by the host controller.</p>
-                       <button onclick="undoTPK()" class="success" style="padding: 10px 20px; font-size: 14px; margin-top:10px;">Undo TPK & Rewind</button>
+                       <button onclick="window.undoTPK()" class="success" style="padding: 10px 20px; font-size: 14px; margin-top:10px;">Undo TPK & Rewind</button>
                    </div>`;
            } else if (stageCount >= 180) {
                document.getElementById('location-name').innerText = "🏆 Escape & Ascend!";
@@ -917,91 +997,13 @@
            document.getElementById('finalize-modal').style.display = 'none';
        };
        window.executeFinalize = async function() {
-           closeFinalizeModal();
-           if (window.archiveAndFinalize) await window.archiveAndFinalize();
+           window.closeFinalizeModal();
+           await window.archiveAndFinalize();
        };
-
-       // Multi-User Discord Activity Sync Handshakes
-       let discordSdk = null;
-       if (typeof DiscordSDK !== 'undefined') {
-           const params = new URLSearchParams(window.location.search);
-           if (params.has('frame_id')) {
-               try {
-                   discordSdk = new DiscordSDK({ clientId: "123456789012345678" });
-               } catch (e) {
-                   console.warn("Failed to instantiate Discord SDK:", e);
-               }
-           }
-       }
-
-       let roomRef = null;
-       let currentUser = null;
-
-       async function initAuth() {
-           try {
-               if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                   await signInWithCustomToken(auth, __initial_auth_token);
-               } else {
-                   await signInAnonymously(auth);
-               }
-           } catch (err) {
-               console.error("Authentication handshake failed:", err);
-           }
-       }
-
-       // FIX 2: Advanced Window Grabbing to parse typing state live before synchronization
-       window.broadcastState = async function() {
-           if (!currentUser || !roomRef) return;
-           
-           // If on setup screen, actively scrape what is currently written in DOM textboxes
-           let currentSetupPlayers = [];
-           if (document.getElementById('setup-screen').style.display !== 'none') {
-               const slots = document.querySelectorAll('.player-slot');
-               slots.forEach(slot => {
-                   const name = slot.querySelector('.p-name-input').value.trim() || "";
-                   const avatar = slot.querySelector('.p-class-select').value;
-                   currentSetupPlayers.push({ name, avatar, brawn: 0, brains: 0, agility: 0, rolled: false });
-               });
-           }
-
-           try {
-               await updateDoc(roomRef, {
-                   tempPlayers: currentSetupPlayers.length > 0 ? currentSetupPlayers : tempPlayers,
-                   players: players,
-                   maxPartyHP: maxPartyHP,
-                   currentPartyHP: currentPartyHP,
-                   stageCount: stageCount,
-                   currentEncounter: currentEncounter,
-                   currentOptions: currentOptions,
-                   backupRollActive: backupRollActive,
-                   weyrRollActive: weyrRollActive,
-                   firstRollerIndex: firstRollerIndex,
-                   firstRollTotal: firstRollTotal,
-                   secondRollerIndex: secondRollerIndex,
-                   secondRollTotal: secondRollTotal,
-                   lastUpdated: Date.now()
-               });
-           } catch (err) {
-               console.error("State transmission failure:", err);
-           }
-       };
-
-      // Pure destruction routine: wipes active room state instantly
-window.archiveAndFinalize = async () => {
- if (!currentUser || !roomRef) return;
- try {
-     // Wipe out the active room document completely
-     await deleteDoc(roomRef);
-     console.log("Active session data securely erased.");
- } catch (err) {
-     console.error("Error finalizing game session:", err);
- }
-};
 
        function syncFromFirebaseData(data) {
            if (!data) return;
            
-           // If we are currently typing into setup slots, lock sync out so incoming updates don't wipe letters mid-keystroke
            if (document.getElementById('setup-screen').style.display !== 'none') {
                const inputs = document.querySelectorAll('.p-name-input');
                let someoneIsTyping = false;
@@ -1023,8 +1025,7 @@ window.archiveAndFinalize = async () => {
            secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
            secondRollTotal = data.secondRollTotal || 0;
 
-           // Visual Sync Handlers
-           if (players.length > 0 && stageCount > 0) {
+           if (stageCount >= 1) {
                document.getElementById('setup-screen').style.display = 'none';
                document.getElementById('rolling-screen').style.display = 'none';
                document.getElementById('game-view').style.display = 'block';
@@ -1039,7 +1040,7 @@ window.archiveAndFinalize = async () => {
                    document.getElementById('story-text').innerHTML = currentEncounter.desc;
                    document.getElementById('encounter-title').innerText = currentEncounter.title;
                    document.getElementById('encounter-stat').innerText = currentEncounter.stat;
-                   updateHostDCReveal();
+                   window.updateHostDCReveal();
 
                    if (weyrRollActive) {
                        document.getElementById('standard-roll-controls').style.display = 'none';
@@ -1065,10 +1066,9 @@ window.archiveAndFinalize = async () => {
                        renderSyncedChoices();
                    }
                }
-           } else if (tempPlayers.length > 0 && stageCount === 0) {
+           } else if (stageCount === 0.5) {
                renderRollingScreenFromState();
            } else {
-               // Render Setup Slots based on Incoming State
                document.getElementById('game-view').style.display = 'none';
                document.getElementById('rolling-screen').style.display = 'none';
                document.getElementById('setup-screen').style.display = 'block';
@@ -1083,7 +1083,7 @@ window.archiveAndFinalize = async () => {
                    slot.id = `slot_${playerCounter}`;
                    let classOptions = classicClasses.map(c => `<option value="${c}" ${c === p.avatar ? 'selected' : ''}>${c}</option>`).join('');
                    slot.innerHTML = `
-                       <button class="remove-btn" onclick="removePlayerSlot(${playerCounter})">X</button>
+                       <button class="remove-btn" onclick="window.removePlayerSlot(${playerCounter})">X</button>
                        <label>Identifier Name:</label>
                        <input type="text" class="p-name-input" value="${p.name}" placeholder="Character label..." oninput="window.broadcastState()">
                        <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
@@ -1112,14 +1112,12 @@ window.archiveAndFinalize = async () => {
                }
                roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
-               // FIX 3: Structured onSnapshot setup to prevent wiping live text boxes during active session entry
                onSnapshot(roomRef, (snapshot) => {
                    if (!currentUser) return;
                    if (snapshot.exists()) {
                        const data = snapshot.data();
                        syncFromFirebaseData(data);
                    } else {
-                       // Only execute standard system reset IF no users are currently filling details on-screen
                        const inputs = document.querySelectorAll('.p-name-input');
                        let activeRegistryTyping = false;
                        inputs.forEach(i => { if (i === document.activeElement) activeRegistryTyping = true; });
