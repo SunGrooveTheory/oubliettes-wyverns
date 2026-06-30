@@ -15,6 +15,12 @@
            --danger-color: #e76f51;
            --magic-color: #a2d2ff;
        }
+async function clearOldData(userId) {
+    await deleteDoc(doc(db, "players", userId));
+    console.log("Old session cleared. Starting fresh.");
+}
+
+      
        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; }
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
