@@ -1021,6 +1021,24 @@
   }
 
   testDatabase();
+     const discordSdk = new DiscordSDK("1521393614528450622");
+
+async function setupDiscordSdk() {
+    console.log("Initializing Discord SDK...");
+    await discordSdk.ready();
+    console.log("Discord SDK is ready!");
+    
+    // Auth code to identify the user
+    const { code } = await discordSdk.commands.authorize({
+        client_id: "1521393614528450622",
+        response_type: "code",
+        state: "",
+        prompt: "none",
+        scope: ["identify", "guilds"]
+    });
+    console.log("Authorization code received!");
+}
+setupDiscordSdk();
 </script>
 </body>
 </html>
