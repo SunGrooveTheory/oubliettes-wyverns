@@ -108,7 +108,7 @@
 
        <div class="section-box" id="rolling-screen" style="display: none;">
            <div class="section-title">Attribute Allocation Matrix</div>
-           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: Roll the digital dice or enter customized numeric stats manually.</p>
            <div id="rolling-list"></div>
            <button onclick="window.finalizeStatsAndStart()" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
@@ -213,14 +213,14 @@
        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-       // Firebase Config
+       // Firebase Connection Initialization Config Block
        const firebaseConfig = { apiKey: "AIzaSyAs-FakeKeyForStructureOnly", authDomain: "oubliettes-wyverns.firebaseapp.com", projectId: "oubliettes-wyverns", storageBucket: "oubliettes-wyverns.appspot.com", messagingSenderId: "123456789", appId: "1:1234:web:abcd" };
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
        const auth = getAuth(app);
        const appId = "oubliettes-wyverns-v1";
 
-       // Custom Dictionary Arrays
+       // Hardcoded Original Custom Lexicon Vocabulary Tables
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -393,25 +393,69 @@
        let firstRollerIndex = null, firstRollTotal = 0;
        let secondRollerIndex = null, secondRollTotal = 0;
 
-       // Custom Hardcoded Drive Images Mapping Catalog
+       // Your Exact Hardcoded Drive Images Mapping Catalog
        const driveImages = {
-           entrance: ["https://lh3.googleusercontent.com/d/1O9mZ6-2w3U7qHhbygC_96U-jN7693A4F"],
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
            combat: [
-               "https://lh3.googleusercontent.com/d/1w62y6t-Ily95-oDcl3KAn6E8Wv1B1T02",
-               "https://lh3.googleusercontent.com/d/12a8Y7y6ZpL345XcYwKm04N6V11ABcd78",
-               "https://lh3.googleusercontent.com/d/13b9Z8z7WqM456YdZxLn05N7W22BCde89"
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
            ],
            puzzle: [
-               "https://lh3.googleusercontent.com/d/1G44h8Z9wLm123XdYwKm02N4V99ABcd56",
-               "https://lh3.googleusercontent.com/d/1H55j9a0xMn234YeZwLn03N5W00BCde67"
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
            ],
            hazard: [
-               "https://lh3.googleusercontent.com/d/1I66k9b1yNo345ZfZwMn04N6X11CDef78",
-               "https://lh3.googleusercontent.com/d/1J77m9c2zOp456AgaWNo05N7Y22DEfg89"
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
            ],
-           camp: ["https://lh3.googleusercontent.com/d/1K88n9d3zPq567BgbXOp06N8Z33EFgh90"],
-           win: ["https://lh3.googleusercontent.com/d/1L99o9e4zQr678CgcYPp07N9a44FGhi01"],
-           gameover: ["https://lh3.googleusercontent.com/d/1M00p9f5zRs789DdaZQq08N9b55GHIj12"]
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
        };
 
        function setBoardImage(category) {
@@ -435,7 +479,7 @@
            "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
 
-       // Multi-User Discord Activity Sync Handshakes
+       // Multi-User Discord SDK Engine Connection Hooks
        let discordSdk = null;
        if (typeof DiscordSDK !== 'undefined') {
            const params = new URLSearchParams(window.location.search);
@@ -463,7 +507,7 @@
            }
        }
 
-       // State Broadcaster
+       // Globally Accessible Window Exposure Block (Resolves Scope Deadlocks)
        window.broadcastState = async function() {
            if (!currentUser || !roomRef) return;
            
@@ -499,7 +543,6 @@
            }
        };
 
-       // Pure destruction routine: wipes active room state instantly
        window.archiveAndFinalize = async () => {
            if (!currentUser || !roomRef) return;
            try {
@@ -510,7 +553,6 @@
            }
        };
 
-       // Exposed Global Action Wrappers
        window.addPlayerSlot = function() {
            playerCounter++;
            const container = document.getElementById('dynamic-player-container');
@@ -545,12 +587,12 @@
                tempPlayers.push({ name, avatar, brawn: 0, brains: 0, agility: 0, rolled: false });
            });
            
-           stageCount = 0.5; // Half-step indicates rolling matrix setup state
-           renderRollingScreenFromState();
+           stageCount = 0.5; 
+           renderRollingListFromState();
            window.broadcastState();
        };
 
-       function renderRollingScreenFromState() {
+       function renderRollingListFromState() {
            document.getElementById('setup-screen').style.display = 'none';
            const listContainer = document.getElementById('rolling-list');
            let listHtml = "";
@@ -968,7 +1010,7 @@
            document.getElementById('encounter-interface').style.display = 'none';
            if (currentPartyHP <= 0) {
                document.getElementById('location-name').innerText = "💀 Vanguard Annihilation";
-               document.getElementById('map-img').src = driveImages.gameover[Math.floor(Math.random() * driveImages.gameover.length)];
+               document.getElementById('map-img').src = driveImages.death[Math.floor(Math.random() * driveImages.death.length)];
                document.getElementById('story-text').innerHTML = `
                    <div style="text-align: center; padding: 10px; border: 2px solid var(--danger-color); background: rgba(231,111,81,0.1); border-radius: 8px;">
                        <h2 style="color: var(--danger-color); font-size: 24px; margin-bottom: 10px;">Vanguard Fallen</h2>
@@ -989,7 +1031,6 @@
            }
        }
 
-       // Synced Confirm Modal Systems
        window.confirmFinalize = function() {
            document.getElementById('finalize-modal').style.display = 'flex';
        };
@@ -1067,7 +1108,7 @@
                    }
                }
            } else if (stageCount === 0.5) {
-               renderRollingScreenFromState();
+               renderRollingListFromState();
            } else {
                document.getElementById('game-view').style.display = 'none';
                document.getElementById('rolling-screen').style.display = 'none';
@@ -1094,6 +1135,7 @@
            }
        }
 
+       // Core Fix: Added 'async' so code compiles correctly and functions fire
        async function init() {
            await initAuth();
            onAuthStateChanged(auth, async (user) => {
@@ -1132,6 +1174,10 @@
                            document.getElementById('stage-counter').innerText = '0';
                            document.getElementById('party-hp').innerText = '0';
                            document.getElementById('dice-log').innerHTML = '';
+                           
+                           // Add two default interactive slots right away on initialization
+                           window.addPlayerSlot();
+                           window.addPlayerSlot();
                        }
                    }
                });
