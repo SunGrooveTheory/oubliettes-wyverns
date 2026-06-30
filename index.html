@@ -1240,21 +1240,17 @@
         }
     };
 
-    // Export finalization & archiving routine under Rule 1 & Rule 3
-    window.archiveAndFinalize = async () => {
-        if (!currentUser || !roomRef) return;
-        try {
-            const docSnap = await getDoc(roomRef);
-            if (docSnap.exists()) {
-                const activeRunData = docSnap.data();
-                const archiveId = `run_${Date.now()}`;
-                const archiveRef = doc(db, 'artifacts', appId, 'public', 'data', 'archives', archiveId);
-                await setDoc(archiveRef, {
-                    ...activeRunData,
-                    archivedAt: Date.now(),
-                    archivedBy: currentUser.uid
-                });
-            }
+   // Pure destruction routine: wipes active room state instantly
+window.archiveAndFinalize = async () => {
+ if (!currentUser || !roomRef) return;
+ try {
+     // Wipe out the active room document completely
+     await deleteDoc(roomRef);
+     console.log("Active session data securely erased.");
+ } catch (err) {
+     console.error("Error finalizing game session:", err);
+ }
+};
             await deleteDoc(roomRef);
         } catch (err) {
             console.error("Error finalizing game session:", err);
