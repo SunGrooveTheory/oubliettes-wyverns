@@ -214,7 +214,14 @@
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
        // Firebase Connection Initialization Config Block
-       const firebaseConfig = { apiKey: "AIzaSyAs-FakeKeyForStructureOnly", authDomain: "oubliettes-wyverns.firebaseapp.com", projectId: "oubliettes-wyverns", storageBucket: "oubliettes-wyverns.appspot.com", messagingSenderId: "123456789", appId: "1:1234:web:abcd" };
+       const firebaseConfig = { 
+           apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw", 
+           authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
+           projectId: "oubliettes-and-wyverns", 
+           storageBucket: "oubliettes-and-wyverns.firebasestorage.app", 
+           messagingSenderId: "611704952225", 
+           appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0" 
+       };
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
        const auth = getAuth(app);
