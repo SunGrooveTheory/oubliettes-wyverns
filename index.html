@@ -563,6 +563,7 @@
        window.addPlayerSlot = function() {
            playerCounter++;
            const container = document.getElementById('dynamic-player-container');
+           if (!container) return; // Prevent crashing if called before DOM parses
            const slot = document.createElement('div');
            slot.className = 'player-slot';
            slot.id = `slot_${playerCounter}`;
@@ -1038,16 +1039,10 @@
            }
        }
 
-       window.confirmFinalize = function() {
-           document.getElementById('finalize-modal').style.display = 'flex';
-       };
-       window.closeFinalizeModal = function() {
-           document.getElementById('finalize-modal').style.display = 'none';
-       };
-       window.executeFinalize = async function() {
-           window.closeFinalizeModal();
-           await window.archiveAndFinalize();
-       };
+       // Global Exposing of Methods for standard HTML layout element click handlers
+       window.confirmFinalize = window.confirmFinalize || function() { document.getElementById('finalize-modal').style.display = 'flex'; };
+       window.closeFinalizeModal = window.closeFinalizeModal || function() { document.getElementById('finalize-modal').style.display = 'none'; };
+       window.executeFinalize = window.executeFinalize || async function() { window.closeFinalizeModal(); await window.archiveAndFinalize(); };
 
        function syncFromFirebaseData(data) {
            if (!data) return;
@@ -1142,12 +1137,22 @@
            }
        }
 
-       // Core Fix: Added 'async' so code compiles correctly and functions fire
+       // Core Fix Execution Layer
        async function init() {
+           // 1. Force instant drawing of character boxes right on compilation load
+           for(let i=0; i<3; i++) { 
+               window.addPlayerSlot(); 
+           }
+
+           // 2. Connect safely underneath without locking the interface 
            await initAuth();
            onAuthStateChanged(auth, async (user) => {
                currentUser = user;
-               if (!user) return;
+               if (!user) {
+                   // Ensure the setup registry page remains interaction-ready if network drops
+                   document.getElementById('setup-screen').style.display = 'block';
+                   return;
+               }
                
                let instanceId = "sandbox-local-channel";
                if (discordSdk) {
@@ -1182,7 +1187,8 @@
                            document.getElementById('party-hp').innerText = '0';
                            document.getElementById('dice-log').innerHTML = '';
                            
-                           // Add two default interactive slots right away on initialization
+                           // Restore base loops if remote space drops completely
+                           window.addPlayerSlot();
                            window.addPlayerSlot();
                            window.addPlayerSlot();
                        }
