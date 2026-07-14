@@ -94,6 +94,7 @@
        <div class="header-container">
            <div>
                <h1>Oubliettes & Wyverns</h1>
+               <div style="font-family: sans-serif; font-size: 12px; color: #888; margin-top: 4px;" id="network-info-label">Initializing secure campaign connection...</div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
@@ -232,6 +233,7 @@
 
        let currentUser = null;
        let roomRef = null;
+       let unsubscribeSnapshot = null;
 
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
@@ -604,7 +606,12 @@
            isMultiplayer = false;
            console.log("Switching to local offline backup simulation.");
 
-           // Instantly unlock UI controls to recover playability
+           const infoLabel = document.getElementById('network-info-label');
+           if (infoLabel) {
+               infoLabel.innerText = "Sandbox Offline Mode (Local)";
+               infoLabel.style.color = "#ffb703";
+           }
+
            const addBtn = document.getElementById('btn-add-character');
            const advanceBtn = document.getElementById('advance-to-rolling-btn');
            if (addBtn) {
@@ -1285,6 +1292,21 @@
                }
            }
 
+           // Robust Multiplayer Check: Automatically add slot for current user if they are joining an active setup screen
+           const tempPlayersList = Object.values(tempPlayers);
+           const hasMySlot = tempPlayersList.some(p => p.owner === SESSION_ID);
+           if (!hasMySlot && stageCount === 0 && isMultiplayer) {
+               if (!window.autoAddingSlot) {
+                   window.autoAddingSlot = true;
+                   addPlayerSlot().then(() => {
+                       window.autoAddingSlot = false;
+                   }).catch((err) => {
+                       console.warn("Auto adding slot bypassed:", err);
+                       window.autoAddingSlot = false;
+                   });
+               }
+           }
+
            if (stageCount >= 1) {
                document.getElementById('setup-screen').style.display = 'none';
                document.getElementById('rolling-screen').style.display = 'none';
@@ -1343,18 +1365,18 @@
                document.getElementById('setup-screen').style.display = 'block';
                
                const container = document.getElementById('dynamic-player-container');
-               const tempPlayersList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+               const sortedList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
                
-               while (container.children.length < tempPlayersList.length) {
+               while (container.children.length < sortedList.length) {
                    const slot = document.createElement('div');
                    slot.className = 'player-slot';
                    container.appendChild(slot);
                }
-               while (container.children.length > tempPlayersList.length) {
+               while (container.children.length > sortedList.length) {
                    container.removeChild(container.lastChild);
                }
 
-               tempPlayersList.forEach((p, idx) => {
+               sortedList.forEach((p, idx) => {
                    const slot = container.children[idx];
                    slot.id = `slot_${p.id}`;
 
@@ -1415,7 +1437,7 @@
 
                const proceedBtn = document.getElementById('advance-to-rolling-btn');
                if (proceedBtn) {
-                   if (tempPlayersList.length === 0) {
+                   if (sortedList.length === 0) {
                        proceedBtn.disabled = true;
                        proceedBtn.innerText = "Add character(s) to proceed";
                    } else {
@@ -1546,6 +1568,37 @@
            });
        }
 
+       function listenToLobby(lobbyId) {
+           if (unsubscribeSnapshot) {
+               unsubscribeSnapshot();
+           }
+
+           const infoLabel = document.getElementById('network-info-label');
+           if (infoLabel) {
+               infoLabel.innerText = `Synchronized: ${lobbyId}`;
+               infoLabel.style.color = "var(--success-color)";
+           }
+
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
+           console.log("Subscribing to synchronized room lobby ID:", lobbyId);
+
+           unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
+               if (!auth.currentUser) return; 
+               
+               isMultiplayer = true; 
+
+               if (snapshot.exists()) {
+                   const data = snapshot.data();
+                   syncFromFirebaseData(data);
+               } else {
+                   setDoc(roomRef, localRoomState);
+               }
+           }, (err) => {
+               console.error("Lobby connection suspended, rolling back to offline playground:", err);
+               switchToLocalOnly();
+           });
+       }
+
        async function init() {
            // Direct clicks for static controls that are always present in base HTML
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
@@ -1563,7 +1616,6 @@
            // Initialize fallback memory state
            initializeLocalState();
 
-           // Non-blocking handshake for the Discord App Embedded container
            const connectionTimeout = setTimeout(() => {
                if (isMultiplayer && !currentUser) {
                    console.warn("Initial lobby sync bypassed. Sandbox local fallback enabled.");
@@ -1574,6 +1626,7 @@
            const user = await performAuth();
            if (!user) {
                switchToLocalOnly();
+               clearTimeout(connectionTimeout);
                return;
            }
 
@@ -1582,27 +1635,25 @@
            let instanceId = "";
            let detectedInsideDiscord = false;
            
-           const urlParams = new URLSearchParams(window.location.search);
-           const discordInstanceId = urlParams.get('instance_id') || urlParams.get('channel_id');
-
-           if (discordInstanceId) {
-               instanceId = discordInstanceId;
+           // A. Grab SDK instance ID instantly (populated on construction, avoids mobile race timeouts)
+           if (discordSdk && discordSdk.instanceId) {
+               instanceId = discordSdk.instanceId;
                detectedInsideDiscord = true;
+               console.log("Discord SDK instance detected immediately:", instanceId);
            }
 
+           // B. Fallback to URL Query parameter mapping
            if (!instanceId) {
-               try {
-                   if (discordSdk) {
-                       const readyPromise = discordSdk.ready();
-                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000));
-                       await Promise.race([readyPromise, timeoutPromise]);
-                       if (discordSdk.instanceId) {
-                           instanceId = discordSdk.instanceId;
-                           detectedInsideDiscord = true;
-                       }
-                   }
-               } catch (discordErr) {
-                   console.warn("Discord connection bypassed. Standby sandbox loaded.");
+               const urlParams = new URLSearchParams(window.location.search);
+               const discordInstanceId = urlParams.get('instance_id') || 
+                                         urlParams.get('channel_id') ||
+                                         urlParams.get('instanceId') ||
+                                         urlParams.get('channelId');
+
+               if (discordInstanceId) {
+                   instanceId = discordInstanceId;
+                   detectedInsideDiscord = true;
+                   console.log("Discord instance detected via query params:", instanceId);
                }
            }
 
@@ -1612,24 +1663,24 @@
                instanceId = "SANDBOX-LOBBY";
            }
 
-           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+           // Subscribe immediately to the resolved Lobby
+           clearTimeout(connectionTimeout);
+           listenToLobby(instanceId);
 
-           onSnapshot(roomRef, (snapshot) => {
-               if (!auth.currentUser) return; 
-               clearTimeout(connectionTimeout);
-               
-               isMultiplayer = true; 
-
-               if (snapshot.exists()) {
-                   const data = snapshot.data();
-                   syncFromFirebaseData(data);
-               } else {
-                   setDoc(roomRef, localRoomState);
+           // C. Non-blocking ready handshake in background to catch slower authorizations on mobile
+           if (discordSdk && !detectedInsideDiscord) {
+               try {
+                   discordSdk.ready().then(() => {
+                       if (discordSdk.instanceId && discordSdk.instanceId !== instanceId) {
+                           console.log("Discord handshake finished late. Relinking campaign channel:", discordSdk.instanceId);
+                           insideDiscord = true;
+                           listenToLobby(discordSdk.instanceId);
+                       }
+                   }).catch(e => console.warn("Discord background handshake skipped:", e));
+               } catch (discordErr) {
+                   console.warn("Discord background handshake failed:", discordErr);
                }
-           }, (err) => {
-               console.error("Lobby connection suspended, rolling back to offline playground:", err);
-               switchToLocalOnly();
-           });
+           }
        }
 
        window.onload = function () {
