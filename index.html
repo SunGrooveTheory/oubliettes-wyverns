@@ -94,7 +94,7 @@
        <div class="header-container">
            <div>
                <h1>Oubliettes & Wyverns</h1>
-               <div style="font-family: sans-serif; font-size: 12px; color: #888; margin-top: 4px;" id="network-info-label">Initializing secure campaign connection...</div>
+               <div style="font-family: sans-serif; font-size: 12px; color: #888; margin-top: 4px;" id="network-info-label">Synchronizing with Discord voice channel...</div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
@@ -102,9 +102,10 @@
        <!-- Character Setup Stage -->
        <div class="section-box" id="setup-screen">
            <div class="section-title">Character Registry</div>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Characters are registered automatically as players join. You can edit your own name and class below.</p>
            <div class="setup-grid" id="dynamic-player-container"></div>
            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Add Character</button>
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Force Add Character</button>
                <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;">Proceed to Attribute Allocation</button>
            </div>
        </div>
@@ -219,7 +220,6 @@
        </div>
    </div>
 
-   <!-- Optional Discord Embedded SDK script fallback -->
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK offline fallback activated.')"></script>
 
    <script type="module">
@@ -270,7 +270,7 @@
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
-               discordSdk = new DiscordSDK("1521393614528450622");
+               discordSdk = new DiscordSDK({ clientId: "1521393614528450622" });
            }
        } catch (discordErr) {
            console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
@@ -608,7 +608,7 @@
 
            const infoLabel = document.getElementById('network-info-label');
            if (infoLabel) {
-               infoLabel.innerText = "Sandbox Offline Mode (Local)";
+               infoLabel.innerText = "Sandbox Offline Mode (In-Memory)";
                infoLabel.style.color = "#ffb703";
            }
 
@@ -616,7 +616,7 @@
            const advanceBtn = document.getElementById('advance-to-rolling-btn');
            if (addBtn) {
                addBtn.removeAttribute('disabled');
-               addBtn.innerText = "+ Add Character";
+               addBtn.innerText = "+ Force Add Character";
            }
            if (advanceBtn) {
                advanceBtn.removeAttribute('disabled');
@@ -630,7 +630,7 @@
                tempPlayers: {
                    [slotId]: {
                        id: slotId,
-                       name: "",
+                       name: "Stout Vanguard",
                        avatar: classicClasses[0],
                        brawn: 0,
                        brains: 0,
@@ -726,10 +726,14 @@
 
        async function addPlayerSlot() {
            const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           const randomPrefixes = ["Valiant", "Stout", "Bold", "Swift", "Cunning", "Fierce", "Noble", "Grim", "Silent", "Iron"];
+           const randomSuffixes = ["Seeker", "Vanguard", "Slayer", "Shadow", "Warden", "Herald", "Keeper", "Stalker", "Spellweaver", "Paladin"];
+           const generatedName = randomPrefixes[Math.floor(Math.random() * randomPrefixes.length)] + " " + randomSuffixes[Math.floor(Math.random() * randomSuffixes.length)];
+
            const newSlot = {
                id: slotId,
-               name: "",
-               avatar: classicClasses[0],
+               name: generatedName,
+               avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
                brawn: 0,
                brains: 0,
                agility: 0,
@@ -846,7 +850,6 @@
                document.getElementById('rolling-list').innerHTML = listHtml;
            }
 
-           // Explicitly update input numeric values securely preserving focus
            sortedTempPlayers.forEach(p => {
                const bInput = document.getElementById(`roll_${p.id}_brawn`);
                const brInput = document.getElementById(`roll_${p.id}_brains`);
@@ -1292,7 +1295,7 @@
                }
            }
 
-           // Robust Multiplayer Check: Automatically add slot for current user if they are joining an active setup screen
+           // Automatic character registration for joined players
            const tempPlayersList = Object.values(tempPlayers);
            const hasMySlot = tempPlayersList.some(p => p.owner === SESSION_ID);
            if (!hasMySlot && stageCount === 0 && isMultiplayer) {
@@ -1455,7 +1458,7 @@
                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
                    user = cred.user;
                } catch (tokenErr) {
-                   console.warn("Custom token authentication bypassed.", tokenErr);
+                   console.warn("Custom token authentication bypassed, trying anonymous.", tokenErr);
                }
            }
            if (!user) {
@@ -1463,7 +1466,7 @@
                    const cred = await signInAnonymously(auth);
                    user = cred.user;
                } catch (anonErr) {
-                   console.error("Authentication rejected completely:", anonErr);
+                   console.error("Anonymous authentication rejected completely:", anonErr);
                    showNotification("Authentication failed. Falling back to local offline sandbox.");
                }
            }
@@ -1575,7 +1578,7 @@
 
            const infoLabel = document.getElementById('network-info-label');
            if (infoLabel) {
-               infoLabel.innerText = `Synchronized: ${lobbyId}`;
+               infoLabel.innerText = `Lobby Sync Active`;
                infoLabel.style.color = "var(--success-color)";
            }
 
@@ -1599,8 +1602,15 @@
            });
        }
 
+       async function setupDiscordSdk() {
+           if (!discordSdk) return "SANDBOX-LOBBY";
+           console.log("Initializing Discord SDK Handshake...");
+           await discordSdk.ready();
+           return discordSdk.instanceId || "SANDBOX-LOBBY";
+       }
+
        async function init() {
-           // Direct clicks for static controls that are always present in base HTML
+           // Static bindings
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1610,10 +1620,7 @@
 
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Activate high durability click listeners delegator
            setupGlobalDelegation();
-
-           // Initialize fallback memory state
            initializeLocalState();
 
            const connectionTimeout = setTimeout(() => {
@@ -1621,7 +1628,7 @@
                    console.warn("Initial lobby sync bypassed. Sandbox local fallback enabled.");
                    switchToLocalOnly();
                }
-           }, 1500);
+           }, 2500);
 
            const user = await performAuth();
            if (!user) {
@@ -1635,14 +1642,11 @@
            let instanceId = "";
            let detectedInsideDiscord = false;
            
-           // A. Grab SDK instance ID instantly (populated on construction, avoids mobile race timeouts)
            if (discordSdk && discordSdk.instanceId) {
                instanceId = discordSdk.instanceId;
                detectedInsideDiscord = true;
-               console.log("Discord SDK instance detected immediately:", instanceId);
            }
 
-           // B. Fallback to URL Query parameter mapping
            if (!instanceId) {
                const urlParams = new URLSearchParams(window.location.search);
                const discordInstanceId = urlParams.get('instance_id') || 
@@ -1653,7 +1657,6 @@
                if (discordInstanceId) {
                    instanceId = discordInstanceId;
                    detectedInsideDiscord = true;
-                   console.log("Discord instance detected via query params:", instanceId);
                }
            }
 
@@ -1663,16 +1666,13 @@
                instanceId = "SANDBOX-LOBBY";
            }
 
-           // Subscribe immediately to the resolved Lobby
            clearTimeout(connectionTimeout);
            listenToLobby(instanceId);
 
-           // C. Non-blocking ready handshake in background to catch slower authorizations on mobile
            if (discordSdk && !detectedInsideDiscord) {
                try {
                    discordSdk.ready().then(() => {
                        if (discordSdk.instanceId && discordSdk.instanceId !== instanceId) {
-                           console.log("Discord handshake finished late. Relinking campaign channel:", discordSdk.instanceId);
                            insideDiscord = true;
                            listenToLobby(discordSdk.instanceId);
                        }
@@ -1689,3 +1689,5 @@
    </script>
 </body>
 </html>
+```
+`
