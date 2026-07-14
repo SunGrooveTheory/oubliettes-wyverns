@@ -134,7 +134,8 @@
                    <div class="map-visual">
                        <strong id="location-name" style="color: var(--accent-color); font-size: 19px; min-height: 28px;">Initialization</strong>
                        <div class="img-frame" id="map-img-container">
-                           <!-- Dynamic Fantasy SVGs render here to avoid unreliable hotlink failures -->
+                           <img id="map-img" style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Location Image">
+                           <div id="fallback-svg-container" style="width: 100%; height: 100%; display: block;"></div>
                        </div>
                        <div id="dice-log"></div>
                    </div>
@@ -443,6 +444,70 @@
        let currentActiveDC = 0;
        let isHostTPK = false; 
 
+       const driveImages = {
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
+           combat: [
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+           ],
+           puzzle: [
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+           ],
+           hazard: [
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+           ],
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
+       };
+
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
 
        const classAffinities = {
@@ -650,9 +715,26 @@
        }
 
        function updateBoardImage(category) {
-           const container = document.getElementById('map-img-container');
-           if (container) {
-               container.innerHTML = getFantasySVG(category);
+           const imgElement = document.getElementById('map-img');
+           const svgContainer = document.getElementById('fallback-svg-container');
+           if (!imgElement || !svgContainer) return;
+
+           const imgArray = driveImages[category];
+           if (imgArray && imgArray.length > 0) {
+               const selectedImg = imgArray[Math.floor(Math.random() * imgArray.length)];
+               imgElement.src = selectedImg;
+               imgElement.style.display = 'block';
+               svgContainer.style.display = 'none';
+               
+               imgElement.onerror = () => {
+                   imgElement.style.display = 'none';
+                   svgContainer.style.display = 'block';
+                   svgContainer.innerHTML = getFantasySVG(category);
+               };
+           } else {
+               imgElement.style.display = 'none';
+               svgContainer.style.display = 'block';
+               svgContainer.innerHTML = getFantasySVG(category);
            }
        }
 
@@ -702,11 +784,9 @@
        async function updatePlayerName(slotId, val) {
            if (!auth.currentUser || !roomRef) return;
            try {
-               await setDoc(roomRef, {
-                   tempPlayers: {
-                       [slotId]: { name: val }
-                   }
-               }, { merge: true });
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}.name`]: val
+               });
            } catch(err) {
                console.error("Name sync failed:", err);
            }
@@ -715,11 +795,9 @@
        async function updatePlayerClass(slotId, val) {
            if (!auth.currentUser || !roomRef) return;
            try {
-               await setDoc(roomRef, {
-                   tempPlayers: {
-                       [slotId]: { avatar: val }
-                   }
-               }, { merge: true });
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}.avatar`]: val
+               });
            } catch(err) {
                console.error("Class sync failed:", err);
            }
@@ -728,11 +806,9 @@
        async function updateTempStat(slotId, stat, val) {
            if (!auth.currentUser || !roomRef) return;
            try {
-               await setDoc(roomRef, {
-                   tempPlayers: {
-                       [slotId]: { [stat]: parseInt(val) || 0 }
-                   }
-               }, { merge: true });
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0
+               });
            } catch(err) {
                console.error("Stat update failed:", err);
            }
@@ -742,11 +818,9 @@
            if (!auth.currentUser || !roomRef) return;
            let r = Math.floor(Math.random() * max) + 1;
            try {
-               await setDoc(roomRef, {
-                   tempPlayers: {
-                       [slotId]: { [stat]: r }
-                   }
-               }, { merge: true });
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}.${stat}`]: r
+               });
            } catch (err) {
                console.error("Dice roll sync failed:", err);
            }
@@ -765,11 +839,9 @@
                owner: SESSION_ID
            };
            try {
-               await setDoc(roomRef, {
-                   tempPlayers: {
-                       [slotId]: newSlot
-                   }
-               }, { merge: true });
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}`]: newSlot
+               });
            } catch(err) {
                console.error("Slot registration failed:", err);
            }
