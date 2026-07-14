@@ -283,7 +283,6 @@
            }
        }
 
-       // ELL Accessible Vocabulary Dictionaries - Magical but understandable
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -427,35 +426,6 @@
            ]
        };
 
-       function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-       function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
-       function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
-
-       function constructGranularText(type, locationName) {
-           let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
-           let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
-           let complication, impact;
-           if (type === "combat") {
-               complication = stems.combatComp[Math.floor(Math.random() * stems.combatComp.length)]();
-               impact = stems.combatImpact[Math.floor(Math.random() * stems.combatImpact.length)]();
-           } else if (type === "puzzle") {
-               complication = stems.puzzleComp[Math.floor(Math.random() * stems.puzzleComp.length)]();
-               impact = stems.puzzleImpact[Math.floor(Math.random() * stems.puzzleImpact.length)]();
-           } else {
-               complication = stems.hazardComp[Math.floor(Math.random() * stems.hazardComp.length)]();
-               impact = stems.hazardImpact[Math.floor(Math.random() * stems.hazardImpact.length)]();
-           }
-           return `<p class="story-paragraph">${approach}${sensory}</p><p class="story-paragraph">${complication}${impact}</p>`;
-       }
-
-       function constructGranularCampText() {
-           let setup = stems.campSetup[Math.floor(Math.random() * stems.campSetup.length)]();
-           let action = stems.campAction[Math.floor(Math.random() * stems.campAction.length)]();
-           let outcome = stems.campOutcome[Math.floor(Math.random() * stems.campOutcome.length)]();
-           return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
-       }
-
-       // Core global variables synchronized across players
        let playerCounter = 0;
        let tempPlayers = [];
        let players = [];
@@ -540,7 +510,6 @@
 
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
 
-       // Class Affinity Offsets Mapping (Hidden mechanical values)
        const classAffinities = {
            "🛡️ Paladin": { combat: -4, puzzle: 1, hazard: 2, camp: 0 },
            "🧙 Wizard": { combat: 2, puzzle: -5, hazard: 0, camp: 0 },
@@ -553,6 +522,34 @@
            "📜 Bard": { combat: -2, puzzle: -2, hazard: -2, camp: -1 },
            "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
+
+       function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+       function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
+       function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
+
+       function constructGranularText(type, locationName) {
+           let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
+           let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
+           let complication, impact;
+           if (type === "combat") {
+               complication = stems.combatComp[Math.floor(Math.random() * stems.combatComp.length)]();
+               impact = stems.combatImpact[Math.floor(Math.random() * stems.combatImpact.length)]();
+           } else if (type === "puzzle") {
+               complication = stems.puzzleComp[Math.floor(Math.random() * stems.puzzleComp.length)]();
+               impact = stems.puzzleImpact[Math.floor(Math.random() * stems.puzzleImpact.length)]();
+           } else {
+               complication = stems.hazardComp[Math.floor(Math.random() * stems.hazardComp.length)]();
+               impact = stems.hazardImpact[Math.floor(Math.random() * stems.hazardImpact.length)]();
+           }
+           return `<p class="story-paragraph">${approach}${sensory}</p><p class="story-paragraph">${complication}${impact}</p>`;
+       }
+
+       function constructGranularCampText() {
+           let setup = stems.campSetup[Math.floor(Math.random() * stems.campSetup.length)]();
+           let action = stems.campAction[Math.floor(Math.random() * stems.campAction.length)]();
+           let outcome = stems.campOutcome[Math.floor(Math.random() * stems.campOutcome.length)]();
+           return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
+       }
 
        function showNotification(text) {
            let box = document.getElementById('custom-notification');
@@ -662,8 +659,14 @@
            broadcastState();
        }
 
+       function setBoardImage(category) {
+           const imgElement = document.getElementById('map-img');
+           if (!imgElement) return;
+           const imgArray = driveImages[category];
+           imgElement.src = (imgArray && imgArray.length > 0) ? imgArray[Math.floor(Math.random() * imgArray.length)] : "https://placehold.co/300x400/16161f/ffffff?text=Image+Missing";
+       }
+
        function goToRollingScreen() {
-           let valid = true;
            let emptyCheck = false;
            tempPlayers.forEach(p => {
                if (!p.name || p.name.trim() === "") {
@@ -787,7 +790,6 @@
            document.getElementById('weyr-roll-controls').style.display = 'none';
            currentEncounter = null;
 
-           // Adjust wyvern-alerts and roll labels based on Difficulty Tier levels
            if (stageCount >= 157) {
                document.getElementById('wyvern-alert').innerText = "🐲 WYVERN WEYR ACTIVATED (3x D30)";
                document.getElementById('wyvern-alert').style.display = 'inline';
@@ -1160,7 +1162,7 @@
            document.getElementById('navigation-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = isDecreedHostTPK ? "💀 Host Doom Decree" : "💀 The Long Goodnight";
-           document.getElementById('map-img').src = driveImages.death[Math.floor(Math.random() * driveImages.death.length)];
+           setBoardImage("death");
 
            let deathNarrative = "";
            if (isDecreedHostTPK) {
@@ -1192,7 +1194,7 @@
            document.getElementById('navigation-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = "🏆 Victory & Escape!";
-           document.getElementById('map-img').src = driveImages.win[Math.floor(Math.random() * driveImages.win.length)];
+           setBoardImage("win");
 
            let survivorNames = players.map(p => `<li><strong>${p.name}</strong> (${p.avatar})</li>`).join('');
 
@@ -1444,7 +1446,6 @@
            });
        }
 
-       // Explicitly map modular-scoped methods to global windows attributes safely
        window.addPlayerSlot = addPlayerSlot;
        window.removePlayerSlot = removePlayerSlot;
        window.claimSlot = claimSlot;
@@ -1470,6 +1471,7 @@
        window.executeFinalize = executeFinalize;
        window.broadcastState = broadcastState;
        window.renderRollingListFromState = renderRollingListFromState;
+       window.setBoardImage = setBoardImage;
 
        init();
    </script>
