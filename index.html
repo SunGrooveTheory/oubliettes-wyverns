@@ -178,8 +178,8 @@
                                <!-- Standard Check Controller -->
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
-                                   <select id="active-player-select" onchange="window.updateHostDCReveal()" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-                                   <button id="roll-check-btn" onclick="window.attemptEncounter()">Roll standard die</button>
+                                   <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <button id="roll-check-btn">Roll standard die</button>
                                </div>
 
                                <!-- Backup Combined Check Controller -->
@@ -187,8 +187,8 @@
                                    <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
                                    <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="backup-roll-btn" class="success" onclick="window.attemptBackup()" style="flex:1;">Roll and Combine</button>
-                                       <button id="decline-backup-btn" class="danger" onclick="window.declineBackup()" style="flex:1;">Accept Fate</button>
+                                       <button id="backup-roll-btn" class="success" style="flex:1;">Roll and Combine</button>
+                                       <button id="decline-backup-btn" class="danger" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
 
@@ -197,16 +197,16 @@
                                    <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
                                    <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="weyr-roll-btn" class="success" onclick="window.attemptWeyr()" style="flex:1;">Roll and Sum Weyr (D30)</button>
-                                       <button id="decline-weyr-btn" class="danger" onclick="window.declineWeyr()" style="flex:1;">Accept Fate</button>
+                                       <button id="weyr-roll-btn" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
+                                       <button id="decline-weyr-btn" class="danger" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
                               
                                <label style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Host Overrides</label>
                                <div class="host-controls">
-                                   <button id="btn-force-pass" class="success" onclick="window.attemptEncounter(true)">Force Pass</button>
-                                   <button id="btn-force-fail" class="danger" onclick="window.attemptEncounter(false)">Force Fail</button>
-                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;" onclick="window.triggerHostTPK()">Force TPK</button>
+                                   <button id="btn-force-pass" class="success">Force Pass</button>
+                                   <button id="btn-force-fail" class="danger">Force Fail</button>
+                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;">Force TPK</button>
                                </div>
                            </div>
                        </div>
@@ -229,8 +229,8 @@
            </p>
            <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="success" id="btn-execute-join" onclick="window.executeJoinLobby()" style="padding: 10px 20px;">Join Lobby</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join" onclick="window.closeJoinModal()">Cancel</button>
+               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
            </div>
        </div>
    </div>
@@ -243,8 +243,8 @@
                This will wipe the active room state instantly and reset the multiplayer configuration back to setup. Do you proceed?
            </p>
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="danger" id="btn-execute-finalize" onclick="window.executeFinalize()" style="padding: 10px 20px;">Yes, WIPE State</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize" onclick="window.closeFinalizeModal()">Cancel</button>
+               <button class="danger" id="btn-execute-finalize" style="padding: 10px 20px;">Yes, WIPE State</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize">Cancel</button>
            </div>
        </div>
    </div>
@@ -269,7 +269,7 @@
        // Unique browser session identifier to establish character sheet authorship
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
-       // Base configuration parameters (will be overwritten by environment variables)
+       // Base configuration parameters
        let firebaseConfig = { 
            apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw", 
            authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
@@ -450,7 +450,6 @@
            ]
        };
 
-       // Shared memory variables
        let tempPlayers = {}; 
        let players = [];
        let maxPartyHP = 0;
@@ -467,72 +466,8 @@
        let currentActiveDC = 0;
        let isHostTPK = false; 
 
+       // High-Fidelity Stock Assets
        const driveImages = {
-           entrance: [
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
-           ],
-           combat: [
-               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
-               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
-               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
-           ],
-           puzzle: [
-               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
-               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
-           ],
-           hazard: [
-               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
-               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
-               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
-           ],
-           camp: [
-               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
-               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
-               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
-               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
-           ],
-           death: [
-               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
-           ],
-           win: [
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
-           ]
-       };
-
-       // Backup high-quality unsplash links in case of loading errors (e.g. strict domain security policies)
-       const fallbackImages = {
            entrance: [
                "https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80",
                "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
@@ -708,7 +643,6 @@
            const svgContainer = document.getElementById('fallback-svg-container');
            if (!imgElement || !svgContainer) return;
 
-           // Step 1: Attempt user custom Google Drive thumbnails
            const driveImgArray = driveImages[category];
            if (driveImgArray && driveImgArray.length > 0) {
                const primaryImg = driveImgArray[Math.floor(Math.random() * driveImgArray.length)];
@@ -716,24 +650,10 @@
                imgElement.style.display = 'block';
                svgContainer.style.display = 'none';
                
-               // Step 2: Fall back to high-res Unsplash stocks if Drive thumbnail is blocked/unauthorized
                imgElement.onerror = () => {
-                   const fallbackArray = fallbackImages[category];
-                   if (fallbackArray && fallbackArray.length > 0) {
-                       const secondaryImg = fallbackArray[Math.floor(Math.random() * fallbackArray.length)];
-                       imgElement.src = secondaryImg;
-                       
-                       imgElement.onerror = () => {
-                           // Step 3: Ultimate vector fallback
-                           imgElement.style.display = 'none';
-                           svgContainer.style.display = 'block';
-                           svgContainer.innerHTML = getFantasySVG(category);
-                       };
-                   } else {
-                       imgElement.style.display = 'none';
-                       svgContainer.style.display = 'block';
-                       svgContainer.innerHTML = getFantasySVG(category);
-                   }
+                   imgElement.style.display = 'none';
+                   svgContainer.style.display = 'block';
+                   svgContainer.innerHTML = getFantasySVG(category);
                };
            } else {
                imgElement.style.display = 'none';
@@ -1041,7 +961,6 @@
            const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
            const currentJSON = JSON.stringify(sortedTempPlayers.map(p => ({id: p.id, name: p.name, avatar: p.avatar})));
 
-           // Only recreate list structure if slots changed, preserving user-focused values and cursor focus
            if (currentJSON !== lastRenderedRollingPlayersJSON) {
                lastRenderedRollingPlayersJSON = currentJSON;
                let listHtml = "";
@@ -1052,26 +971,44 @@
                            <div class="rolling-stats-grid">
                                <div class="stat-roll-box">
                                    <span>⚔️ Brawn:</span>
-                                   <input type="number" id="roll_${p.id}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat('${p.id}', 'brawn', this.value)">
-                                   <button type="button" onclick="window.rollStat('${p.id}', 'brawn', 6)">d6</button>
+                                   <input type="number" id="roll_${p.id}_brawn" class="stat-roll-input" data-id="${p.id}" data-stat="brawn" value="${p.brawn || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="brawn" data-die="6">d6</button>
                                </div>
                                <div class="stat-roll-box">
                                    <span>🧠 Brains:</span>
-                                   <input type="number" id="roll_${p.id}_brains" value="${p.brains || 0}" onchange="window.updateTempStat('${p.id}', 'brains', this.value)">
-                                   <button type="button" onclick="window.rollStat('${p.id}', 'brains', 10)">d10</button>
+                                   <input type="number" id="roll_${p.id}_brains" class="stat-roll-input" data-id="${p.id}" data-stat="brains" value="${p.brains || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="brains" data-die="10">d10</button>
                                </div>
                                <div class="stat-roll-box">
                                    <span>🏃 Agility:</span>
-                                   <input type="number" id="roll_${p.id}_agility" value="${p.agility || 0}" onchange="window.updateTempStat('${p.id}', 'agility', this.value)">
-                                   <button type="button" onclick="window.rollStat('${p.id}', 'agility', 20)">d20</button>
+                                   <input type="number" id="roll_${p.id}_agility" class="stat-roll-input" data-id="${p.id}" data-stat="agility" value="${p.agility || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="agility" data-die="20">d20</button>
                                </div>
                            </div>
                        </div>`;
                });
                document.getElementById('rolling-list').innerHTML = listHtml;
+
+               // Programmatically bind changes and roll triggers
+               document.querySelectorAll('.stat-roll-input').forEach(input => {
+                   input.addEventListener('change', (e) => {
+                       const id = e.target.getAttribute('data-id');
+                       const stat = e.target.getAttribute('data-stat');
+                       updateTempStat(id, stat, e.target.value);
+                   });
+               });
+
+               document.querySelectorAll('.roll-btn').forEach(btn => {
+                   btn.addEventListener('click', (e) => {
+                       const id = btn.getAttribute('data-id');
+                       const stat = btn.getAttribute('data-stat');
+                       const die = parseInt(btn.getAttribute('data-die'));
+                       rollStat(id, stat, die);
+                   });
+               });
            }
 
-           // Explicitly update values of attributes dynamically so inputs never override each other
+           // Update actual inputs seamlessly preserving focused state
            sortedTempPlayers.forEach(p => {
                const bInput = document.getElementById(`roll_${p.id}_brawn`);
                const brInput = document.getElementById(`roll_${p.id}_brains`);
@@ -1112,12 +1049,32 @@
        }
 
        function renderSyncedChoices() {
-           let choicesHtml = `<div class="choice-card" onclick="window.selectPath(0)"><h4>➡️ Descend into ${currentOptions[0].title}</h4><p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p></div>
-                              <div class="choice-card" onclick="window.selectPath(1)"><h4>➡️ Route toward ${currentOptions[1].title}</h4><p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p></div>`;
+           let choicesHtml = `
+               <div class="choice-card" id="btn-choice-0">
+                   <h4>➡️ Descend into ${currentOptions[0].title}</h4>
+                   <p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p>
+               </div>
+               <div class="choice-card" id="btn-choice-1">
+                   <h4>➡️ Route toward ${currentOptions[1].title}</h4>
+                   <p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p>
+               </div>`;
            if (currentPartyHP < maxPartyHP) {
-               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="window.selectCamp()"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
+               choicesHtml += `
+                   <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" id="btn-choice-camp">
+                       <h4>⛺ Set Up Camp</h4>
+                       <p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p>
+                   </div>`;
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
+
+           // Programmatically attach standard events to bypass sandbox frame click overrides
+           const opt0 = document.getElementById('btn-choice-0');
+           const opt1 = document.getElementById('btn-choice-1');
+           const optCamp = document.getElementById('btn-choice-camp');
+
+           if (opt0) opt0.addEventListener('click', () => selectPath(0));
+           if (opt1) opt1.addEventListener('click', () => selectPath(1));
+           if (optCamp) optCamp.addEventListener('click', selectCamp);
        }
 
        async function selectPath(idx) {
@@ -1449,9 +1406,14 @@
                <div id="tpk-undo-container" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--danger-color); border-radius: 8px; background: rgba(231, 111, 81, 0.05); text-align: center;">
                    <p style="color: var(--danger-color); font-size: 13px; font-family: sans-serif; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">👑 Host Intervention Console</p>
                    <p style="font-size: 13px; color: #bbb; margin-bottom: 15px; font-family: sans-serif;">Did the party carelessly stumble into their doom? You can rewind time to the last encounter and restore partial vitality.</p>
-                   <button id="btn-undo-tpk" class="success" onclick="window.undoTPK()" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
+                   <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
                </div>
            `;
+
+           const undoBtn = document.getElementById('btn-undo-tpk');
+           if (undoBtn) {
+               undoBtn.addEventListener('click', undoTPK);
+           }
        }
 
        function handleWin() {
@@ -1474,8 +1436,11 @@
                        </ul>
                    </div>
                    <p class="story-paragraph" style="text-align: center; font-size: 14px; color: var(--accent-color); font-weight: bold;">Final Score: Stage ${stageCount} Cleared!</p>
-                   <button onclick="window.location.reload();" style="margin-top: 15px; padding: 12px 24px;" class="success">Forge a New Lineage</button>
+                   <button id="btn-win-restart" class="success" style="margin-top: 15px; padding: 12px 24px;">Forge a New Lineage</button>
                </div>`;
+           
+           const winRestart = document.getElementById('btn-win-restart');
+           if (winRestart) winRestart.addEventListener('click', () => window.location.reload());
        }
 
        function syncFromFirebaseData(data) {
@@ -1661,17 +1626,13 @@
        async function setupDiscordSdk() {
            if (!discordSdk) return "sandbox-local-channel";
            console.log("Initializing Discord SDK...");
-           await discordSdk.ready();
-           console.log("Discord SDK is ready!");
            
-           const { code } = await discordSdk.commands.authorize({
-               client_id: "1521393614528450622",
-               response_type: "code",
-               state: "",
-               prompt: "none",
-               scope: ["identify", "guilds"]
-           });
-           console.log("Authorization code received!");
+           // Wrap SDK Handshake in a safe 1.5-second timeout race
+           const readyPromise = discordSdk.ready();
+           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord Handshake Timeout")), 1500));
+           
+           await Promise.race([readyPromise, timeoutPromise]);
+           console.log("Discord SDK ready and authorized!");
            return discordSdk.instanceId || "discord-activity-dev-room";
        }
 
@@ -1689,7 +1650,7 @@
        }
 
        async function init() {
-           // Direct click handlers binding dynamically in the script
+           // Programmatic event bindings to prevent standard frame click blocks
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1699,6 +1660,19 @@
 
            document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
            document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
+           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
+           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
+
+           document.getElementById('roll-check-btn').addEventListener('click', () => attemptEncounter());
+           document.getElementById('backup-roll-btn').addEventListener('click', attemptBackup);
+           document.getElementById('decline-backup-btn').addEventListener('click', declineBackup);
+           document.getElementById('weyr-roll-btn').addEventListener('click', attemptWeyr);
+           document.getElementById('decline-weyr-btn').addEventListener('click', declineWeyr);
+
+           document.getElementById('btn-force-pass').addEventListener('click', () => attemptEncounter(true));
+           document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
+           document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
+           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
            // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
            initializeLocalState();
@@ -1723,7 +1697,7 @@
                        detectedInsideDiscord = true;
                    }
                } catch (discordErr) {
-                   console.warn("Discord SDK connection offline or bypassed. Sandbox browser mode loaded.");
+                   console.warn("Discord SDK timed out or bypassed. Sandboxed browser mode loaded.");
                }
 
                insideDiscord = detectedInsideDiscord;
@@ -1802,27 +1776,10 @@
            });
        }
 
-       // Global exports to guarantee the dynamically rendered onclick handlers match perfectly
-       window.updateTempStat = updateTempStat;
-       window.rollStat = rollStat;
+       // Global exports for remove buttons
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
-       window.selectPath = selectPath;
-       window.selectCamp = selectCamp;
-       window.updateHostDCReveal = updateHostDCReveal;
-       window.attemptEncounter = attemptEncounter;
-       window.attemptBackup = attemptBackup;
-       window.declineBackup = declineBackup;
-       window.attemptWeyr = attemptWeyr;
-       window.declineWeyr = declineWeyr;
-       window.triggerHostTPK = triggerHostTPK;
-       window.undoTPK = undoTPK;
-       window.confirmFinalize = confirmFinalize;
-       window.closeFinalizeModal = closeFinalizeModal;
-       window.executeFinalize = executeFinalize;
-       window.closeJoinModal = closeJoinModal;
-       window.executeJoinLobby = executeJoinLobby;
 
        window.onload = function () {
            init();
