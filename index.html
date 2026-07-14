@@ -64,7 +64,6 @@
            align-items: center;
            justify-content: center;
        }
-       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -134,8 +133,8 @@
                <div class="game-board">
                    <div class="map-visual">
                        <strong id="location-name" style="color: var(--accent-color); font-size: 19px; min-height: 28px;">Initialization</strong>
-                       <div class="img-frame">
-                           <img id="map-img" src="" alt="Location Image" onerror="this.src='https://placehold.co/300x400/16161f/ffffff?text=Image+Load+Error';">
+                       <div class="img-frame" id="map-img-container">
+                           <!-- Dynamic Fantasy SVGs render here to avoid unreliable hotlink failures -->
                        </div>
                        <div id="dice-log"></div>
                    </div>
@@ -219,14 +218,14 @@
 
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-       // Context authentication variables
+       // Authentication variables
        let currentUser = null;
        let roomRef = null;
 
-       // Secure context friendly browser-based Session ID for inputs locks
+       // Unique browser session identifier to establish character sheet authorship
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
        // Base configuration parameters
@@ -283,6 +282,7 @@
            }
        }
 
+       // Vocabulary lists for adventure generation
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -426,8 +426,8 @@
            ]
        };
 
-       let playerCounter = 0;
-       let tempPlayers = [];
+       // Shared memory variables
+       let tempPlayers = {}; // Converted to nested object to support seamless concurrent updates
        let players = [];
        let maxPartyHP = 0;
        let currentPartyHP = 0;
@@ -442,70 +442,6 @@
        let secondRollTotal = 0;
        let currentActiveDC = 0;
        let isHostTPK = false; 
-
-       const driveImages = {
-           entrance: [
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
-           ],
-           combat: [
-               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
-               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
-               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
-           ],
-           puzzle: [
-               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
-               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
-           ],
-           hazard: [
-               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
-               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
-               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
-           ],
-           camp: [
-               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
-               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
-               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
-               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
-           ],
-           death: [
-               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
-           ],
-           win: [
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
-           ]
-       };
 
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
 
@@ -522,6 +458,205 @@
            "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
 
+       function getFantasySVG(category) {
+           const svgAttrs = `viewBox="0 0 300 400" width="100%" height="100%" style="display: block; background: #050507;"`;
+           
+           switch (category) {
+               case 'entrance':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <linearGradient id="gateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                   <stop offset="0%" stop-color="#2a2a3a" />
+                                   <stop offset="100%" stop-color="#111" />
+                               </linearGradient>
+                               <radialGradient id="glowEntrance" cx="50%" cy="50%" r="50%">
+                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.3"/>
+                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
+                               </radialGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" />
+                           <path d="M60 350 V150 A90 90 0 0 1 240 150 V350" fill="none" stroke="#1c1c28" stroke-width="4" />
+                           <rect x="70" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
+                           <rect x="155" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
+                           <line x1="90" y1="160" x2="90" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
+                           <line x1="120" y1="160" x2="120" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
+                           <line x1="180" y1="160" x2="180" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
+                           <line x1="210" y1="160" x2="210" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
+                           <circle cx="150" cy="150" r="40" fill="none" stroke="#f4a261" stroke-width="2" stroke-opacity="0.5" />
+                           <g transform="translate(35, 180)">
+                               <path d="M0 0 L10 30 L5 30 L0 0" fill="#444" />
+                               <circle cx="5" cy="-5" r="8" fill="#e76f51" />
+                               <circle cx="5" cy="-5" r="4" fill="#f4a261" />
+                           </g>
+                           <g transform="translate(255, 180)">
+                               <path d="M0 0 L10 30 L5 30 L0 0" fill="#444" />
+                               <circle cx="5" cy="-5" r="8" fill="#e76f51" />
+                               <circle cx="5" cy="-5" r="4" fill="#f4a261" />
+                           </g>
+                           <ellipse cx="150" cy="250" rx="90" ry="110" fill="url(#glowEntrance)" />
+                           <text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text>
+                       </svg>
+                   `;
+               case 'combat':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <radialGradient id="glowCombat" cx="50%" cy="50%" r="50%">
+                                   <stop offset="0%" stop-color="#e76f51" stop-opacity="0.4"/>
+                                   <stop offset="100%" stop-color="#e76f51" stop-opacity="0"/>
+                               </radialGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <path d="M70 320 C70 200, 110 130, 150 130 C190 130, 230 200, 230 320" fill="#111" stroke="#e76f51" stroke-width="2" />
+                           <ellipse cx="135" cy="180" rx="6" ry="3" fill="#ff0000" />
+                           <ellipse cx="165" cy="180" rx="6" ry="3" fill="#ff0000" />
+                           <path d="M120 145 Q90 110 110 80 Q120 110 130 140" fill="#111" stroke="#e76f51" stroke-width="1.5" />
+                           <path d="M180 145 Q210 110 190 80 Q180 110 170 140" fill="#111" stroke="#e76f51" stroke-width="1.5" />
+                           <g stroke="#e2e2e9" stroke-width="4" stroke-linecap="round">
+                               <line x1="80" y1="340" x2="220" y2="220" />
+                               <line x1="220" y1="340" x2="80" y2="220" />
+                           </g>
+                           <circle cx="95" cy="328" r="6" fill="#f4a261" />
+                           <circle cx="205" cy="328" r="6" fill="#f4a261" />
+                           <circle cx="150" cy="220" r="80" fill="url(#glowCombat)" />
+                           <text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text>
+                       </svg>
+                   `;
+               case 'puzzle':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <radialGradient id="glowPuzzle" cx="50%" cy="50%" r="50%">
+                                   <stop offset="0%" stop-color="#a2d2ff" stop-opacity="0.4"/>
+                                   <stop offset="100%" stop-color="#a2d2ff" stop-opacity="0"/>
+                               </radialGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <path d="M80 350 L120 250 L180 250 L220 350 Z" fill="#16161f" stroke="#2a2a3a" stroke-width="3" />
+                           <path d="M130 280 L140 270 L140 310" stroke="#a2d2ff" stroke-width="2" stroke-linecap="round" fill="none" />
+                           <path d="M160 275 L170 295 L155 310" stroke="#a2d2ff" stroke-width="2" stroke-linecap="round" fill="none" />
+                           <g transform="translate(110, 110)">
+                               <polygon points="40,0 80,20 40,40 0,20" fill="#1b1c29" stroke="#a2d2ff" stroke-width="2" />
+                               <polygon points="0,20 40,40 40,80 0,60" fill="#13141f" stroke="#a2d2ff" stroke-width="2" />
+                               <polygon points="40,40 80,20 80,60 40,80" fill="#0f1017" stroke="#a2d2ff" stroke-width="2" />
+                               <circle cx="40" cy="40" r="12" fill="#a2d2ff" opacity="0.8" />
+                           </g>
+                           <text x="70" y="150" fill="#a2d2ff" font-family="monospace" font-size="12" opacity="0.6">᚛</text>
+                           <text x="220" y="130" fill="#a2d2ff" font-family="monospace" font-size="12" opacity="0.6">᚜</text>
+                           <circle cx="150" cy="150" r="70" fill="url(#glowPuzzle)" />
+                           <text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text>
+                       </svg>
+                   `;
+               case 'hazard':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <linearGradient id="lavaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                   <stop offset="0%" stop-color="#ff9f1c" />
+                                   <stop offset="100%" stop-color="#e76f51" />
+                               </linearGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <path d="M0 250 L100 250 L80 400 L0 400 Z" fill="#16161f" stroke="#222" stroke-width="2" />
+                           <path d="M200 250 L300 250 L300 400 L220 400 Z" fill="#16161f" stroke="#222" stroke-width="2" />
+                           <rect x="75" y="280" width="150" height="120" fill="url(#lavaGrad)" opacity="0.9" />
+                           <line x1="90" y1="245" x2="140" y2="310" stroke="#f4a261" stroke-width="10" stroke-linecap="round" />
+                           <line x1="210" y1="245" x2="170" y2="295" stroke="#f4a261" stroke-width="10" stroke-linecap="round" />
+                           <circle cx="110" cy="330" r="3" fill="#fff" />
+                           <circle cx="180" cy="310" r="2" fill="#fff" />
+                           <circle cx="140" cy="270" r="4" fill="#f4a261" />
+                           <circle cx="160" cy="340" r="3" fill="#ff9f1c" />
+                           <polygon points="120,130 135,140 125,150 115,140" fill="#2a2a3a" />
+                           <polygon points="170,120 180,135 165,140" fill="#2a2a3a" />
+                           <text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text>
+                       </svg>
+                   `;
+               case 'camp':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
+                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.5"/>
+                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
+                               </radialGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <path d="M0 400 Q80 150 150 150 Q220 150 300 400" fill="none" stroke="#16161f" stroke-width="20" />
+                           <circle cx="70" cy="100" r="1.5" fill="#fff" opacity="0.5" />
+                           <circle cx="120" cy="80" r="1" fill="#fff" opacity="0.8" />
+                           <circle cx="180" cy="90" r="2" fill="#fff" opacity="0.6" />
+                           <circle cx="230" cy="110" r="1" fill="#fff" opacity="0.4" />
+                           <line x1="120" y1="320" x2="180" y2="300" stroke="#5c3d2e" stroke-width="8" stroke-linecap="round" />
+                           <line x1="180" y1="320" x2="120" y2="300" stroke="#5c3d2e" stroke-width="8" stroke-linecap="round" />
+                           <path d="M130 300 Q150 220 150 230 Q170 300 130 300 Z" fill="#e76f51" />
+                           <path d="M140 300 Q150 240 150 250 Q160 300 140 300 Z" fill="#f4a261" />
+                           <path d="M145 300 Q150 260 150 270 Q155 300 145 300 Z" fill="#ffe3a8" />
+                           <circle cx="150" cy="280" r="80" fill="url(#fireGlow)" />
+                           <text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text>
+                       </svg>
+                   `;
+               case 'death':
+                   return `
+                       <svg ${svgAttrs}>
+                           <rect width="300" height="400" fill="#0a0505"/>
+                           <path d="M80 350 V220 A40 40 0 0 1 160 220 V350" fill="#1c1313" stroke="#e76f51" stroke-width="2" />
+                           <line x1="120" y1="240" x2="120" y2="290" stroke="#e76f51" stroke-width="2" />
+                           <line x1="105" y1="255" x2="135" y2="255" stroke="#e76f51" stroke-width="2" />
+                           <g transform="translate(180, 260) rotate(45)">
+                               <line x1="0" y1="0" x2="0" y2="60" stroke="#3d2a2a" stroke-width="4" stroke-linecap="round" />
+                               <line x1="-15" y1="15" x2="15" y2="15" stroke="#3d2a2a" stroke-width="4" />
+                               <circle cx="0" cy="0" r="4" fill="#3d2a2a" />
+                           </g>
+                           <path d="M135 150 C135 120 165 120 165 150 C165 165 155 175 155 175 H145 L145 175 C145 175 135 165 135 150 Z" fill="#e76f51" opacity="0.6" />
+                           <circle cx="145" cy="145" r="3" fill="#000" />
+                           <circle cx="155" cy="145" r="3" fill="#000" />
+                           <text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text>
+                       </svg>
+                   `;
+               case 'win':
+                   return `
+                       <svg ${svgAttrs}>
+                           <defs>
+                               <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.6"/>
+                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
+                               </radialGradient>
+                           </defs>
+                           <rect width="300" height="400" fill="#0c0e0c"/>
+                           <polygon points="50,350 250,350 180,180 120,180" fill="#161f16" stroke="#2a3a2a" stroke-width="3" />
+                           <line x1="110" y1="300" x2="190" y2="300" stroke="#2a3a2a" stroke-width="2" />
+                           <line x1="120" y1="260" x2="180" y2="260" stroke="#2a3a2a" stroke-width="2" />
+                           <line x1="130" y1="220" x2="170" y2="220" stroke="#2a3a2a" stroke-width="2" />
+                           <polygon points="120,180 180,180 170,120 130,120" fill="#fff" />
+                           <circle cx="150" cy="150" r="60" fill="url(#sunGlow)" />
+                           <line x1="150" y1="150" x2="80" y2="100" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
+                           <line x1="150" y1="150" x2="220" y2="100" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
+                           <line x1="150" y1="150" x2="100" y2="220" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
+                           <line x1="150" y1="150" x2="200" y2="220" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
+                           <path d="M110 100 Q150 120 190 100" fill="none" stroke="#2a9d8f" stroke-width="3" stroke-linecap="round" />
+                           <text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text>
+                       </svg>
+                   `;
+               default:
+                   return `
+                       <svg ${svgAttrs}>
+                           <rect width="300" height="400" fill="#0c0c0e"/>
+                           <text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading Scene...</text>
+                       </svg>
+                   `;
+           }
+       }
+
+       function updateBoardImage(category) {
+           const container = document.getElementById('map-img-container');
+           if (container) {
+               container.innerHTML = getFantasySVG(category);
+           }
+       }
+
+       // Helper vocabulary functions
        function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
        function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
        function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
@@ -550,6 +685,7 @@
            return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
        }
 
+       // Custom safe system messages
        function showNotification(text) {
            let box = document.getElementById('custom-notification');
            if (!box) {
@@ -563,103 +699,104 @@
            setTimeout(() => { box.style.opacity = '0'; }, 3000);
        }
 
-       async function broadcastState() {
-           if (!currentUser || !roomRef) {
-               syncFromFirebaseData({
-                   tempPlayers, players, maxPartyHP, currentPartyHP, stageCount, currentEncounter, currentOptions,
-                   backupRollActive, weyrRollActive, firstRollerIndex, firstRollTotal, secondRollerIndex, secondRollTotal, isHostTPK
-               });
-               return;
-           }
-
+       async function updatePlayerName(slotId, val) {
+           if (!auth.currentUser || !roomRef) return;
            try {
                await setDoc(roomRef, {
-                   tempPlayers: tempPlayers,
-                   players: players,
-                   maxPartyHP: maxPartyHP,
-                   currentPartyHP: currentPartyHP,
-                   stageCount: stageCount,
-                   currentEncounter: currentEncounter,
-                   currentOptions: currentOptions,
-                   backupRollActive: backupRollActive,
-                   weyrRollActive: weyrRollActive,
-                   firstRollerIndex: firstRollerIndex,
-                   firstRollTotal: firstRollTotal,
-                   secondRollerIndex: secondRollerIndex,
-                   secondRollTotal: secondRollTotal,
-                   isHostTPK: isHostTPK,
-                   lastUpdated: Date.now()
+                   tempPlayers: {
+                       [slotId]: { name: val }
+                   }
+               }, { merge: true });
+           } catch(err) {
+               console.error("Name sync failed:", err);
+           }
+       }
+
+       async function updatePlayerClass(slotId, val) {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await setDoc(roomRef, {
+                   tempPlayers: {
+                       [slotId]: { avatar: val }
+                   }
+               }, { merge: true });
+           } catch(err) {
+               console.error("Class sync failed:", err);
+           }
+       }
+
+       async function updateTempStat(slotId, stat, val) {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await setDoc(roomRef, {
+                   tempPlayers: {
+                       [slotId]: { [stat]: parseInt(val) || 0 }
+                   }
+               }, { merge: true });
+           } catch(err) {
+               console.error("Stat update failed:", err);
+           }
+       }
+
+       async function rollStat(slotId, stat, max) {
+           if (!auth.currentUser || !roomRef) return;
+           let r = Math.floor(Math.random() * max) + 1;
+           try {
+               await setDoc(roomRef, {
+                   tempPlayers: {
+                       [slotId]: { [stat]: r }
+                   }
                }, { merge: true });
            } catch (err) {
-               console.error("Transmission error:", err);
+               console.error("Dice roll sync failed:", err);
            }
        }
 
-       async function archiveAndFinalize() {
-           if (!currentUser || !roomRef) {
-               playerCounter = 0; tempPlayers = []; players = []; maxPartyHP = 0; currentPartyHP = 0; stageCount = 0; currentEncounter = null; currentOptions = []; isHostTPK = false;
-               syncFromFirebaseData({ tempPlayers, players, maxPartyHP, currentPartyHP, stageCount, currentEncounter, currentOptions, isHostTPK });
-               return;
-           }
-           try {
-               await deleteDoc(roomRef);
-           } catch (err) {
-               console.error("Dungeon deletion rejected:", err);
-           }
-       }
-
-       function confirmFinalize() { document.getElementById('finalize-modal').style.display = 'flex'; }
-       function closeFinalizeModal() { document.getElementById('finalize-modal').style.display = 'none'; }
-       async function executeFinalize() { closeFinalizeModal(); await archiveAndFinalize(); }
-
-       function updatePlayerName(idx, val) {
-           if (tempPlayers[idx]) {
-               tempPlayers[idx].name = val;
-           }
-       }
-
-       function updatePlayerClass(idx, val) {
-           if (tempPlayers[idx]) {
-               tempPlayers[idx].avatar = val;
-           }
-       }
-
-       function addPlayerSlot() {
-           playerCounter++;
-           tempPlayers.push({
-               id: playerCounter,
+       async function addPlayerSlot() {
+           if (!auth.currentUser || !roomRef) return;
+           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           const newSlot = {
+               id: slotId,
                name: "",
                avatar: classicClasses[0],
                brawn: 0,
                brains: 0,
                agility: 0,
-               rolled: false,
-               owner: SESSION_ID // Automatically assigned to current browser session to prevent overwrite
-           });
-           broadcastState();
+               owner: SESSION_ID
+           };
+           try {
+               await setDoc(roomRef, {
+                   tempPlayers: {
+                       [slotId]: newSlot
+                   }
+               }, { merge: true });
+           } catch(err) {
+               console.error("Slot registration failed:", err);
+           }
        }
 
-       function removePlayerSlot(id) {
-           tempPlayers = tempPlayers.filter(p => p.id !== id);
-           broadcastState();
+       async function removePlayerSlot(slotId) {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await updateDoc(roomRef, {
+                   [`tempPlayers.${slotId}`]: deleteField()
+               });
+           } catch(err) {
+               console.error("Slot removal failed:", err);
+           }
        }
 
-       function setBoardImage(category) {
-           const imgElement = document.getElementById('map-img');
-           if (!imgElement) return;
-           const imgArray = driveImages[category];
-           imgElement.src = (imgArray && imgArray.length > 0) ? imgArray[Math.floor(Math.random() * imgArray.length)] : "https://placehold.co/300x400/16161f/ffffff?text=Image+Missing";
-       }
-
-       function goToRollingScreen() {
+       async function goToRollingScreen() {
+           if (!auth.currentUser || !roomRef) return;
+           const tempPlayersList = Object.values(tempPlayers);
            let emptyCheck = false;
-           tempPlayers.forEach(p => {
+           tempPlayersList.forEach(p => {
                if (!p.name || p.name.trim() === "") {
                    emptyCheck = true;
                }
            });
 
-           if (tempPlayers.length === 0) { 
+           if (tempPlayersList.length === 0) { 
                showNotification("Registry error: Vanguards must contain at least one member."); 
                return; 
            }
@@ -668,87 +805,89 @@
                return;
            }
 
-           stageCount = 0.5; 
-           renderRollingListFromState();
-           broadcastState();
+           try {
+               await updateDoc(roomRef, { stageCount: 0.5 });
+           } catch(err) {
+               console.error("Proceeding status failed to broadcast:", err);
+           }
        }
 
+       async function finalizeStatsAndStart() {
+           if (!auth.currentUser || !roomRef) return;
+           let derivedPlayers = [];
+           let totalCapacity = 0;
+           const tempPlayersList = Object.values(tempPlayers);
+
+           for (let i = 0; i < tempPlayersList.length; i++) {
+               let tp = tempPlayersList[i];
+               let br = parseInt(document.getElementById(`roll_${tp.id}_brawn`).value) || 0;
+               let bn = parseInt(document.getElementById(`roll_${tp.id}_brains`).value) || 0;
+               let ag = parseInt(document.getElementById(`roll_${tp.id}_agility`).value) || 0;
+               derivedPlayers.push({ name: tp.name, avatar: tp.avatar, brawn: br, brains: bn, agility: ag });
+               totalCapacity += (br + bn + ag);
+           }
+
+           let startingHP = Math.max(50, totalCapacity + (derivedPlayers.length * 10));
+           
+           try {
+               await updateDoc(roomRef, {
+                   players: derivedPlayers,
+                   maxPartyHP: startingHP,
+                   currentPartyHP: startingHP,
+                   stageCount: 1,
+                   currentEncounter: null,
+                   currentOptions: [],
+                   isHostTPK: false
+               });
+           } catch(err) {
+               console.error("Game launch failed:", err);
+           }
+       }
+
+       async function archiveAndFinalize() {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await deleteDoc(roomRef);
+           } catch (err) {
+               console.error("Dungeon state deletion rejected:", err);
+           }
+       }
+
+       function confirmFinalize() { document.getElementById('finalize-modal').style.display = 'flex'; }
+       function closeFinalizeModal() { document.getElementById('finalize-modal').style.display = 'none'; }
+       async function executeFinalize() { closeFinalizeModal(); await archiveAndFinalize(); }
+
+       // Render rolling board dynamically
        function renderRollingListFromState() {
            document.getElementById('setup-screen').style.display = 'none';
            document.getElementById('rolling-screen').style.display = 'block';
            document.getElementById('game-view').style.display = 'none';
 
            let listHtml = "";
-           tempPlayers.forEach((p, idx) => {
+           Object.values(tempPlayers).forEach((p) => {
                listHtml += `
                    <div class="rolling-row">
                        <strong>${p.avatar} ( ${p.name || 'Unnamed'} )</strong>
                        <div class="rolling-stats-grid">
                            <div class="stat-roll-box">
                                <span>⚔️ Brawn:</span>
-                               <input type="number" id="roll_${idx}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat(${idx}, 'brawn', this.value)">
-                               <button onclick="window.rollStat(${idx}, 'brawn', 6)">d6</button>
+                               <input type="number" id="roll_${p.id}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat('${p.id}', 'brawn', this.value)">
+                               <button type="button" onclick="window.rollStat('${p.id}', 'brawn', 6)">d6</button>
                            </div>
                            <div class="stat-roll-box">
                                <span>🧠 Brains:</span>
-                               <input type="number" id="roll_${idx}_brains" value="${p.brains || 0}" onchange="window.updateTempStat(${idx}, 'brains', this.value)">
-                               <button onclick="window.rollStat(${idx}, 'brains', 10)">d10</button>
+                               <input type="number" id="roll_${p.id}_brains" value="${p.brains || 0}" onchange="window.updateTempStat('${p.id}', 'brains', this.value)">
+                               <button type="button" onclick="window.rollStat('${p.id}', 'brains', 10)">d10</button>
                            </div>
                            <div class="stat-roll-box">
                                <span>🏃 Agility:</span>
-                               <input type="number" id="roll_${idx}_agility" value="${p.agility || 0}" onchange="window.updateTempStat(${idx}, 'agility', this.value)">
-                               <button onclick="window.rollStat(${idx}, 'agility', 20)">d20</button>
+                               <input type="number" id="roll_${p.id}_agility" value="${p.agility || 0}" onchange="window.updateTempStat('${p.id}', 'agility', this.value)">
+                               <button type="button" onclick="window.rollStat('${p.id}', 'agility', 20)">d20</button>
                            </div>
                        </div>
                    </div>`;
            });
            document.getElementById('rolling-list').innerHTML = listHtml;
-       }
-
-       function rollStat(idx, stat, max) {
-           let r = Math.floor(Math.random() * max) + 1;
-           if (tempPlayers[idx]) {
-               tempPlayers[idx][stat] = r;
-               let inputEl = document.getElementById(`roll_${idx}_${stat}`);
-               if (inputEl) inputEl.value = r;
-               broadcastState();
-           }
-       }
-
-       function updateTempStat(idx, stat, val) {
-           if (tempPlayers[idx]) {
-               tempPlayers[idx][stat] = parseInt(val) || 0;
-               broadcastState();
-           }
-       }
-
-       function finalizeStatsAndStart() {
-           players = [];
-           let totalCapacity = 0;
-           for (let i = 0; i < tempPlayers.length; i++) {
-               let br = parseInt(document.getElementById(`roll_${i}_brawn`).value) || 0;
-               let bn = parseInt(document.getElementById(`roll_${i}_brains`).value) || 0;
-               let ag = parseInt(document.getElementById(`roll_${i}_agility`).value) || 0;
-               players.push({ name: tempPlayers[i].name, avatar: tempPlayers[i].avatar, brawn: br, brains: bn, agility: ag });
-               totalCapacity += (br + bn + ag);
-           }
-           maxPartyHP = Math.max(50, totalCapacity + (players.length * 10));
-           currentPartyHP = maxPartyHP;
-           stageCount = 1;
-           currentEncounter = null;
-           currentOptions = [];
-           isHostTPK = false;
-           
-           document.getElementById('rolling-screen').style.display = 'none';
-           document.getElementById('game-view').style.display = 'block';
-           
-           let startingTitle = generateDynamicLocationTitle();
-           document.getElementById('location-name').innerText = startingTitle;
-           document.getElementById('story-text').innerHTML = `
-               <p class="story-paragraph">The massive iron doors crash shut behind your regiment, sealing the party inside <strong>${startingTitle}</strong>. The air is cold, and the only way out is through the darkness.</p>
-               <p class="story-paragraph">Your torchlight flickers, revealing diverging paths ahead. It is time to choose your fate.</p>`;
-           setBoardImage("entrance");
-           generateAdventureChoices();
        }
 
        function getChallengeMapping() {
@@ -758,36 +897,31 @@
            return { type: "hazard", stat: "Agility", header: "Unstable Cascade" };
        }
 
-       function generateAdventureChoices() {
-           document.getElementById('encounter-interface').style.display = 'none';
-           document.getElementById('navigation-block').style.display = 'block';
-           backupRollActive = false; weyrRollActive = false;
-           firstRollerIndex = null; secondRollerIndex = null;
-           firstRollTotal = 0; secondRollTotal = 0;
-           document.getElementById('standard-roll-controls').style.display = 'block';
-           document.getElementById('backup-roll-controls').style.display = 'none';
-           document.getElementById('weyr-roll-controls').style.display = 'none';
-           currentEncounter = null;
-
-           if (stageCount >= 157) {
-               document.getElementById('wyvern-alert').innerText = "🐲 WYVERN WEYR ACTIVATED (3x D30)";
-               document.getElementById('wyvern-alert').style.display = 'inline';
-               document.getElementById('roll-check-btn').innerText = "Roll D30 Wyvern Die";
-           } else if (stageCount >= 124) {
-               document.getElementById('wyvern-alert').innerText = "🔥 WYVERN TIER ACTIVATED (2x D30)";
-               document.getElementById('wyvern-alert').style.display = 'inline';
-               document.getElementById('roll-check-btn').innerText = "Roll D30 Wyvern Die";
-           } else {
-               document.getElementById('wyvern-alert').style.display = 'none';
-               document.getElementById('roll-check-btn').innerText = "Roll standard die";
-           }
-
+       async function generateAdventureChoices() {
+           if (!auth.currentUser || !roomRef) return;
            let title1 = generateDynamicLocationTitle(), title2 = generateDynamicLocationTitle();
            while(title2 === title1) { title2 = generateDynamicLocationTitle(); }
            let c1 = getChallengeMapping(), c2 = getChallengeMapping();
-           currentOptions = [{ title: title1, type: c1.type, stat: c1.stat, header: c1.header }, { title: title2, type: c2.type, stat: c2.stat, header: c2.header }];
-           renderSyncedChoices();
-           broadcastState();
+           
+           const newOptions = [
+               { title: title1, type: c1.type, stat: c1.stat, header: c1.header }, 
+               { title: title2, type: c2.type, stat: c2.stat, header: c2.header }
+           ];
+
+           try {
+               await updateDoc(roomRef, {
+                   currentOptions: newOptions,
+                   currentEncounter: null,
+                   backupRollActive: false,
+                   weyrRollActive: false,
+                   firstRollerIndex: null,
+                   firstRollTotal: 0,
+                   secondRollerIndex: null,
+                   secondRollTotal: 0
+               });
+           } catch(err) {
+               console.error("Adventure navigation pathing failed:", err);
+           }
        }
 
        function renderSyncedChoices() {
@@ -799,56 +933,64 @@
            document.getElementById('direction-choices').innerHTML = choicesHtml;
        }
 
-       function selectPath(idx) {
-           stageCount++;
-           document.getElementById('stage-counter').innerText = stageCount;
-           document.getElementById('navigation-block').style.display = 'none';
+       async function selectPath(idx) {
+           if (!auth.currentUser || !roomRef) return;
+           let nextStage = stageCount + 1;
            let chosen = currentOptions[idx];
-           document.getElementById('location-name').innerText = `Scene ${stageCount}: ${chosen.title}`;
-           setBoardImage(chosen.type);
 
-           let N = players.length;
+           let N = players.length || 1;
            let M = 0.60 + 0.02 * (N - 8);
            let d6 = Math.floor(Math.random() * 6) + 1;
-           let dc = 11 + d6 + Math.floor(stageCount * M);
+           let dc = 11 + d6 + Math.floor(nextStage * M);
 
-           let failDmg = Math.floor((6 + d6 + stageCount) * (N * 0.5));
+           let failDmg = Math.floor((6 + d6 + nextStage) * (N * 0.5));
            let dynamicStoryText = constructGranularText(chosen.type, chosen.title);
 
-           currentEncounter = { type: chosen.type, stat: chosen.stat, title: chosen.header, desc: dynamicStoryText, dc: dc, failDmg: failDmg, isCamp: false };
-           let encUI = document.getElementById('encounter-interface');
-           encUI.className = `encounter-box ${chosen.type}`;
-           encUI.style.display = 'block';
-           document.getElementById('story-text').innerHTML = dynamicStoryText;
-           document.getElementById('encounter-title').innerText = chosen.header;
-           document.getElementById('encounter-stat').innerText = chosen.stat;
-           
-           updateHostDCReveal();
-           broadcastState();
+           const newEncounter = { 
+               type: chosen.type, 
+               stat: chosen.stat, 
+               title: chosen.header, 
+               desc: dynamicStoryText, 
+               dc: dc, 
+               failDmg: failDmg, 
+               isCamp: false 
+           };
+
+           try {
+               await updateDoc(roomRef, {
+                   stageCount: nextStage,
+                   currentEncounter: newEncounter
+               });
+           } catch(err) {
+               console.error("Path selection failed:", err);
+           }
        }
 
-       function selectCamp() {
-           document.getElementById('navigation-block').style.display = 'none';
-           document.getElementById('location-name').innerText = `Camp Operations`;
-           setBoardImage("camp");
-           
+       async function selectCamp() {
+           if (!auth.currentUser || !roomRef) return;
            let campDescription = constructGranularCampText();
 
-           let N = players.length;
+           let N = players.length || 1;
            let M = 0.60 + 0.02 * (N - 8);
            let d6 = Math.floor(Math.random() * 6) + 1;
            let dc = 10 + d6 + Math.floor(stageCount * 0.4 * M);
 
-           currentEncounter = { type: "puzzle", stat: ["Brawn", "Brains", "Agility"][Math.floor(Math.random() * 3)], title: `Secure Rest Optimization`, desc: campDescription, dc: dc, isCamp: true };
-           let encUI = document.getElementById('encounter-interface');
-           encUI.className = "encounter-box puzzle";
-           encUI.style.display = 'block';
-           document.getElementById('story-text').innerHTML = campDescription;
-           document.getElementById('encounter-title').innerText = `⛺ Camp Security`;
-           document.getElementById('encounter-stat').innerText = currentEncounter.stat;
-           
-           updateHostDCReveal();
-           broadcastState();
+           const campEncounter = { 
+               type: "puzzle", 
+               stat: ["Brawn", "Brains", "Agility"][Math.floor(Math.random() * 3)], 
+               title: `Secure Rest Optimization`, 
+               desc: campDescription, 
+               dc: dc, 
+               isCamp: true 
+           };
+
+           try {
+               await updateDoc(roomRef, {
+                   currentEncounter: campEncounter
+               });
+           } catch(err) {
+               console.error("Camp assembly failed:", err);
+           }
        }
 
        function updateHostDCReveal() {
@@ -856,6 +998,7 @@
            const selectEl = document.getElementById('active-player-select');
            if (!selectEl || selectEl.value === "") return;
            let player = players[selectEl.value];
+           if (!player) return;
            let classOffset = 0;
            if (classAffinities[player.avatar]) {
                const category = currentEncounter.isCamp ? "camp" : currentEncounter.type;
@@ -866,11 +1009,15 @@
            document.getElementById('encounter-dc').innerHTML = `Base DC: ${currentEncounter.dc} <span style="display:block; font-size:11px; font-weight:normal; color:#aaa; margin-top:4px;">Active for ${player.name} (${player.avatar.split(" ")[0]}): <strong>${activeDC}</strong> due to hidden ${classOffset >= 0 ? '+' : ''}${classOffset} class offset</span>`;
        }
 
-       function attemptEncounter(hostOverride = null) {
+       async function attemptEncounter(hostOverride = null) {
+           if (!auth.currentUser || !roomRef || !currentEncounter) return;
            let selectEl = document.getElementById('active-player-select');
+           if (!selectEl || selectEl.value === "") return;
            let firstIdx = parseInt(selectEl.value);
            let player = players[firstIdx];
-           let modifier = player[currentEncounter.stat.toLowerCase()];
+           if (!player) return;
+           
+           let modifier = player[currentEncounter.stat.toLowerCase()] || 0;
            
            let dieSize = (stageCount >= 124) ? 30 : 20;
            let roll = Math.floor(Math.random() * dieSize) + 1;
@@ -887,204 +1034,195 @@
            let success = (hostOverride !== null) ? hostOverride : (total >= activeDC);
 
            if (success) {
+               let logText = "";
                if (hostOverride === null) {
-                   logDice(`🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>PASS</strong>`);
+                   logText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>PASS</strong>`;
                } else {
-                   logDice(`👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Pass</strong>.`);
+                   logText = `👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Pass</strong>.`;
                }
-               resolveEncounterSuccess();
+               resolveEncounterSuccess(logText);
            } else {
                if (hostOverride === false) {
-                   logDice(`👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Fail</strong>.`);
-                   resolveEncounterFailure();
+                   let logText = `👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Fail</strong>.`;
+                   resolveEncounterFailure(logText);
                } else {
+                   let failText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong>`;
                    if (stageCount >= 58) {
-                       backupRollActive = true;
-                       firstRollerIndex = firstIdx;
-                       firstRollTotal = total;
-                       logDice(`🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong>`);
-                       logDice(`🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally...`);
-                       document.getElementById('standard-roll-controls').style.display = 'none';
-                       populateBackupSelect();
-                       document.getElementById('backup-roll-controls').style.display = 'block';
+                       try {
+                           await updateDoc(roomRef, {
+                               backupRollActive: true,
+                               firstRollerIndex: firstIdx,
+                               firstRollTotal: total,
+                               diceLogUpdate: failText + `<br>🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally...`
+                           });
+                       } catch(err) {
+                           console.error("Backup check sequence failure:", err);
+                       }
                    } else {
-                       logDice(`🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong> <span style="font-size:11px; color:#aaa; display:block;">(Combined Effort unlocks at Stage 58)</span>`);
-                       resolveEncounterFailure();
+                       resolveEncounterFailure(failText + ` <span style="font-size:11px; color:#aaa; display:block;">(Combined Effort unlocks at Stage 58)</span>`);
                    }
                }
            }
-           broadcastState();
        }
 
-       function attemptBackup() {
+       async function attemptBackup() {
+           if (!auth.currentUser || !roomRef || !currentEncounter) return;
            let backupIdx = parseInt(document.getElementById('backup-player-select').value);
            let backupPlayer = players[backupIdx];
-           let modifier = backupPlayer[currentEncounter.stat.toLowerCase()];
+           if (!backupPlayer) return;
+
+           let modifier = backupPlayer[currentEncounter.stat.toLowerCase()] || 0;
            let dieSize = (stageCount >= 124) ? 30 : 20;
            let roll = Math.floor(Math.random() * dieSize) + 1;
            let p2Total = roll + modifier;
-           secondRollerIndex = backupIdx;
-           secondRollTotal = p2Total;
+           
            let combinedTotal = firstRollTotal + p2Total;
            let success = combinedTotal >= currentActiveDC;
 
-           logDice(`🤝 <strong>Combined Effort!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${backupPlayer.name} (${currentEncounter.stat} Check: [${roll}] + ${modifier} = ${p2Total}) = <span class="highlight">${combinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`);
-
-           document.getElementById('backup-roll-controls').style.display = 'none';
+           let resultLog = `🤝 <strong>Combined Effort!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${backupPlayer.name} (${currentEncounter.stat} Check: [${roll}] + ${modifier} = ${p2Total}) = <span class="highlight">${combinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`;
 
            if (success) {
-               document.getElementById('standard-roll-controls').style.display = 'block';
-               backupRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
-               resolveEncounterSuccess();
+               resolveEncounterSuccess(resultLog);
            } else {
                if (stageCount >= 157) {
-                   weyrRollActive = true;
-                   logDice(`🐲 <strong>Wyvern Weyr Triggered!</strong> Sum is still below the threshold. Nominate a third operator to join...`);
-                   document.getElementById('backup-roll-controls').style.display = 'none';
-                   populateWeyrSelect();
-                   document.getElementById('weyr-roll-controls').style.display = 'block';
+                   try {
+                       await updateDoc(roomRef, {
+                           backupRollActive: false,
+                           weyrRollActive: true,
+                           secondRollerIndex: backupIdx,
+                           secondRollTotal: p2Total,
+                           diceLogUpdate: resultLog + `<br>🐲 <strong>Wyvern Weyr Triggered!</strong> Nominate a third operator...`
+                       });
+                   } catch(err) {
+                       console.error("Weyr transition failed:", err);
+                   }
                } else {
-                   document.getElementById('standard-roll-controls').style.display = 'block';
-                   backupRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
-                   resolveEncounterFailure();
+                   resolveEncounterFailure(resultLog);
                }
            }
-           broadcastState();
        }
 
-       function declineBackup() {
-           logDice(`💀 Fate accepted. Support intervention declined.`);
-           document.getElementById('backup-roll-controls').style.display = 'none';
-           document.getElementById('standard-roll-controls').style.display = 'block';
-           backupRollActive = false; firstRollerIndex = null;
-           resolveEncounterFailure();
-           broadcastState();
+       async function declineBackup() {
+           if (!auth.currentUser || !roomRef) return;
+           resolveEncounterFailure(`💀 Fate accepted. Support intervention declined.`);
        }
 
-       function attemptWeyr() {
+       async function attemptWeyr() {
+           if (!auth.currentUser || !roomRef || !currentEncounter) return;
            let weyrIdx = parseInt(document.getElementById('weyr-player-select').value);
            let weyrPlayer = players[weyrIdx];
-           let modifier = weyrPlayer[currentEncounter.stat.toLowerCase()];
+           if (!weyrPlayer) return;
+
+           let modifier = weyrPlayer[currentEncounter.stat.toLowerCase()] || 0;
            let roll = Math.floor(Math.random() * 30) + 1;
            let p3Total = roll + modifier;
            let finalCombinedTotal = firstRollTotal + secondRollTotal + p3Total;
            let success = finalCombinedTotal >= currentActiveDC;
 
-           logDice(`🐲 <strong>Wyvern Weyr!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${players[secondRollerIndex].name} (${secondRollTotal}) + ${weyrPlayer.name} (d30: [${roll}] + ${modifier} = ${p3Total}) = <span class="highlight">${finalCombinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`);
-           document.getElementById('weyr-roll-controls').style.display = 'none';
-           document.getElementById('standard-roll-controls').style.display = 'block';
-           backupRollActive = false; weyrRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
-           if (success) resolveEncounterSuccess(); else resolveEncounterFailure();
-           broadcastState();
+           let logText = `🐲 <strong>Wyvern Weyr!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${players[secondRollerIndex].name} (${secondRollTotal}) + ${weyrPlayer.name} (d30: [${roll}] + ${modifier} = ${p3Total}) = <span class="highlight">${finalCombinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`;
+           if (success) resolveEncounterSuccess(logText); else resolveEncounterFailure(logText);
        }
 
-       function declineWeyr() {
-           logDice(`💀 Fate accepted. Wyvern Weyr declined.`);
-           document.getElementById('weyr-roll-controls').style.display = 'none';
-           document.getElementById('standard-roll-controls').style.display = 'block';
-           backupRollActive = false; weyrRollActive = false; firstRollerIndex = null; secondRollerIndex = null;
-           resolveEncounterFailure();
-           broadcastState();
+       async function declineWeyr() {
+           if (!auth.currentUser || !roomRef) return;
+           resolveEncounterFailure(`💀 Fate accepted. Wyvern Weyr declined.`);
        }
 
-       function resolveEncounterSuccess() {
-           let resolutionProse = "";
-           let additionalLine = "";
+       async function resolveEncounterSuccess(actionLogMessage) {
+           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           let heal = 0;
+           let wearAndTear = 0;
+           let updatedHP = currentPartyHP;
+
            if (currentEncounter.isCamp) {
                let baselineMin = Math.ceil(maxPartyHP * 0.15);
-               let heal = Math.max(baselineMin, Math.floor((maxPartyHP - currentPartyHP) * 0.50) + 5);
-               currentPartyHP = Math.min(maxPartyHP, currentPartyHP + heal);
-               resolutionProse = getWord(resolutionTemplates.campSuccess)();
-               additionalLine = `<p class="story-paragraph" style="color: var(--success-color); font-weight: bold; margin-top: 10px;">⛺ The watch is uninterrupted. Rest yields +${heal} vitality units.</p>`;
+               heal = Math.max(baselineMin, Math.floor((maxPartyHP - currentPartyHP) * 0.50) + 5);
+               updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
            } else {
-               let wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
-               currentPartyHP = Math.max(0, currentPartyHP - wearAndTear);
-               resolutionProse = getWord(resolutionTemplates.obstacleSuccess)();
-               additionalLine = `<p class="story-paragraph" style="color: var(--accent-color); font-weight: bold; margin-top: 10px;">⚔️ Obstacle cleared, but the strain takes a minor physical toll: -${wearAndTear} vitality.</p>`;
+               wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
+               updatedHP = Math.max(0, currentPartyHP - wearAndTear);
            }
 
-           document.getElementById('story-text').innerHTML += `
-               <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">
-               <p class="story-paragraph" style="font-style: italic; color: #b1b1b9;">${resolutionProse}</p>
-               ${additionalLine}`;
-           document.getElementById('encounter-interface').style.display = 'none';
-           updateHPDisplay();
-
-           if (currentPartyHP <= 0) {
-               currentEncounter = null;
-               currentOptions = [];
-               handleEnd(false);
-           } else if (stageCount >= 180) {
-               handleWin();
-           } else {
-               generateAdventureChoices();
+           try {
+               await updateDoc(roomRef, {
+                   currentPartyHP: updatedHP,
+                   currentEncounter: null,
+                   currentOptions: [],
+                   backupRollActive: false,
+                   weyrRollActive: false,
+                   diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Rest yields +${heal} vitality.` : `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`)
+               });
+           } catch(err) {
+               console.error("Success resolution broadcast failed:", err);
            }
        }
 
-       function resolveEncounterFailure() {
-           let resolutionProse = "";
-           let additionalLine = "";
+       async function resolveEncounterFailure(actionLogMessage) {
+           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           let heal = 0;
+           let damage = 0;
+           let updatedHP = currentPartyHP;
+
            if (currentEncounter.isCamp) {
-               let baselineMin = Math.ceil(maxPartyHP * 0.15);
-               let heal = baselineMin;
-               currentPartyHP = Math.min(maxPartyHP, currentPartyHP + heal);
-               resolutionProse = getWord(resolutionTemplates.campFailure)();
-               additionalLine = `<p class="story-paragraph" style="color: var(--danger-color); font-weight: bold; margin-top: 10px;">⛺ Shadows stalk the perimeter, causing restless sleep. Your band of heroes manage only +${heal} vitality units.</p>`;
+               heal = Math.ceil(maxPartyHP * 0.15);
+               updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
            } else {
-               currentPartyHP = Math.max(0, currentPartyHP - currentEncounter.failDmg);
-               resolutionProse = getWord(resolutionTemplates.obstacleFailure)();
-               additionalLine = `<p class="story-paragraph" style="color: var(--danger-color); font-weight: bold; margin-top: 10px;">⚔️ Your party will live to fight another day, but the group sustained heavy -${currentEncounter.failDmg} damage.</p>`;
+               damage = currentEncounter.failDmg || 10;
+               updatedHP = Math.max(0, currentPartyHP - damage);
            }
 
-           document.getElementById('story-text').innerHTML += `
-               <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">
-               <p class="story-paragraph" style="font-style: italic; color: #b1b1b9;">${resolutionProse}</p>
-               ${additionalLine}`;
-           document.getElementById('encounter-interface').style.display = 'none';
-           updateHPDisplay();
-
-           if (currentPartyHP <= 0) {
-               currentEncounter = null;
-               currentOptions = [];
-               handleEnd(false);
-           } else {
-               generateAdventureChoices();
+           try {
+               await updateDoc(roomRef, {
+                   currentPartyHP: updatedHP,
+                   currentEncounter: null,
+                   currentOptions: [],
+                   backupRollActive: false,
+                   weyrRollActive: false,
+                   diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Perimeter breached. Minimal rest: +${heal} vitality.` : `⚔️ Strike landed! Group sustained -${damage} damage.`)
+               });
+           } catch(err) {
+               console.error("Failure resolution broadcast failed:", err);
            }
        }
 
-       function triggerHostTPK() {
-           currentPartyHP = 0;
-           isHostTPK = true;
-           currentEncounter = null;
-           currentOptions = [];
-           updateHPDisplay();
-           logDice("👑 <strong>Host Intervention:</strong> Unleashed a lethal, unavoidable outcome.");
-           
-           document.getElementById('encounter-interface').style.display = 'none';
-           handleEnd(true);
-           broadcastState();
+       async function triggerHostTPK() {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await updateDoc(roomRef, {
+                   currentPartyHP: 0,
+                   isHostTPK: true,
+                   currentEncounter: null,
+                   currentOptions: [],
+                   diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced immediate TPK.`
+               });
+           } catch(err) {
+               console.error("TPK broadcast failed:", err);
+           }
        }
 
-       function undoTPK() {
-           currentPartyHP = Math.ceil(maxPartyHP * 0.25);
-           isHostTPK = false;
-           currentEncounter = null;
-           currentOptions = [];
-           updateHPDisplay();
-           logDice("👑 <strong>Host Intervention:</strong> TPK undone! Restored 25% vitality and rewound time.");
-           generateAdventureChoices();
-           broadcastState();
+       async function undoTPK() {
+           if (!auth.currentUser || !roomRef) return;
+           try {
+               await updateDoc(roomRef, {
+                   currentPartyHP: Math.ceil(maxPartyHP * 0.25),
+                   isHostTPK: false,
+                   currentEncounter: null,
+                   currentOptions: [],
+                   diceLogUpdate: `👑 <strong>Host Intervention:</strong> Redefined outcome. Rewound time to the portal.`
+               });
+           } catch(err) {
+               console.error("TPK undo failed:", err);
+           }
        }
 
        function logDice(msg) {
            const log = document.getElementById('dice-log');
            if (log) {
-               log.innerHTML = `<div style="margin-bottom:6px;">${msg}</div>` + log.innerHTML;
+               log.innerHTML = `<div style="margin-bottom:6px; border-bottom:1px solid #1c1c24; padding-bottom:4px;">${msg}</div>` + log.innerHTML;
            }
        }
 
        function updateHPDisplay() {
-           if (currentPartyHP < 0) currentPartyHP = 0;
            document.getElementById('stage-counter').innerText = Math.floor(stageCount);
            let container = document.getElementById('party-hp');
            container.innerText = `${currentPartyHP} / ${maxPartyHP}`;
@@ -1139,7 +1277,7 @@
            document.getElementById('navigation-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = isDecreedHostTPK ? "💀 Host Doom Decree" : "💀 The Long Goodnight";
-           setBoardImage("death");
+           updateBoardImage("death");
 
            let deathNarrative = "";
            if (isDecreedHostTPK) {
@@ -1176,7 +1314,7 @@
            document.getElementById('navigation-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = "🏆 Victory & Escape!";
-           setBoardImage("win");
+           updateBoardImage("win");
 
            let survivorNames = players.map(p => `<li><strong>${p.name}</strong> (${p.avatar})</li>`).join('');
 
@@ -1199,7 +1337,7 @@
        function syncFromFirebaseData(data) {
            if (!data) return;
 
-           tempPlayers = data.tempPlayers || [];
+           tempPlayers = data.tempPlayers || {};
            players = data.players || [];
            maxPartyHP = data.maxPartyHP || 0;
            currentPartyHP = data.currentPartyHP || 0;
@@ -1213,6 +1351,14 @@
            secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
            secondRollTotal = data.secondRollTotal || 0;
            isHostTPK = data.isHostTPK || false;
+
+           if (data.diceLogUpdate) {
+               logDice(data.diceLogUpdate);
+               // Clear message instantly after consuming to prevent recursive loops
+               if (auth.currentUser && roomRef) {
+                   updateDoc(roomRef, { diceLogUpdate: deleteField() });
+               }
+           }
 
            if (stageCount >= 1) {
                document.getElementById('setup-screen').style.display = 'none';
@@ -1230,6 +1376,7 @@
                    document.getElementById('encounter-title').innerText = currentEncounter.title;
                    document.getElementById('encounter-stat').innerText = currentEncounter.stat;
                    updateHostDCReveal();
+                   updateBoardImage(currentEncounter.isCamp ? "camp" : currentEncounter.type);
 
                    if (weyrRollActive) {
                        document.getElementById('standard-roll-controls').style.display = 'none';
@@ -1254,7 +1401,14 @@
                        handleWin();
                    } else {
                        document.getElementById('navigation-block').style.display = 'block';
-                       renderSyncedChoices();
+                       updateBoardImage("entrance");
+                       
+                       if (currentOptions.length === 0) {
+                           // Nominate paths collaboratively
+                           generateAdventureChoices();
+                       } else {
+                           renderSyncedChoices();
+                       }
                    }
                }
            } else if (stageCount === 0.5) {
@@ -1265,25 +1419,22 @@
                document.getElementById('setup-screen').style.display = 'block';
                
                const container = document.getElementById('dynamic-player-container');
+               const tempPlayersList = Object.values(tempPlayers);
                
-               while (container.children.length < tempPlayers.length) {
+               while (container.children.length < tempPlayersList.length) {
                    const slot = document.createElement('div');
                    slot.className = 'player-slot';
                    container.appendChild(slot);
                }
-               while (container.children.length > tempPlayers.length) {
+               while (container.children.length > tempPlayersList.length) {
                    container.removeChild(container.lastChild);
                }
 
-               tempPlayers.forEach((p, idx) => {
+               tempPlayersList.forEach((p, idx) => {
                    const slot = container.children[idx];
                    slot.id = `slot_${p.id}`;
 
                    const isMySlot = p.owner === SESSION_ID;
-                   
-                   if (!p.owner) {
-                       p.owner = SESSION_ID;
-                   }
 
                    if (isMySlot) {
                        slot.style.borderColor = "var(--success-color)";
@@ -1293,7 +1444,10 @@
                        slot.style.boxShadow = "none";
                    }
 
-                   if (!slot.querySelector('.p-name-input')) {
+                   let nameInput = slot.querySelector('.p-name-input');
+                   let classSelect = slot.querySelector('.p-class-select');
+
+                   if (!nameInput) {
                        let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
                        slot.innerHTML = `
                            <div class="lock-status-label" style="font-size: 11px; font-family: sans-serif; text-transform: uppercase; margin-bottom: 4px; color: #888; font-weight: bold;"></div>
@@ -1305,12 +1459,12 @@
                                ${classOptions}
                            </select>
                        `;
+                       nameInput = slot.querySelector('.p-name-input');
+                       classSelect = slot.querySelector('.p-class-select');
                    }
 
                    const statusLabel = slot.querySelector('.lock-status-label');
                    const removeBtn = slot.querySelector('.remove-btn');
-                   const nameInput = slot.querySelector('.p-name-input');
-                   const classSelect = slot.querySelector('.p-class-select');
 
                    let lockStatus = ``;
                    if (isMySlot) {
@@ -1331,12 +1485,10 @@
                    nameInput.disabled = !isMySlot;
 
                    nameInput.oninput = (e) => {
-                       // Update immediately in local state so validation and buttons reflect right away
                        p.name = e.target.value;
                    };
                    nameInput.onblur = (e) => {
-                       window.updatePlayerName(idx, e.target.value);
-                       window.broadcastState();
+                       window.updatePlayerName(p.id, e.target.value);
                    };
 
                    if (document.activeElement !== classSelect) {
@@ -1345,14 +1497,13 @@
                    classSelect.disabled = !isMySlot;
 
                    classSelect.onchange = (e) => {
-                       window.updatePlayerClass(idx, e.target.value);
-                       window.broadcastState();
+                       window.updatePlayerClass(p.id, e.target.value);
                    };
                });
 
                const proceedBtn = document.getElementById('advance-to-rolling-btn');
                if (proceedBtn) {
-                   if (tempPlayers.length === 0) {
+                   if (tempPlayersList.length === 0) {
                        proceedBtn.disabled = true;
                        proceedBtn.innerText = "Add character(s) to proceed";
                    } else {
@@ -1382,7 +1533,6 @@
            document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
 
-           // Bind the dynamic Active Player DC update listener
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
            await initAuth();
@@ -1403,7 +1553,7 @@
                roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
                onSnapshot(roomRef, (snapshot) => {
-                   if (!currentUser) return;
+                   if (!auth.currentUser) return;
                    if (snapshot.exists()) {
                        const data = snapshot.data();
                        syncFromFirebaseData(data);
@@ -1413,17 +1563,29 @@
                        inputs.forEach(i => { if (i === document.activeElement) activeRegistryTyping = true; });
                        
                        if (!activeRegistryTyping) {
-                           playerCounter = 0; tempPlayers = []; players = []; maxPartyHP = 0; currentPartyHP = 0; stageCount = 0; currentEncounter = null; currentOptions = []; isHostTPK = false;
-                           backupRollActive = false; weyrRollActive = false; firstRollerIndex = null; firstRollTotal = 0; secondRollerIndex = null; secondRollTotal = 0;
-                           document.getElementById('dynamic-player-container').innerHTML = '';
-                           document.getElementById('game-view').style.display = 'none';
-                           document.getElementById('rolling-screen').style.display = 'none';
-                           document.getElementById('setup-screen').style.display = 'block';
-                           document.getElementById('stage-counter').innerText = '0';
-                           document.getElementById('party-hp').innerText = '0';
-                           document.getElementById('dice-log').innerHTML = '';
-                           
-                           addPlayerSlot();
+                           // Initialize collaborative session safely
+                           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+                           const initialSlot = {
+                               id: slotId,
+                               name: "",
+                               avatar: classicClasses[0],
+                               brawn: 0,
+                               brains: 0,
+                               agility: 0,
+                               owner: SESSION_ID
+                           };
+                           setDoc(roomRef, {
+                               tempPlayers: {
+                                   [slotId]: initialSlot
+                               },
+                               players: [],
+                               maxPartyHP: 0,
+                               currentPartyHP: 0,
+                               stageCount: 0,
+                               currentEncounter: null,
+                               currentOptions: [],
+                               isHostTPK: false
+                           });
                        }
                    }
                }, (err) => {
@@ -1432,30 +1594,14 @@
            });
        }
 
-       window.addPlayerSlot = addPlayerSlot;
+       // Global window exports to keep dynamically compiled HTML templates running perfectly
+       window.updateTempStat = updateTempStat;
+       window.rollStat = rollStat;
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
-       window.goToRollingScreen = goToRollingScreen;
-       window.rollStat = rollStat;
-       window.updateTempStat = updateTempStat;
-       window.finalizeStatsAndStart = finalizeStatsAndStart;
        window.selectPath = selectPath;
        window.selectCamp = selectCamp;
-       window.updateHostDCReveal = updateHostDCReveal;
-       window.attemptEncounter = attemptEncounter;
-       window.attemptBackup = attemptBackup;
-       window.declineBackup = declineBackup;
-       window.attemptWeyr = attemptWeyr;
-       window.declineWeyr = declineWeyr;
-       window.triggerHostTPK = triggerHostTPK;
-       window.undoTPK = undoTPK;
-       window.confirmFinalize = confirmFinalize;
-       window.closeFinalizeModal = closeFinalizeModal;
-       window.executeFinalize = executeFinalize;
-       window.broadcastState = broadcastState;
-       window.renderRollingListFromState = renderRollingListFromState;
-       window.setBoardImage = setBoardImage;
 
        init();
    </script>
