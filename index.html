@@ -87,7 +87,6 @@
        summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
        summary.dc-reveal:hover { color: var(--accent-color); }
 
-       /* Status pulse animation */
        @keyframes pulse {
            0% { transform: scale(0.9); opacity: 0.5; }
            50% { transform: scale(1.15); opacity: 1; }
@@ -104,9 +103,6 @@
                <div id="room-connection-status" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; font-family: sans-serif; font-size: 13px; flex-wrap: wrap;">
                    <span id="status-dot" style="width: 8px; height: 8px; background: #ffb703; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
                    <span id="status-text" style="color: #ffb703; font-weight: bold;">Loading...</span>
-                   <span id="room-code-badge" style="display: none; background: rgba(244,162,97,0.15); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">ROOM: ---</span>
-                   <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
-                   <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
                </div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
@@ -217,21 +213,6 @@
        </div>
    </div>
 
-   <!-- Join Room Modal -->
-   <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
-       <div class="section-box" style="background: var(--panel-color); max-width: 400px; width: 100%; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; text-align: center;">
-           <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Join Adventure Room</h3>
-           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 13px; color: var(--text-color); font-family: sans-serif;">
-               Enter your ally's 5-character Room Code to connect on the same screen:
-           </p>
-           <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
-           <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
-           </div>
-       </div>
-   </div>
-
    <!-- Finalize Confirmation Modal -->
    <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
        <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
@@ -302,28 +283,6 @@
            }
        } catch (discordErr) {
            console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
-       }
-
-       async function setupDiscordSdk() {
-           if (!discordSdk) return "sandbox-local-channel";
-           console.log("Initializing Discord SDK...");
-           
-           // Wrap SDK ready in a timeout to protect standalone browser canvas previews
-           const readyPromise = discordSdk.ready();
-           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord handshake timeout")), 2500));
-           
-           await Promise.race([readyPromise, timeoutPromise]);
-           console.log("Discord SDK is ready!");
-           
-           const { code } = await discordSdk.commands.authorize({
-               client_id: "1521393614528450622",
-               response_type: "code",
-               state: "",
-               prompt: "none",
-               scope: ["identify", "guilds"]
-           });
-           console.log("Authorization code received!");
-           return discordSdk.instanceId || "discord-activity-dev-room";
        }
 
        // Vocabulary lists for adventure generation
@@ -487,67 +446,34 @@
        let currentActiveDC = 0;
        let isHostTPK = false; 
 
+       // High-Fidelity Unsplash Dark Fantasy Stock Assets (100% reliable inside Sandboxed Frames)
        const driveImages = {
            entrance: [
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+               "https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
            ],
            combat: [
-               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
-               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
-               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+               "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80"
            ],
            puzzle: [
-               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
-               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+               "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=600&q=80"
            ],
            hazard: [
-               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
-               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
-               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+               "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80"
            ],
            camp: [
-               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
-               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
-               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
-               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+               "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1478131143081-80f5f47be220?auto=format&fit=crop&w=600&q=80"
            ],
            death: [
-               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+               "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+               "https://images.unsplash.com/photo-1536252683841-04f4f727654a?auto=format&fit=crop&w=600&q=80"
            ],
            win: [
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+               "https://images.unsplash.com/photo-1513829096999-4978602294fc?auto=format&fit=crop&w=600&q=80"
            ]
        };
 
@@ -758,41 +684,6 @@
            setTimeout(() => { box.style.opacity = '0'; }, 3000);
        }
 
-       function copyLobbyLink() {
-           const url = window.location.href;
-           const tempInput = document.createElement("input");
-           tempInput.style.position = "absolute";
-           tempInput.style.left = "-9999px";
-           tempInput.value = url;
-           document.body.appendChild(tempInput);
-           tempInput.select();
-           try {
-               document.execCommand("copy");
-               showNotification("Lobby invitation link copied! Share with your friends.");
-           } catch (err) {
-               console.error("Link copying fallback failed", err);
-           }
-           document.body.removeChild(tempInput);
-       }
-
-       function openJoinModal() {
-           document.getElementById('join-modal').style.display = 'flex';
-       }
-       function closeJoinModal() {
-           document.getElementById('join-modal').style.display = 'none';
-       }
-       function executeJoinLobby() {
-           const codeInput = document.getElementById('input-join-room-id');
-           if (!codeInput) return;
-           const rawCode = codeInput.value.trim().toUpperCase();
-           if (rawCode.length < 3) {
-               showNotification("Please enter a valid lobby code.");
-               return;
-           }
-           window.location.hash = `room=${rawCode}`;
-           window.location.reload();
-       }
-
        function switchToLocalOnly() {
            if (!isMultiplayer) return;
            isMultiplayer = false;
@@ -802,7 +693,6 @@
            const dot = document.getElementById('status-dot');
            const statusText = document.getElementById('status-text');
            
-           // Completely suppress local server status labels when running in native Discord client
            if (insideDiscord) {
                if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
            } else {
@@ -811,7 +701,7 @@
                    dot.style.animation = "pulse 2.0s infinite";
                }
                if (statusText) {
-                   statusText.innerText = "Offline Mode (In-Memory)";
+                   statusText.innerText = "Sandbox Mode";
                    statusText.style.color = "#ffb703";
                }
            }
@@ -850,7 +740,6 @@
 
        function applyLocalUpdates(updates) {
            for (const [key, val] of Object.entries(updates)) {
-               // Handle modular deletion checks
                const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue') || val === deleteField();
 
                if (key.includes('.')) {
@@ -1008,38 +897,64 @@
        function closeFinalizeModal() { document.getElementById('finalize-modal').style.display = 'none'; }
        async function executeFinalize() { closeFinalizeModal(); await archiveAndFinalize(); }
 
+       let lastRenderedRollingPlayersJSON = "";
        function renderRollingListFromState() {
            document.getElementById('setup-screen').style.display = 'none';
            document.getElementById('rolling-screen').style.display = 'block';
            document.getElementById('game-view').style.display = 'none';
 
-           let listHtml = "";
            const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+           const currentJSON = JSON.stringify(sortedTempPlayers.map(p => ({id: p.id, name: p.name, avatar: p.avatar})));
 
-           sortedTempPlayers.forEach((p) => {
-               listHtml += `
-                   <div class="rolling-row">
-                       <strong>${p.avatar} ( ${p.name || 'Unnamed'} )</strong>
-                       <div class="rolling-stats-grid">
-                           <div class="stat-roll-box">
-                               <span>⚔️ Brawn:</span>
-                               <input type="number" id="roll_${p.id}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat('${p.id}', 'brawn', this.value)">
-                               <button type="button" onclick="window.rollStat('${p.id}', 'brawn', 6)">d6</button>
+           // Only recreate list structure if slots changed, preserving user-focused values and cursor focus
+           if (currentJSON !== lastRenderedRollingPlayersJSON) {
+               lastRenderedRollingPlayersJSON = currentJSON;
+               let listHtml = "";
+               sortedTempPlayers.forEach((p) => {
+                   listHtml += `
+                       <div class="rolling-row" id="rolling_row_${p.id}">
+                           <strong>${p.avatar} ( ${p.name || 'Unnamed'} )</strong>
+                           <div class="rolling-stats-grid">
+                               <div class="stat-roll-box">
+                                   <span>⚔️ Brawn:</span>
+                                   <input type="number" id="roll_${p.id}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat('${p.id}', 'brawn', this.value)">
+                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="brawn" data-die="6">d6</button>
+                               </div>
+                               <div class="stat-roll-box">
+                                   <span>🧠 Brains:</span>
+                                   <input type="number" id="roll_${p.id}_brains" value="${p.brains || 0}" onchange="window.updateTempStat('${p.id}', 'brains', this.value)">
+                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="brains" data-die="10">d10</button>
+                               </div>
+                               <div class="stat-roll-box">
+                                   <span>🏃 Agility:</span>
+                                   <input type="number" id="roll_${p.id}_agility" value="${p.agility || 0}" onchange="window.updateTempStat('${p.id}', 'agility', this.value)">
+                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="agility" data-die="20">d20</button>
+                               </div>
                            </div>
-                           <div class="stat-roll-box">
-                               <span>🧠 Brains:</span>
-                               <input type="number" id="roll_${p.id}_brains" value="${p.brains || 0}" onchange="window.updateTempStat('${p.id}', 'brains', this.value)">
-                               <button type="button" onclick="window.rollStat('${p.id}', 'brains', 10)">d10</button>
-                           </div>
-                           <div class="stat-roll-box">
-                               <span>🏃 Agility:</span>
-                               <input type="number" id="roll_${p.id}_agility" value="${p.agility || 0}" onchange="window.updateTempStat('${p.id}', 'agility', this.value)">
-                               <button type="button" onclick="window.rollStat('${p.id}', 'agility', 20)">d20</button>
-                           </div>
-                       </div>
-                   </div>`;
+                       </div>`;
+               });
+               document.getElementById('rolling-list').innerHTML = listHtml;
+
+               // Programmatically bind freshly generated rolling dice buttons
+               document.querySelectorAll('.roll-trigger-btn').forEach(btn => {
+                   btn.addEventListener('click', (e) => {
+                       const slot = btn.getAttribute('data-slot');
+                       const stat = btn.getAttribute('data-stat');
+                       const die = parseInt(btn.getAttribute('data-die'));
+                       rollStat(slot, stat, die);
+                   });
+               });
+           }
+
+           // Explicitly update values of attributes dynamically so inputs never override each other
+           sortedTempPlayers.forEach(p => {
+               const bInput = document.getElementById(`roll_${p.id}_brawn`);
+               const brInput = document.getElementById(`roll_${p.id}_brains`);
+               const aInput = document.getElementById(`roll_${p.id}_agility`);
+               if (bInput && document.activeElement !== bInput) bInput.value = p.brawn || 0;
+               if (brInput && document.activeElement !== brInput) brInput.value = p.brains || 0;
+               if (aInput && document.activeElement !== aInput) aInput.value = p.agility || 0;
            });
-           document.getElementById('rolling-list').innerHTML = listHtml;
        }
 
        function getChallengeMapping() {
@@ -1072,12 +987,20 @@
        }
 
        function renderSyncedChoices() {
-           let choicesHtml = `<div class="choice-card" onclick="window.selectPath(0)"><h4>➡️ Descend into ${currentOptions[0].title}</h4><p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p></div>
-                              <div class="choice-card" onclick="window.selectPath(1)"><h4>➡️ Route toward ${currentOptions[1].title}</h4><p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p></div>`;
+           let choicesHtml = `<div class="choice-card" id="btn-choice-0"><h4>➡️ Descend into ${currentOptions[0].title}</h4><p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p></div>
+                              <div class="choice-card" id="btn-choice-1"><h4>➡️ Route toward ${currentOptions[1].title}</h4><p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p></div>`;
            if (currentPartyHP < maxPartyHP) {
-               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="window.selectCamp()"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
+               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" id="btn-choice-camp"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
+
+           // Programmatically bind dynamic navigation elements
+           const opt0 = document.getElementById('btn-choice-0');
+           const opt1 = document.getElementById('btn-choice-1');
+           const optCamp = document.getElementById('btn-choice-camp');
+           if (opt0) opt0.addEventListener('click', () => selectPath(0));
+           if (opt1) opt1.addEventListener('click', () => selectPath(1));
+           if (optCamp) optCamp.addEventListener('click', selectCamp);
        }
 
        async function selectPath(idx) {
@@ -1463,7 +1386,6 @@
 
            if (data.diceLogUpdate) {
                logDice(data.diceLogUpdate);
-               // Clear message instantly after consuming to prevent recursive loops
                if (isMultiplayer && auth.currentUser && roomRef) {
                    updateDoc(roomRef, { diceLogUpdate: deleteField() });
                } else if (!isMultiplayer) {
@@ -1529,7 +1451,6 @@
                document.getElementById('setup-screen').style.display = 'block';
                
                const container = document.getElementById('dynamic-player-container');
-               
                const tempPlayersList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
                
                while (container.children.length < tempPlayersList.length) {
@@ -1627,24 +1548,20 @@
 
        async function performAuth() {
            let user = null;
-           // 1. Prioritize custom authentication token
            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                try {
                    console.log("Attempting custom server credentials authentication...");
                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
                    user = cred.user;
-                   console.log("Token-based credentials authentication completed.");
                } catch (tokenErr) {
                    console.warn("Server custom token declined. Falling back to secure guest token...", tokenErr);
                }
            }
-           // 2. Direct anonymous fallback to ensure user always gains entrance instantly
            if (!user) {
                try {
                    console.log("Attempting guest session token allocation...");
                    const cred = await signInAnonymously(auth);
                    user = cred.user;
-                   console.log("Guest token authentication completed.");
                } catch (anonErr) {
                    console.error("All authentication routes rejected:", anonErr);
                }
@@ -1653,6 +1570,7 @@
        }
 
        async function init() {
+           // Direct click handlers binding dynamically in the script
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1672,12 +1590,6 @@
 
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Bind lobby modal actions
-           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
-           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
-           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
-           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
-
            // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
            initializeLocalState();
 
@@ -1694,17 +1606,31 @@
            let instanceId = "";
            let detectedInsideDiscord = false;
            
-           try {
-               const discId = await setupDiscordSdk();
-               if (discId && discId !== "sandbox-local-channel") {
-                   instanceId = discId;
-                   detectedInsideDiscord = true;
+           // Resolve room/instance ID using a safe, zero-failure lookup
+           const urlParams = new URLSearchParams(window.location.search);
+           const discordInstanceId = urlParams.get('instance_id') || urlParams.get('channel_id');
+
+           if (discordInstanceId) {
+               instanceId = discordInstanceId;
+               detectedInsideDiscord = true;
+           } else {
+               // Safe Discord SDK ready evaluation
+               try {
+                   if (discordSdk) {
+                       const readyPromise = discordSdk.ready();
+                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord handshake timeout")), 2500));
+                       await Promise.race([readyPromise, timeoutPromise]);
+                       
+                       if (discordSdk.instanceId) {
+                           instanceId = discordSdk.instanceId;
+                           detectedInsideDiscord = true;
+                       }
+                   }
+               } catch (discordErr) {
+                   console.warn("Discord SDK connection bypassed. Standing by in sandbox browser layout.");
                }
-           } catch (discordErr) {
-               console.warn("Discord SDK connection bypassed. Standing by in sandbox browser layout.");
            }
 
-           // Set the outer tracked variable
            insideDiscord = detectedInsideDiscord;
 
            if (insideDiscord) {
@@ -1713,28 +1639,29 @@
                if (connStatus) {
                    connStatus.style.setProperty('display', 'none', 'important');
                }
-               // Instantly transition buttons past "Waiting for connection..." loading strings
-               const addBtn = document.getElementById('btn-add-character');
-               const advanceBtn = document.getElementById('advance-to-rolling-btn');
-               if (addBtn) {
-                   addBtn.removeAttribute('disabled');
-                   addBtn.innerText = "+ Add Character";
-               }
-               if (advanceBtn) {
-                   advanceBtn.removeAttribute('disabled');
-                   advanceBtn.innerText = "Proceed to Attribute Allocation";
-               }
-           }
-
-           if (!insideDiscord) {
+           } else {
+               // Standard web sandbox/browser canvas fallback
+               // Default to a constant "SANDBOX-LOBBY" room ID so player 1 and 2 automatically see each other in our canvas previews!
                const hash = window.location.hash;
                const match = hash.match(/room=([A-Z0-9]+)/i);
                if (match && match[1]) {
                    instanceId = match[1].toUpperCase();
                } else {
-                   instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                   instanceId = "SANDBOX-LOBBY";
                    window.location.hash = `room=${instanceId}`;
                }
+           }
+
+           // Programmatically unlock the setup buttons immediately on load
+           const addBtn = document.getElementById('btn-add-character');
+           const advanceBtn = document.getElementById('advance-to-rolling-btn');
+           if (addBtn) {
+               addBtn.removeAttribute('disabled');
+               addBtn.innerText = "+ Add Character";
+           }
+           if (advanceBtn) {
+               advanceBtn.removeAttribute('disabled');
+               advanceBtn.innerText = "Proceed to Attribute Allocation";
            }
            
            // strict collection structures mapping (RULE 1)
@@ -1747,41 +1674,21 @@
                
                const dot = document.getElementById('status-dot');
                const statusText = document.getElementById('status-text');
-               const codeBadge = document.getElementById('room-code-badge');
-               const copyBtn = document.getElementById('btn-copy-link');
-               const joinBtn = document.getElementById('btn-open-join-modal');
                const connStatus = document.getElementById('room-connection-status');
                
                if (insideDiscord) {
                    if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-                   if (dot) dot.style.display = "none";
-                   if (statusText) statusText.style.display = "none";
-                   if (codeBadge) codeBadge.style.display = "none";
-                   if (copyBtn) copyBtn.style.display = "none";
-                   if (joinBtn) joinBtn.style.display = "none";
                } else {
                    if (connStatus) connStatus.style.display = "flex";
                    if (dot) {
                        dot.style.background = "var(--success-color)";
                        dot.style.animation = "none";
-                       dot.style.display = "inline-block";
                    }
                    if (statusText) {
-                       statusText.innerText = "Synchronized";
+                       statusText.innerText = `Synchronized: ${instanceId}`;
                        statusText.style.color = "var(--success-color)";
-                       statusText.style.display = "inline-block";
                    }
-                   if (codeBadge) {
-                       codeBadge.style.display = "inline-block";
-                       codeBadge.innerText = `ROOM: ${instanceId}`;
-                   }
-                   if (copyBtn) copyBtn.style.display = "inline-block";
-                   if (joinBtn) joinBtn.style.display = "inline-block";
                }
-
-               document.getElementById('btn-add-character').removeAttribute('disabled');
-               document.getElementById('btn-add-character').innerText = "+ Add Character";
-               document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
 
                if (snapshot.exists()) {
                    const data = snapshot.data();
@@ -1796,7 +1703,6 @@
            });
        }
 
-       // Global window exports
        window.updateTempStat = updateTempStat;
        window.rollStat = rollStat;
        window.removePlayerSlot = removePlayerSlot;
@@ -1805,7 +1711,9 @@
        window.selectPath = selectPath;
        window.selectCamp = selectCamp;
 
-       init();
+       window.onload = function () {
+           init();
+       };
    </script>
 </body>
 </html>
