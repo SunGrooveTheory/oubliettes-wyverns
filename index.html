@@ -257,6 +257,7 @@
        // Local vs Server connectivity states
        let isMultiplayer = true; 
        let localRoomState = {};
+       let insideDiscord = false; // Track Discord environment globally
 
        // Authentication variables
        let currentUser = null;
@@ -797,15 +798,22 @@
            isMultiplayer = false;
            console.log("Switching to offline/local-only backup mode.");
            
+           const connStatus = document.getElementById('room-connection-status');
            const dot = document.getElementById('status-dot');
            const statusText = document.getElementById('status-text');
-           if (dot) {
-               dot.style.background = "#ffb703"; 
-               dot.style.animation = "pulse 2.0s infinite";
-           }
-           if (statusText) {
-               statusText.innerText = "Offline Mode (In-Memory)";
-               statusText.style.color = "#ffb703";
+           
+           // Completely suppress local server status labels when running in native Discord client
+           if (insideDiscord) {
+               if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
+           } else {
+               if (dot) {
+                   dot.style.background = "#ffb703"; 
+                   dot.style.animation = "pulse 2.0s infinite";
+               }
+               if (statusText) {
+                   statusText.innerText = "Offline Mode (In-Memory)";
+                   statusText.style.color = "#ffb703";
+               }
            }
 
            // Instantly unlock UI controls to recover playability
@@ -1684,16 +1692,38 @@
            currentUser = user;
 
            let instanceId = "";
-           let insideDiscord = false;
+           let detectedInsideDiscord = false;
            
            try {
                const discId = await setupDiscordSdk();
                if (discId && discId !== "sandbox-local-channel") {
                    instanceId = discId;
-                   insideDiscord = true;
+                   detectedInsideDiscord = true;
                }
            } catch (discordErr) {
                console.warn("Discord SDK connection bypassed. Standing by in sandbox browser layout.");
+           }
+
+           // Set the outer tracked variable
+           insideDiscord = detectedInsideDiscord;
+
+           if (insideDiscord) {
+               // Completely strip and hide all browser web-lobby and server diagnostic elements instantly
+               const connStatus = document.getElementById('room-connection-status');
+               if (connStatus) {
+                   connStatus.style.setProperty('display', 'none', 'important');
+               }
+               // Instantly transition buttons past "Waiting for connection..." loading strings
+               const addBtn = document.getElementById('btn-add-character');
+               const advanceBtn = document.getElementById('advance-to-rolling-btn');
+               if (addBtn) {
+                   addBtn.removeAttribute('disabled');
+                   addBtn.innerText = "+ Add Character";
+               }
+               if (advanceBtn) {
+                   advanceBtn.removeAttribute('disabled');
+                   advanceBtn.innerText = "Proceed to Attribute Allocation";
+               }
            }
 
            if (!insideDiscord) {
@@ -1720,21 +1750,34 @@
                const codeBadge = document.getElementById('room-code-badge');
                const copyBtn = document.getElementById('btn-copy-link');
                const joinBtn = document.getElementById('btn-open-join-modal');
+               const connStatus = document.getElementById('room-connection-status');
                
-               if (dot) {
-                   dot.style.background = "var(--success-color)";
-                   dot.style.animation = "none";
+               if (insideDiscord) {
+                   if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
+                   if (dot) dot.style.display = "none";
+                   if (statusText) statusText.style.display = "none";
+                   if (codeBadge) codeBadge.style.display = "none";
+                   if (copyBtn) copyBtn.style.display = "none";
+                   if (joinBtn) joinBtn.style.display = "none";
+               } else {
+                   if (connStatus) connStatus.style.display = "flex";
+                   if (dot) {
+                       dot.style.background = "var(--success-color)";
+                       dot.style.animation = "none";
+                       dot.style.display = "inline-block";
+                   }
+                   if (statusText) {
+                       statusText.innerText = "Synchronized";
+                       statusText.style.color = "var(--success-color)";
+                       statusText.style.display = "inline-block";
+                   }
+                   if (codeBadge) {
+                       codeBadge.style.display = "inline-block";
+                       codeBadge.innerText = `ROOM: ${instanceId}`;
+                   }
+                   if (copyBtn) copyBtn.style.display = "inline-block";
+                   if (joinBtn) joinBtn.style.display = "inline-block";
                }
-               if (statusText) {
-                   statusText.innerText = "Synchronized";
-                   statusText.style.color = "var(--success-color)";
-               }
-               if (codeBadge) {
-                   codeBadge.style.display = "inline-block";
-                   codeBadge.innerText = `ROOM: ${instanceId}`;
-               }
-               if (copyBtn) copyBtn.style.display = "inline-block";
-               if (joinBtn) joinBtn.style.display = "inline-block";
 
                document.getElementById('btn-add-character').removeAttribute('disabled');
                document.getElementById('btn-add-character').innerText = "+ Add Character";
