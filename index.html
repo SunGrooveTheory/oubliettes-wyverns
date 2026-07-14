@@ -19,25 +19,15 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       
-       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+       h1 { color: var(--accent-color); text-align: center; margin-bottom: 20px; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
-       /* Status indicator bar animation */
-       @keyframes pulse {
-           0% { transform: scale(0.9); opacity: 0.5; }
-           50% { transform: scale(1.15); opacity: 1; }
-           100% { transform: scale(0.9); opacity: 0.5; }
-       }
-
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
-       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
+       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; }
        .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
-       .player-slot input:disabled, .player-slot select:disabled { opacity: 0.5; cursor: not-allowed; }
-       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; }
 
        .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -46,7 +36,7 @@
 
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
-       button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
+       button:disabled { background: #333; color: #777; cursor: not-allowed; }
        button.danger { background: var(--danger-color); color: white; }
        button.success { background: var(--success-color); color: white; }
       
@@ -71,7 +61,7 @@
            align-items: center;
            justify-content: center;
        }
-       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -101,17 +91,8 @@
 <body>
 
    <div class="container">
-       <div class="header-container">
-           <div>
-               <h1>Oubliettes & Wyverns</h1>
-               <div id="room-connection-status" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; font-family: sans-serif; font-size: 13px; flex-wrap: wrap;">
-                   <span id="status-dot" style="width: 8px; height: 8px; background: #e76f51; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
-                   <span id="status-text" style="color: #aaa; font-weight: bold;">Authenticating...</span>
-                   <span id="room-code-badge" style="display: none; background: rgba(244,162,97,0.15); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">ROOM: ---</span>
-                   <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
-                   <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
-               </div>
-           </div>
+       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+           <h1 style="margin: 0; text-align: left;">Oubliettes & Wyverns</h1>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
 
@@ -120,15 +101,15 @@
            <div class="section-title">Character Registry</div>
            <div class="setup-grid" id="dynamic-player-container"></div>
            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;" disabled>Connecting to server...</button>
-               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;" disabled>Waiting for connection...</button>
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Add Character</button>
+               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;">Proceed to Attribute Allocation</button>
            </div>
        </div>
 
        <!-- Attribute Matrix Stage -->
        <div class="section-box" id="rolling-screen" style="display: none;">
            <div class="section-title">Attribute Allocation Matrix</div>
-           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes.</p>
            <div id="rolling-list"></div>
            <button id="btn-finalize-stats" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
@@ -179,7 +160,7 @@
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
                                    <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-                                   <button id="roll-check-btn">Roll standard die</button>
+                                   <button id="roll-check-btn" style="width: 100%; margin-bottom: 10px;">Roll standard die</button>
                                </div>
 
                                <!-- Backup Combined Check Controller -->
@@ -220,21 +201,6 @@
        </div>
    </div>
 
-   <!-- Join Room Modal -->
-   <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
-       <div class="section-box" style="background: var(--panel-color); max-width: 400px; width: 100%; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; text-align: center;">
-           <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Join Adventure Room</h3>
-           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 13px; color: var(--text-color); font-family: sans-serif;">
-               Enter your ally's 5-character Room Code to connect on the same screen:
-           </p>
-           <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
-           <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
-           </div>
-       </div>
-   </div>
-
    <!-- Finalize Confirmation Modal -->
    <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
        <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
@@ -249,27 +215,22 @@
        </div>
    </div>
 
-   <!-- Optional Discord Embedded SDK script fallback -->
-   <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK offline fallback activated.')"></script>
 
    <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-       // Local vs Server connectivity states
        let isMultiplayer = true; 
        let localRoomState = {};
-       let insideDiscord = false; // Track Discord environment globally
+       let insideDiscord = false; 
 
-       // Authentication variables
        let currentUser = null;
        let roomRef = null;
 
-       // Unique browser session identifier to establish character sheet authorship
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
-       // Base configuration parameters
        let firebaseConfig = { 
            apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw", 
            authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
@@ -279,7 +240,6 @@
            appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0" 
        };
 
-       // Robust check for environmental configuration parameters
        if (typeof __firebase_config !== 'undefined') {
            try {
                if (typeof __firebase_config === 'string') {
@@ -297,7 +257,6 @@
        const auth = getAuth(app);
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
-       // Safe Discord SDK registration
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
@@ -306,6 +265,70 @@
        } catch (discordErr) {
            console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
        }
+
+       const driveImages = {
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
+           combat: [
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+           ],
+           puzzle: [
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+           ],
+           hazard: [
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+           ],
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
+       };
 
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
@@ -466,37 +489,6 @@
        let currentActiveDC = 0;
        let isHostTPK = false; 
 
-       // High-Fidelity Stock Assets
-       const driveImages = {
-           entrance: [
-               "https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
-           ],
-           combat: [
-               "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80"
-           ],
-           puzzle: [
-               "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=600&q=80"
-           ],
-           hazard: [
-               "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80"
-           ],
-           camp: [
-               "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1478131143081-80f5f47be220?auto=format&fit=crop&w=600&q=80"
-           ],
-           death: [
-               "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
-               "https://images.unsplash.com/photo-1536252683841-04f4f727654a?auto=format&fit=crop&w=600&q=80"
-           ],
-           win: [
-               "https://images.unsplash.com/photo-1513829096999-4978602294fc?auto=format&fit=crop&w=600&q=80"
-           ]
-       };
-
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
 
        const classAffinities = {
@@ -514,127 +506,23 @@
 
        function getFantasySVG(category) {
            const svgAttrs = `viewBox="0 0 300 400" width="100%" height="100%" style="display: block; background: #050507;"`;
-           
            switch (category) {
                case 'entrance':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <linearGradient id="gateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                   <stop offset="0%" stop-color="#2a2a3a" />
-                                   <stop offset="100%" stop-color="#111" />
-                               </linearGradient>
-                               <radialGradient id="glowEntrance" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.3"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" />
-                           <path d="M60 350 V150 A90 90 0 0 1 240 150 V350" fill="none" stroke="#1c1c28" stroke-width="4" />
-                           <rect x="70" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
-                           <rect x="155" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
-                           <circle cx="150" cy="150" r="40" fill="none" stroke="#f4a261" stroke-width="2" stroke-opacity="0.5" />
-                           <ellipse cx="150" cy="250" rx="90" ry="110" fill="url(#glowEntrance)" />
-                           <text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" /><text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text></svg>`;
                case 'combat':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="glowCombat" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#e76f51" stop-opacity="0.4"/>
-                                   <stop offset="100%" stop-color="#e76f51" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <ellipse cx="135" cy="180" rx="6" ry="3" fill="#ff0000" />
-                           <ellipse cx="165" cy="180" rx="6" ry="3" fill="#ff0000" />
-                           <g stroke="#e2e2e9" stroke-width="4" stroke-linecap="round">
-                               <line x1="80" y1="340" x2="220" y2="220" />
-                               <line x1="220" y1="340" x2="80" y2="220" />
-                           </g>
-                           <circle cx="150" cy="220" r="80" fill="url(#glowCombat)" />
-                           <text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><circle cx="150" cy="220" r="80" fill="red" opacity="0.1" /><text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text></svg>`;
                case 'puzzle':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="glowPuzzle" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#a2d2ff" stop-opacity="0.4"/>
-                                   <stop offset="100%" stop-color="#a2d2ff" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <g transform="translate(110, 110)">
-                               <polygon points="40,0 80,20 40,40 0,20" fill="#1b1c29" stroke="#a2d2ff" stroke-width="2" />
-                               <circle cx="40" cy="40" r="12" fill="#a2d2ff" opacity="0.8" />
-                           </g>
-                           <circle cx="150" cy="150" r="70" fill="url(#glowPuzzle)" />
-                           <text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text></svg>`;
                case 'hazard':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <linearGradient id="lavaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                   <stop offset="0%" stop-color="#ff9f1c" />
-                                   <stop offset="100%" stop-color="#e76f51" />
-                               </linearGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <rect x="75" y="280" width="150" height="120" fill="url(#lavaGrad)" opacity="0.9" />
-                           <text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text></svg>`;
                case 'camp':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.5"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M130 300 Q150 220 150 230 Q170 300 130 300 Z" fill="#e76f51" />
-                           <circle cx="150" cy="280" r="80" fill="url(#fireGlow)" />
-                           <text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text></svg>`;
                case 'death':
-                   return `
-                       <svg ${svgAttrs}>
-                           <rect width="300" height="400" fill="#0a0505"/>
-                           <path d="M80 350 V220 A40 40 0 0 1 160 220 V350" fill="#1c1313" stroke="#e76f51" stroke-width="2" />
-                           <text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0a0505"/><text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text></svg>`;
                case 'win':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.6"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0e0c"/>
-                           <circle cx="150" cy="150" r="60" fill="url(#sunGlow)" />
-                           <text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0e0c"/><text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text></svg>`;
                default:
-                   return `
-                       <svg ${svgAttrs}>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading Scene...</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading...</text></svg>`;
            }
        }
 
@@ -643,10 +531,10 @@
            const svgContainer = document.getElementById('fallback-svg-container');
            if (!imgElement || !svgContainer) return;
 
-           const driveImgArray = driveImages[category];
-           if (driveImgArray && driveImgArray.length > 0) {
-               const primaryImg = driveImgArray[Math.floor(Math.random() * driveImgArray.length)];
-               imgElement.src = primaryImg;
+           const imgArray = driveImages[category];
+           if (imgArray && imgArray.length > 0) {
+               const selectedImg = imgArray[Math.floor(Math.random() * imgArray.length)];
+               imgElement.src = selectedImg;
                imgElement.style.display = 'block';
                svgContainer.style.display = 'none';
                
@@ -662,7 +550,6 @@
            }
        }
 
-       // Helper vocabulary functions
        function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
        function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
        function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
@@ -704,68 +591,22 @@
            setTimeout(() => { box.style.opacity = '0'; }, 3000);
        }
 
-       function copyLobbyLink() {
-           const url = window.location.href;
-           const tempInput = document.createElement("input");
-           tempInput.style.position = "absolute";
-           tempInput.style.left = "-9999px";
-           tempInput.value = url;
-           document.body.appendChild(tempInput);
-           tempInput.select();
-           try {
-               document.execCommand("copy");
-               showNotification("Lobby invitation link copied! Share with your friends.");
-           } catch (err) {
-               console.error("Link copying fallback failed", err);
-           }
-           document.body.removeChild(tempInput);
-       }
-
-       function openJoinModal() {
-           document.getElementById('join-modal').style.display = 'flex';
-       }
-       function closeJoinModal() {
-           document.getElementById('join-modal').style.display = 'none';
-       }
-       function executeJoinLobby() {
-           const codeInput = document.getElementById('input-join-room-id');
-           if (!codeInput) return;
-           const rawCode = codeInput.value.trim().toUpperCase();
-           if (rawCode.length < 3) {
-               showNotification("Please enter a valid lobby code.");
-               return;
-           }
-           window.location.hash = `room=${rawCode}`;
-           window.location.reload();
-       }
-
        function switchToLocalOnly() {
            if (!isMultiplayer) return;
            isMultiplayer = false;
-           console.log("Switching to offline/local-only backup mode.");
-           
-           const connStatus = document.getElementById('room-connection-status');
-           const dot = document.getElementById('status-dot');
-           const statusText = document.getElementById('status-text');
-           
-           if (insideDiscord) {
-               if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-           } else {
-               if (dot) {
-                   dot.style.background = "#ffb703"; 
-                   dot.style.animation = "pulse 2.0s infinite";
-               }
-               if (statusText) {
-                   statusText.innerText = "Sandbox Mode";
-                   statusText.style.color = "#ffb703";
-               }
-           }
+           console.log("Switching to local offline backup simulation.");
 
            // Instantly unlock UI controls to recover playability
-           document.getElementById('btn-add-character').removeAttribute('disabled');
-           document.getElementById('btn-add-character').innerText = "+ Add Character";
-           document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
-           document.getElementById('advance-to-rolling-btn').innerText = "Proceed to Attribute Allocation";
+           const addBtn = document.getElementById('btn-add-character');
+           const advanceBtn = document.getElementById('advance-to-rolling-btn');
+           if (addBtn) {
+               addBtn.removeAttribute('disabled');
+               addBtn.innerText = "+ Add Character";
+           }
+           if (advanceBtn) {
+               advanceBtn.removeAttribute('disabled');
+               advanceBtn.innerText = "Proceed to Attribute Allocation";
+           }
        }
 
        function initializeLocalState() {
@@ -989,7 +830,7 @@
                });
                document.getElementById('rolling-list').innerHTML = listHtml;
 
-               // Programmatically bind changes and roll triggers
+               // Programmatically bind rolling inputs
                document.querySelectorAll('.stat-roll-input').forEach(input => {
                    input.addEventListener('change', (e) => {
                        const id = e.target.getAttribute('data-id');
@@ -998,6 +839,7 @@
                    });
                });
 
+               // Programmatically bind roll dice buttons IMMEDIATELY after generation
                document.querySelectorAll('.roll-btn').forEach(btn => {
                    btn.addEventListener('click', (e) => {
                        const id = btn.getAttribute('data-id');
@@ -1008,7 +850,7 @@
                });
            }
 
-           // Update actual inputs seamlessly preserving focused state
+           // Explicitly update input numeric values securely preserving focus
            sortedTempPlayers.forEach(p => {
                const bInput = document.getElementById(`roll_${p.id}_brawn`);
                const brInput = document.getElementById(`roll_${p.id}_brains`);
@@ -1049,6 +891,7 @@
        }
 
        function renderSyncedChoices() {
+           if (!currentOptions || currentOptions.length < 2) return;
            let choicesHtml = `
                <div class="choice-card" id="btn-choice-0">
                    <h4>➡️ Descend into ${currentOptions[0].title}</h4>
@@ -1067,7 +910,7 @@
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
 
-           // Programmatically attach standard events to bypass sandbox frame click overrides
+           // Programmatically attach choices events cleanly
            const opt0 = document.getElementById('btn-choice-0');
            const opt1 = document.getElementById('btn-choice-1');
            const optCamp = document.getElementById('btn-choice-camp');
@@ -1596,6 +1439,9 @@
                    nameInput.oninput = (e) => {
                        p.name = e.target.value;
                    };
+                   nameInput.onchange = (e) => {
+                       window.updatePlayerName(p.id, e.target.value);
+                   };
                    nameInput.onblur = (e) => {
                        window.updatePlayerName(p.id, e.target.value);
                    };
@@ -1623,45 +1469,36 @@
            }
        }
 
-       async function setupDiscordSdk() {
-           if (!discordSdk) return "sandbox-local-channel";
-           console.log("Initializing Discord SDK...");
-           
-           // Wrap SDK Handshake in a safe 1.5-second timeout race
-           const readyPromise = discordSdk.ready();
-           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord Handshake Timeout")), 1500));
-           
-           await Promise.race([readyPromise, timeoutPromise]);
-           console.log("Discord SDK ready and authorized!");
-           return discordSdk.instanceId || "discord-activity-dev-room";
-       }
-
-       async function initAuth() {
-           try {
-               if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                   await signInWithCustomToken(auth, __initial_auth_token);
-               } else {
-                   await signInAnonymously(auth);
+       async function performAuth() {
+           let user = null;
+           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+               try {
+                   console.log("Attempting custom credentials authentication...");
+                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                   user = cred.user;
+               } catch (tokenErr) {
+                   console.warn("Custom token declined. Falling back to anonymous guest token...", tokenErr);
                }
-           } catch (err) {
-               console.error("Authentication handshake failure:", err);
-               showNotification("Adventure server authentication failed.");
            }
+           if (!user) {
+               try {
+                   const cred = await signInAnonymously(auth);
+                   user = cred.user;
+               } catch (anonErr) {
+                   console.error("All authentication routes rejected:", anonErr);
+               }
+           }
+           return user;
        }
 
        async function init() {
-           // Programmatic event bindings to prevent standard frame click blocks
+           // Direct click handlers binding dynamically in the script
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
            document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
            document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
            document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
-
-           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
-           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
-           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
-           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
 
            document.getElementById('roll-check-btn').addEventListener('click', () => attemptEncounter());
            document.getElementById('backup-roll-btn').addEventListener('click', attemptBackup);
@@ -1672,114 +1509,92 @@
            document.getElementById('btn-force-pass').addEventListener('click', () => attemptEncounter(true));
            document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
+
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
+           // Initialize local backup state instantly (ensures fully responsive GUI buttons immediately)
            initializeLocalState();
 
-           // Execute safe authentication setup
-           await initAuth();
-           onAuthStateChanged(auth, async (user) => {
-               currentUser = user;
-               if (!user) {
-                   document.getElementById('setup-screen').style.display = 'block';
-                   return;
+           // 3-second connection fallback guard ensures buttons NEVER get stuck "Connecting"
+           const connectionTimeout = setTimeout(() => {
+               if (isMultiplayer && !currentUser) {
+                   console.warn("Multiplayer connection timed out. Activating local offline play sandbox.");
+                   switchToLocalOnly();
                }
+           }, 3000);
 
-               let instanceId = "";
-               let detectedInsideDiscord = false;
-               
-               // Safely authorize Discord Embedded Session
+           const user = await performAuth();
+           if (!user) {
+               console.warn("Authentication failed completely. Activating local offline sandbox mode.");
+               switchToLocalOnly();
+               return;
+           }
+
+           currentUser = user;
+
+           let instanceId = "";
+           let detectedInsideDiscord = false;
+           
+           const urlParams = new URLSearchParams(window.location.search);
+           const discordInstanceId = urlParams.get('instance_id') || urlParams.get('channel_id');
+
+           if (discordInstanceId) {
+               instanceId = discordInstanceId;
+               detectedInsideDiscord = true;
+           }
+
+           if (!instanceId) {
                try {
-                   const discId = await setupDiscordSdk();
-                   if (discId && discId !== "sandbox-local-channel") {
-                       instanceId = discId;
-                       detectedInsideDiscord = true;
+                   if (discordSdk) {
+                       const readyPromise = discordSdk.ready();
+                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500));
+                       await Promise.race([readyPromise, timeoutPromise]);
+                       if (discordSdk.instanceId) {
+                           instanceId = discordSdk.instanceId;
+                           detectedInsideDiscord = true;
+                       }
                    }
                } catch (discordErr) {
-                   console.warn("Discord SDK timed out or bypassed. Sandboxed browser mode loaded.");
+                   console.warn("Discord SDK connection timed out. Standing by.");
                }
+           }
 
-               insideDiscord = detectedInsideDiscord;
+           insideDiscord = detectedInsideDiscord;
 
-               // Web lobby / browser sandbox fallback setup
-               if (!insideDiscord) {
-                   const hash = window.location.hash;
-                   const match = hash.match(/room=([A-Z0-9]+)/i);
-                   if (match && match[1]) {
-                       instanceId = match[1].toUpperCase();
-                   } else {
-                       // Generate a 5-character randomized Lobby identifier
-                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                       window.location.hash = `room=${instanceId}`;
-                   }
-               }
+           // CRITICAL SYNC RESOLUTION: If instanceId is STILL empty, default to "SANDBOX-LOBBY" so all peers play together!
+           if (!instanceId || instanceId.trim() === "") {
+               instanceId = "SANDBOX-LOBBY";
+           }
 
-               // Programmatically unlock the setup buttons immediately on load
-               const addBtn = document.getElementById('btn-add-character');
-               const advanceBtn = document.getElementById('advance-to-rolling-btn');
-               if (addBtn) {
-                   addBtn.removeAttribute('disabled');
-                   addBtn.innerText = "+ Add Character";
-               }
-               if (advanceBtn) {
-                   advanceBtn.removeAttribute('disabled');
-                   advanceBtn.innerText = "Proceed to Attribute Allocation";
-               }
+           // strict collection structures mapping (RULE 1)
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+
+           onSnapshot(roomRef, (snapshot) => {
+               if (!auth.currentUser) return; // strict authentication guard (RULE 3)
+               clearTimeout(connectionTimeout);
                
-               // Setup document reference mapping (strict collection structures mapping)
-               roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+               isMultiplayer = true; 
 
-               onSnapshot(roomRef, (snapshot) => {
-                   if (!auth.currentUser) return; // strict authentication guard
-                   
-                   isMultiplayer = true; 
-                   
-                   const dot = document.getElementById('status-dot');
-                   const statusText = document.getElementById('status-text');
-                   const connStatus = document.getElementById('room-connection-status');
-                   const codeBadge = document.getElementById('room-code-badge');
-                   const copyBtn = document.getElementById('btn-copy-link');
-                   const joinBtn = document.getElementById('btn-open-join-modal');
-                   
-                   if (insideDiscord) {
-                       if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-                   } else {
-                       if (connStatus) connStatus.style.display = "flex";
-                       if (dot) {
-                           dot.style.background = "var(--success-color)";
-                           dot.style.animation = "none";
-                       }
-                       if (statusText) {
-                           statusText.innerText = `Synchronized`;
-                           statusText.style.color = "var(--success-color)";
-                       }
-                       if (codeBadge) {
-                           codeBadge.style.display = "inline-block";
-                           codeBadge.innerText = `ROOM: ${instanceId}`;
-                       }
-                       if (copyBtn) copyBtn.style.display = "inline-block";
-                       if (joinBtn) joinBtn.style.display = "inline-block";
-                   }
-
-                   if (snapshot.exists()) {
-                       const data = snapshot.data();
-                       syncFromFirebaseData(data);
-                   } else {
-                       // Synchronize current local state upward
-                       setDoc(roomRef, localRoomState);
-                   }
-               }, (err) => {
-                   console.error("Firebase sync error. Falling back to local offline mode:", err);
-                   switchToLocalOnly();
-               });
+               if (snapshot.exists()) {
+                   const data = snapshot.data();
+                   syncFromFirebaseData(data);
+               } else {
+                   // Synchronize current local state upward
+                   setDoc(roomRef, localRoomState);
+               }
+           }, (err) => {
+               console.error("Firebase sync error. Falling back to local offline mode:", err);
+               switchToLocalOnly();
            });
        }
 
-       // Global exports for remove buttons
+       window.updateTempStat = updateTempStat;
+       window.rollStat = rollStat;
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
+       window.selectPath = selectPath;
+       window.selectCamp = selectCamp;
 
        window.onload = function () {
            init();
