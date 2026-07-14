@@ -94,7 +94,7 @@
        <div class="header-container">
            <div>
                <h1>Oubliettes & Wyverns</h1>
-               <div style="font-family: sans-serif; font-size: 12px; color: #888; margin-top: 4px;" id="network-info-label">Initializing secure campaign connection...</div>
+               <div style="font-family: sans-serif; font-size: 12px; color: #f4a261; margin-top: 4px; font-weight: bold;" id="network-info-label">🔗 Initializing Real-time Lobby Session...</div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
@@ -102,9 +102,10 @@
        <!-- Character Setup Stage -->
        <div class="section-box" id="setup-screen">
            <div class="section-title">Character Registry</div>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Your default character slot has been registered instantly. Customize your name and class below.</p>
            <div class="setup-grid" id="dynamic-player-container"></div>
            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Add Character</button>
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Force Add Character</button>
                <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;">Proceed to Attribute Allocation</button>
            </div>
        </div>
@@ -224,7 +225,7 @@
 
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField, initializeFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        let isMultiplayer = true; 
@@ -259,8 +260,7 @@
        }
 
        const app = initializeApp(firebaseConfig);
-       const db = initializeFirestore(app, {});
-       
+       const db = getFirestore(app);
        const auth = initializeAuth(app, {
            persistence: inMemoryPersistence
        });
@@ -270,7 +270,7 @@
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
-               discordSdk = new DiscordSDK("1521393614528450622");
+               discordSdk = new DiscordSDK({ clientId: "1521393614528450622" });
            }
        } catch (discordErr) {
            console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
@@ -598,40 +598,35 @@
            }
            box.innerText = text;
            box.style.opacity = '1';
-           setTimeout(() => { box.style.opacity = '0'; }, 5000); // Increased view time so you can read errors
+           setTimeout(() => { box.style.opacity = '0'; }, 3000);
+       }
+
+       function updateNetworkInfoDisplay(text, color) {
+           const label = document.getElementById('network-info-label');
+           if (label) {
+               label.innerText = text;
+               label.style.color = color;
+           }
        }
 
        function switchToLocalOnly() {
-           if (!isMultiplayer) return;
-           isMultiplayer = false;
-           console.log("Switching to local offline backup simulation.");
-
-           const infoLabel = document.getElementById('network-info-label');
-           if (infoLabel) {
-               infoLabel.innerText = "Sandbox Offline Mode (Local)";
-               infoLabel.style.color = "#ffb703";
-           }
-
-           const addBtn = document.getElementById('btn-add-character');
-           const advanceBtn = document.getElementById('advance-to-rolling-btn');
-           if (addBtn) {
-               addBtn.removeAttribute('disabled');
-               addBtn.innerText = "+ Add Character";
-           }
-           if (advanceBtn) {
-               advanceBtn.removeAttribute('disabled');
-               advanceBtn.innerText = "Proceed to Attribute Allocation";
-           }
+           // We keep isMultiplayer as-is but notify user that fallback triggers.
+           // However we never permanently disable multiplayer so sync can heal if lag resolves.
+           updateNetworkInfoDisplay("⚠️ Slow Connection Fallback Active", "#ffb703");
        }
 
        function initializeLocalState() {
            const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
-           const randomNum = Math.floor(Math.random() * 9000) + 1000; // Auto-generate name for initial load
+           
+           const randomPrefixes = ["Valiant", "Stout", "Bold", "Swift", "Cunning", "Fierce", "Noble", "Grim", "Silent", "Iron"];
+           const randomSuffixes = ["Seeker", "Vanguard", "Slayer", "Shadow", "Warden", "Herald", "Keeper", "Stalker", "Spellweaver", "Paladin"];
+           const generatedName = randomPrefixes[Math.floor(Math.random() * randomPrefixes.length)] + " " + randomSuffixes[Math.floor(Math.random() * randomSuffixes.length)];
+
            localRoomState = {
                tempPlayers: {
                    [slotId]: {
                        id: slotId,
-                       name: "Vanguard " + randomNum,
+                       name: generatedName,
                        avatar: classicClasses[0],
                        brawn: 0,
                        brains: 0,
@@ -683,8 +678,7 @@
                try {
                    await updateDoc(roomRef, updates);
                } catch (err) {
-                   console.error("Multiplayer broadcast failed, moving locally:", err);
-                   switchToLocalOnly();
+                   console.warn("Multiplayer update bypassed, applying locally:", err);
                    applyLocalUpdates(updates);
                }
            } else {
@@ -697,8 +691,7 @@
                try {
                    await setDoc(roomRef, data);
                } catch (err) {
-                   console.error("Multiplayer setup failed, moving locally:", err);
-                   switchToLocalOnly();
+                   console.warn("Multiplayer setup bypassed, applying locally:", err);
                    localRoomState = data;
                    syncFromFirebaseData(localRoomState);
                }
@@ -725,13 +718,15 @@
            await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: r });
        }
 
-       // --- FIX: AUTO-CHARACTER NAME CREATION TO PREVENT BLOCKING ---
        async function addPlayerSlot() {
            const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
-           const randomNum = Math.floor(Math.random() * 9000) + 1000;
+           const randomPrefixes = ["Valiant", "Stout", "Bold", "Swift", "Cunning", "Fierce", "Noble", "Grim", "Silent", "Iron"];
+           const randomSuffixes = ["Seeker", "Vanguard", "Slayer", "Shadow", "Warden", "Herald", "Keeper", "Stalker", "Spellweaver", "Paladin"];
+           const generatedName = randomPrefixes[Math.floor(Math.random() * randomPrefixes.length)] + " " + randomSuffixes[Math.floor(Math.random() * randomSuffixes.length)];
+
            const newSlot = {
                id: slotId,
-               name: "Vanguard " + randomNum, // Auto-assign instead of empty string!
+               name: generatedName,
                avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
                brawn: 0,
                brains: 0,
@@ -745,25 +740,22 @@
            await safeUpdateDoc({ [`tempPlayers.${slotId}`]: deleteField() });
        }
 
-       // --- FIX: NO LONGER REJECTS EMPTY NAMES ---
        async function goToRollingScreen() {
            const tempPlayersList = Object.values(tempPlayers);
+           let emptyCheck = false;
+           tempPlayersList.forEach(p => {
+               if (!p.name || p.name.trim() === "") {
+                   emptyCheck = true;
+               }
+           });
 
            if (tempPlayersList.length === 0) { 
                showNotification("Registry error: Vanguards must contain at least one member."); 
                return; 
            }
-
-           // Instead of blocking progress, we just fix any empty names the players managed to clear out
-           let updates = {};
-           tempPlayersList.forEach(p => {
-               if (!p.name || p.name.trim() === "") {
-                   updates[`tempPlayers.${p.id}.name`] = "Unknown Hero";
-               }
-           });
-           
-           if (Object.keys(updates).length > 0) {
-               await safeUpdateDoc(updates);
+           if (emptyCheck) {
+               showNotification("Validation error: All characters must have a registered name.");
+               return;
            }
 
            await safeUpdateDoc({ stageCount: 0.5 });
@@ -852,7 +844,6 @@
                document.getElementById('rolling-list').innerHTML = listHtml;
            }
 
-           // Explicitly update input numeric values securely preserving focus
            sortedTempPlayers.forEach(p => {
                const bInput = document.getElementById(`roll_${p.id}_brawn`);
                const brInput = document.getElementById(`roll_${p.id}_brains`);
@@ -1298,7 +1289,7 @@
                }
            }
 
-           // Robust Multiplayer Check: Automatically add slot for current user if they are joining an active setup screen
+           // Automatic character registration for joined players
            const tempPlayersList = Object.values(tempPlayers);
            const hasMySlot = tempPlayersList.some(p => p.owner === SESSION_ID);
            if (!hasMySlot && stageCount === 0 && isMultiplayer) {
@@ -1430,7 +1421,12 @@
                    }
                    statusLabel.innerText = lockStatus;
 
-                   if (document.activeElement !== nameInput) {
+                   // Core Fix: Prevent incoming sync states from resetting inputs currently being modified by the owner.
+                   if (isMySlot) {
+                       if (nameInput.value === '' && p.name) {
+                           nameInput.value = p.name;
+                       }
+                   } else {
                        nameInput.value = p.name || '';
                    }
                    nameInput.disabled = !isMySlot;
@@ -1454,7 +1450,6 @@
            }
        }
 
-       // --- FIX: ERROR HANDLING REWRITE FOR FIREBASE AUTH ---
        async function performAuth() {
            let user = null;
            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -1462,7 +1457,7 @@
                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
                    user = cred.user;
                } catch (tokenErr) {
-                   console.warn("Custom token authentication bypassed.", tokenErr);
+                   console.warn("Custom token authentication bypassed, trying anonymous.", tokenErr);
                }
            }
            if (!user) {
@@ -1470,11 +1465,8 @@
                    const cred = await signInAnonymously(auth);
                    user = cred.user;
                } catch (anonErr) {
-                   console.error("Authentication rejected completely:", anonErr);
-                   // Let the user actually see the exact reason why before shutting down sync
-                   showNotification("Auth Error! Please ensure 'Anonymous Auth' is turned ON in your Firebase console.");
-                   // Give them a moment to read the error before taking them offline
-                   setTimeout(switchToLocalOnly, 4000); 
+                   console.error("Anonymous authentication failed:", anonErr);
+                   showNotification("Database connection failed. Multi-user play might be restricted.");
                }
            }
            return user;
@@ -1504,6 +1496,7 @@
            });
 
            document.addEventListener('click', (e) => {
+               // Roll Button Inside setup allocation matrix
                const rollBtn = e.target.closest('.roll-btn');
                if (rollBtn) {
                    const id = rollBtn.getAttribute('data-id');
@@ -1512,12 +1505,14 @@
                    rollStat(id, stat, die);
                }
 
+               // Remove Slot Button
                const removeBtn = e.target.closest('.remove-btn');
                if (removeBtn) {
                    const id = removeBtn.getAttribute('data-id');
                    removePlayerSlot(id);
                }
 
+               // Choice selections
                const choice0 = e.target.closest('#btn-choice-0');
                if (choice0) selectPath(0);
 
@@ -1527,6 +1522,7 @@
                const choiceCamp = e.target.closest('#btn-choice-camp');
                if (choiceCamp) selectCamp();
 
+               // Host Target Reveal Toggle
                const revealBtn = e.target.closest('#btn-toggle-dc');
                if (revealBtn) {
                    const dcBox = document.getElementById('encounter-dc-box');
@@ -1541,21 +1537,25 @@
                    }
                }
 
+               // Standard check Roll
                const standardRoll = e.target.closest('#roll-check-btn');
                if (standardRoll) attemptEncounter();
 
+               // Combined Backup Roll Binds
                const backupRoll = e.target.closest('#backup-roll-btn');
                if (backupRoll) attemptBackup();
 
                const declineBackupBtn = e.target.closest('#decline-backup-btn');
                if (declineBackupBtn) declineBackup();
 
+               // Wyvern Weyr Roll Binds
                const weyrRoll = e.target.closest('#weyr-roll-btn');
                if (weyrRoll) attemptWeyr();
 
                const declineWeyrBtn = e.target.closest('#decline-weyr-btn');
                if (declineWeyrBtn) declineWeyr();
 
+               // Host Overrides
                const passBtn = e.target.closest('#btn-force-pass');
                if (passBtn) attemptEncounter(true);
 
@@ -1575,18 +1575,13 @@
                unsubscribeSnapshot();
            }
 
-           const infoLabel = document.getElementById('network-info-label');
-           if (infoLabel) {
-               infoLabel.innerText = `Synchronized: ${lobbyId}`;
-               infoLabel.style.color = "var(--success-color)";
-           }
+           updateNetworkInfoDisplay("🟢 Connected to Live Voice Lobby", "var(--success-color)");
 
            roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
            console.log("Subscribing to synchronized room lobby ID:", lobbyId);
 
            unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
                if (!auth.currentUser) return; 
-               
                isMultiplayer = true; 
 
                if (snapshot.exists()) {
@@ -1596,12 +1591,13 @@
                    setDoc(roomRef, localRoomState);
                }
            }, (err) => {
-               console.error("Lobby connection suspended, rolling back to offline playground:", err);
+               console.error("Lobby connection suspended, rolling back to offline play:", err);
                switchToLocalOnly();
            });
        }
 
        async function init() {
+           // Direct click handlers for static layouts
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1612,70 +1608,28 @@
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
            setupGlobalDelegation();
-
            initializeLocalState();
 
-           // --- FIX: NO MORE AGGRESSIVE 1.5 SEC TIMEOUT DISCONNECTS ---
-           const connectionTimeout = setTimeout(() => {
-               if (isMultiplayer && !currentUser) {
-                   console.warn("Initial lobby sync is taking a long time. Hang tight, mobile networks vary!");
-                   // We no longer call `switchToLocalOnly()` here. We wait for Auth to properly fail first.
-               }
-           }, 8000); 
-
+           // Execute safe authentication setup
            const user = await performAuth();
            if (!user) {
-               clearTimeout(connectionTimeout);
-               return; // Error popup already triggered by performAuth()
+               switchToLocalOnly();
+               return;
            }
 
            currentUser = user;
 
-           let instanceId = "";
-           let detectedInsideDiscord = false;
-           
-           if (discordSdk && discordSdk.instanceId) {
-               instanceId = discordSdk.instanceId;
-               detectedInsideDiscord = true;
-               console.log("Discord SDK instance detected immediately:", instanceId);
+           // Parse Discord URL Params
+           const params = new URLSearchParams(window.location.search);
+           const channelId = params.get('channel_id') || params.get('channelId');
+           const instanceIdParam = params.get('instance_id') || params.get('instanceId');
+           let resolvedLobbyId = instanceIdParam || channelId;
+
+           if (!resolvedLobbyId || resolvedLobbyId.trim() === "") {
+               resolvedLobbyId = "SANDBOX-LOBBY";
            }
 
-           if (!instanceId) {
-               const urlParams = new URLSearchParams(window.location.search);
-               const discordInstanceId = urlParams.get('instance_id') || 
-                                         urlParams.get('channel_id') ||
-                                         urlParams.get('instanceId') ||
-                                         urlParams.get('channelId');
-
-               if (discordInstanceId) {
-                   instanceId = discordInstanceId;
-                   detectedInsideDiscord = true;
-                   console.log("Discord instance detected via query params:", instanceId);
-               }
-           }
-
-           insideDiscord = detectedInsideDiscord;
-
-           if (!instanceId || instanceId.trim() === "") {
-               instanceId = "SANDBOX-LOBBY";
-           }
-
-           clearTimeout(connectionTimeout);
-           listenToLobby(instanceId);
-
-           if (discordSdk && !detectedInsideDiscord) {
-               try {
-                   discordSdk.ready().then(() => {
-                       if (discordSdk.instanceId && discordSdk.instanceId !== instanceId) {
-                           console.log("Discord handshake finished late. Relinking campaign channel:", discordSdk.instanceId);
-                           insideDiscord = true;
-                           listenToLobby(discordSdk.instanceId);
-                       }
-                   }).catch(e => console.warn("Discord background handshake skipped:", e));
-               } catch (discordErr) {
-                   console.warn("Discord background handshake failed:", discordErr);
-               }
-           }
+           listenToLobby(resolvedLobbyId);
        }
 
        window.onload = function () {
