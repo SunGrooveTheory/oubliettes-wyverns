@@ -19,15 +19,18 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       h1 { color: var(--accent-color); text-align: center; margin-bottom: 20px; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+       
+       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
-       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; }
+       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
        .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
-       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; }
+       .player-slot input:disabled, .player-slot select:disabled { opacity: 0.5; cursor: not-allowed; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
 
        .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -36,7 +39,7 @@
 
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
-       button:disabled { background: #333; color: #777; cursor: not-allowed; }
+       button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
        button.danger { background: var(--danger-color); color: white; }
        button.success { background: var(--success-color); color: white; }
       
@@ -61,7 +64,7 @@
            align-items: center;
            justify-content: center;
        }
-       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -83,16 +86,15 @@
       
        .host-controls { display: flex; gap: 8px; margin-top: 10px; }
        .host-controls button { flex: 1; font-size: 12px; padding: 6px; }
-      
-       summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
-       summary.dc-reveal:hover { color: var(--accent-color); }
    </style>
 </head>
 <body>
 
    <div class="container">
-       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-           <h1 style="margin: 0; text-align: left;">Oubliettes & Wyverns</h1>
+       <div class="header-container">
+           <div>
+               <h1>Oubliettes & Wyverns</h1>
+           </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
 
@@ -147,12 +149,13 @@
                           
                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; font-family: sans-serif;">
                                Action Variable Required: <strong id="encounter-stat" style="color: white; text-transform: uppercase;"></strong>
-                               <details>
-                                   <summary class="dc-reveal">🔍 [Host Only] Reveal Target DC</summary>
-                                   <div style="margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--danger-color);">
+                               
+                               <div style="margin-top: 8px;">
+                                   <button id="btn-toggle-dc" style="background: transparent; color: #888; font-family: sans-serif; font-size: 12px; border: none; padding: 4px 0; cursor: pointer; text-decoration: underline;">🔍 [Host Only] Reveal Target DC</button>
+                                   <div id="encounter-dc-box" style="display: none; margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--danger-color);">
                                        Target DC Threshold: <strong id="encounter-dc" class="highlight"></strong>
                                    </div>
-                               </details>
+                               </div>
                            </div>
                           
                            <div id="action-area">
@@ -215,12 +218,13 @@
        </div>
    </div>
 
+   <!-- Optional Discord Embedded SDK script fallback -->
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK offline fallback activated.')"></script>
 
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField, initializeFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        let isMultiplayer = true; 
        let localRoomState = {};
@@ -253,8 +257,12 @@
        }
 
        const app = initializeApp(firebaseConfig);
-       const db = getFirestore(app);
-       const auth = getAuth(app);
+       const db = initializeFirestore(app, {});
+       
+       const auth = initializeAuth(app, {
+           persistence: inMemoryPersistence
+       });
+       
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
        let discordSdk = null;
@@ -829,25 +837,6 @@
                        </div>`;
                });
                document.getElementById('rolling-list').innerHTML = listHtml;
-
-               // Programmatically bind rolling inputs
-               document.querySelectorAll('.stat-roll-input').forEach(input => {
-                   input.addEventListener('change', (e) => {
-                       const id = e.target.getAttribute('data-id');
-                       const stat = e.target.getAttribute('data-stat');
-                       updateTempStat(id, stat, e.target.value);
-                   });
-               });
-
-               // Programmatically bind roll dice buttons IMMEDIATELY after generation
-               document.querySelectorAll('.roll-btn').forEach(btn => {
-                   btn.addEventListener('click', (e) => {
-                       const id = btn.getAttribute('data-id');
-                       const stat = btn.getAttribute('data-stat');
-                       const die = parseInt(btn.getAttribute('data-die'));
-                       rollStat(id, stat, die);
-                   });
-               });
            }
 
            // Explicitly update input numeric values securely preserving focus
@@ -909,15 +898,6 @@
                    </div>`;
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
-
-           // Programmatically attach choices events cleanly
-           const opt0 = document.getElementById('btn-choice-0');
-           const opt1 = document.getElementById('btn-choice-1');
-           const optCamp = document.getElementById('btn-choice-camp');
-
-           if (opt0) opt0.addEventListener('click', () => selectPath(0));
-           if (opt1) opt1.addEventListener('click', () => selectPath(1));
-           if (optCamp) optCamp.addEventListener('click', selectCamp);
        }
 
        async function selectPath(idx) {
@@ -1252,11 +1232,6 @@
                    <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
                </div>
            `;
-
-           const undoBtn = document.getElementById('btn-undo-tpk');
-           if (undoBtn) {
-               undoBtn.addEventListener('click', undoTPK);
-           }
        }
 
        function handleWin() {
@@ -1281,9 +1256,6 @@
                    <p class="story-paragraph" style="text-align: center; font-size: 14px; color: var(--accent-color); font-weight: bold;">Final Score: Stage ${stageCount} Cleared!</p>
                    <button id="btn-win-restart" class="success" style="margin-top: 15px; padding: 12px 24px;">Forge a New Lineage</button>
                </div>`;
-           
-           const winRestart = document.getElementById('btn-win-restart');
-           if (winRestart) winRestart.addEventListener('click', () => window.location.reload());
        }
 
        function syncFromFirebaseData(data) {
@@ -1403,11 +1375,11 @@
                        let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
                        slot.innerHTML = `
                            <div class="lock-status-label" style="font-size: 11px; font-family: sans-serif; text-transform: uppercase; margin-bottom: 4px; color: #888; font-weight: bold;"></div>
-                           <button class="remove-btn" type="button">X</button>
+                           <button class="remove-btn" type="button" data-id="${p.id}">X</button>
                            <label>Character Name:</label>
-                           <input type="text" class="p-name-input" placeholder="Character Name">
+                           <input type="text" class="p-name-input" data-id="${p.id}" placeholder="Character Name">
                            <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
-                           <select class="p-class-select">
+                           <select class="p-class-select" data-id="${p.id}">
                                ${classOptions}
                            </select>
                        `;
@@ -1423,7 +1395,6 @@
                        lockStatus = `👤 Your Character (Edit)`;
                        statusLabel.style.color = "var(--success-color)";
                        removeBtn.style.display = 'block';
-                       removeBtn.onclick = () => window.removePlayerSlot(p.id);
                    } else {
                        lockStatus = `🔒 Ally's Character (View Only)`;
                        statusLabel.style.color = "#888";
@@ -1436,24 +1407,10 @@
                    }
                    nameInput.disabled = !isMySlot;
 
-                   nameInput.oninput = (e) => {
-                       p.name = e.target.value;
-                   };
-                   nameInput.onchange = (e) => {
-                       window.updatePlayerName(p.id, e.target.value);
-                   };
-                   nameInput.onblur = (e) => {
-                       window.updatePlayerName(p.id, e.target.value);
-                   };
-
                    if (document.activeElement !== classSelect) {
                        classSelect.value = p.avatar;
                    }
                    classSelect.disabled = !isMySlot;
-
-                   classSelect.onchange = (e) => {
-                       window.updatePlayerClass(p.id, e.target.value);
-                   };
                });
 
                const proceedBtn = document.getElementById('advance-to-rolling-btn');
@@ -1473,11 +1430,10 @@
            let user = null;
            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                try {
-                   console.log("Attempting custom credentials authentication...");
                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
                    user = cred.user;
                } catch (tokenErr) {
-                   console.warn("Custom token declined. Falling back to anonymous guest token...", tokenErr);
+                   console.warn("Custom token authentication bypassed.", tokenErr);
                }
            }
            if (!user) {
@@ -1485,14 +1441,113 @@
                    const cred = await signInAnonymously(auth);
                    user = cred.user;
                } catch (anonErr) {
-                   console.error("All authentication routes rejected:", anonErr);
+                   console.error("Authentication rejected completely:", anonErr);
+                   showNotification("Authentication failed. Falling back to local offline sandbox.");
                }
            }
            return user;
        }
 
+       function setupGlobalDelegation() {
+           document.addEventListener('input', (e) => {
+               if (e.target.classList.contains('p-name-input')) {
+                   const id = e.target.getAttribute('data-id');
+                   if (tempPlayers[id]) {
+                       tempPlayers[id].name = e.target.value;
+                       updatePlayerName(id, e.target.value);
+                   }
+               }
+           });
+
+           document.addEventListener('change', (e) => {
+               if (e.target.classList.contains('p-class-select')) {
+                   const id = e.target.getAttribute('data-id');
+                   updatePlayerClass(id, e.target.value);
+               }
+               if (e.target.classList.contains('stat-roll-input')) {
+                   const id = e.target.getAttribute('data-id');
+                   const stat = e.target.getAttribute('data-stat');
+                   updateTempStat(id, stat, e.target.value);
+               }
+           });
+
+           document.addEventListener('click', (e) => {
+               // Roll Button Inside setup allocation matrix
+               const rollBtn = e.target.closest('.roll-btn');
+               if (rollBtn) {
+                   const id = rollBtn.getAttribute('data-id');
+                   const stat = rollBtn.getAttribute('data-stat');
+                   const die = parseInt(rollBtn.getAttribute('data-die'));
+                   rollStat(id, stat, die);
+               }
+
+               // Remove Slot Button
+               const removeBtn = e.target.closest('.remove-btn');
+               if (removeBtn) {
+                   const id = removeBtn.getAttribute('data-id');
+                   removePlayerSlot(id);
+               }
+
+               // Choice selections
+               const choice0 = e.target.closest('#btn-choice-0');
+               if (choice0) selectPath(0);
+
+               const choice1 = e.target.closest('#btn-choice-1');
+               if (choice1) selectPath(1);
+
+               const choiceCamp = e.target.closest('#btn-choice-camp');
+               if (choiceCamp) selectCamp();
+
+               // Host Target Reveal Toggle
+               const revealBtn = e.target.closest('#btn-toggle-dc');
+               if (revealBtn) {
+                   const dcBox = document.getElementById('encounter-dc-box');
+                   if (dcBox) {
+                       if (dcBox.style.display === "none") {
+                           dcBox.style.display = "block";
+                           revealBtn.innerText = "🔑 [Host Only] Hide Target DC";
+                       } else {
+                           dcBox.style.display = "none";
+                           revealBtn.innerText = "🔍 [Host Only] Reveal Target DC";
+                       }
+                   }
+               }
+
+               // Standard check Roll
+               const standardRoll = e.target.closest('#roll-check-btn');
+               if (standardRoll) attemptEncounter();
+
+               // Combined Backup Roll Binds
+               const backupRoll = e.target.closest('#backup-roll-btn');
+               if (backupRoll) attemptBackup();
+
+               const declineBackupBtn = e.target.closest('#decline-backup-btn');
+               if (declineBackupBtn) declineBackup();
+
+               // Wyvern Weyr Roll Binds
+               const weyrRoll = e.target.closest('#weyr-roll-btn');
+               if (weyrRoll) attemptWeyr();
+
+               const declineWeyrBtn = e.target.closest('#decline-weyr-btn');
+               if (declineWeyrBtn) declineWeyr();
+
+               // Host Overrides
+               const passBtn = e.target.closest('#btn-force-pass');
+               if (passBtn) attemptEncounter(true);
+
+               const failBtn = e.target.closest('#btn-force-fail');
+               if (failBtn) attemptEncounter(false);
+
+               const tpkBtn = e.target.closest('#tpk-btn');
+               if (tpkBtn) triggerHostTPK();
+
+               const undoBtn = e.target.closest('#btn-undo-tpk');
+               if (undoBtn) undoTPK();
+           });
+       }
+
        async function init() {
-           // Direct click handlers binding dynamically in the script
+           // Direct clicks for static controls that are always present in base HTML
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1500,32 +1555,24 @@
            document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
            document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
 
-           document.getElementById('roll-check-btn').addEventListener('click', () => attemptEncounter());
-           document.getElementById('backup-roll-btn').addEventListener('click', attemptBackup);
-           document.getElementById('decline-backup-btn').addEventListener('click', declineBackup);
-           document.getElementById('weyr-roll-btn').addEventListener('click', attemptWeyr);
-           document.getElementById('decline-weyr-btn').addEventListener('click', declineWeyr);
-
-           document.getElementById('btn-force-pass').addEventListener('click', () => attemptEncounter(true));
-           document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
-           document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
-
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Initialize local backup state instantly (ensures fully responsive GUI buttons immediately)
+           // Activate high durability click listeners delegator
+           setupGlobalDelegation();
+
+           // Initialize fallback memory state
            initializeLocalState();
 
-           // 3-second connection fallback guard ensures buttons NEVER get stuck "Connecting"
+           // Non-blocking handshake for the Discord App Embedded container
            const connectionTimeout = setTimeout(() => {
                if (isMultiplayer && !currentUser) {
-                   console.warn("Multiplayer connection timed out. Activating local offline play sandbox.");
+                   console.warn("Initial lobby sync bypassed. Sandbox local fallback enabled.");
                    switchToLocalOnly();
                }
-           }, 3000);
+           }, 1500);
 
            const user = await performAuth();
            if (!user) {
-               console.warn("Authentication failed completely. Activating local offline sandbox mode.");
                switchToLocalOnly();
                return;
            }
@@ -1547,7 +1594,7 @@
                try {
                    if (discordSdk) {
                        const readyPromise = discordSdk.ready();
-                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500));
+                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000));
                        await Promise.race([readyPromise, timeoutPromise]);
                        if (discordSdk.instanceId) {
                            instanceId = discordSdk.instanceId;
@@ -1555,22 +1602,20 @@
                        }
                    }
                } catch (discordErr) {
-                   console.warn("Discord SDK connection timed out. Standing by.");
+                   console.warn("Discord connection bypassed. Standby sandbox loaded.");
                }
            }
 
            insideDiscord = detectedInsideDiscord;
 
-           // CRITICAL SYNC RESOLUTION: If instanceId is STILL empty, default to "SANDBOX-LOBBY" so all peers play together!
            if (!instanceId || instanceId.trim() === "") {
                instanceId = "SANDBOX-LOBBY";
            }
 
-           // strict collection structures mapping (RULE 1)
            roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
            onSnapshot(roomRef, (snapshot) => {
-               if (!auth.currentUser) return; // strict authentication guard (RULE 3)
+               if (!auth.currentUser) return; 
                clearTimeout(connectionTimeout);
                
                isMultiplayer = true; 
@@ -1579,22 +1624,13 @@
                    const data = snapshot.data();
                    syncFromFirebaseData(data);
                } else {
-                   // Synchronize current local state upward
                    setDoc(roomRef, localRoomState);
                }
            }, (err) => {
-               console.error("Firebase sync error. Falling back to local offline mode:", err);
+               console.error("Lobby connection suspended, rolling back to offline playground:", err);
                switchToLocalOnly();
            });
        }
-
-       window.updateTempStat = updateTempStat;
-       window.rollStat = rollStat;
-       window.removePlayerSlot = removePlayerSlot;
-       window.updatePlayerName = updatePlayerName;
-       window.updatePlayerClass = updatePlayerClass;
-       window.selectPath = selectPath;
-       window.selectCamp = selectCamp;
 
        window.onload = function () {
            init();
