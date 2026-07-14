@@ -20,9 +20,16 @@
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
        
-       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
        h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
+       /* Status indicator bar animation */
+       @keyframes pulse {
+           0% { transform: scale(0.9); opacity: 0.5; }
+           50% { transform: scale(1.15); opacity: 1; }
+           100% { transform: scale(0.9); opacity: 0.5; }
+       }
+
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -30,7 +37,7 @@
        .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
        .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
        .player-slot input:disabled, .player-slot select:disabled { opacity: 0.5; cursor: not-allowed; }
-       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
 
        .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -94,7 +101,16 @@
 
    <div class="container">
        <div class="header-container">
-           <h1>Oubliettes & Wyverns</h1>
+           <div>
+               <h1>Oubliettes & Wyverns</h1>
+               <div id="room-connection-status" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; font-family: sans-serif; font-size: 13px; flex-wrap: wrap;">
+                   <span id="status-dot" style="width: 8px; height: 8px; background: #e76f51; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+                   <span id="status-text" style="color: #aaa; font-weight: bold;">Authenticating...</span>
+                   <span id="room-code-badge" style="display: none; background: rgba(244,162,97,0.15); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">ROOM: ---</span>
+                   <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
+                   <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
+               </div>
+           </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
 
@@ -103,8 +119,8 @@
            <div class="section-title">Character Registry</div>
            <div class="setup-grid" id="dynamic-player-container"></div>
            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Add Character</button>
-               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;">Proceed to Attribute Allocation</button>
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;" disabled>Connecting to server...</button>
+               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;" disabled>Waiting for connection...</button>
            </div>
        </div>
 
@@ -203,6 +219,21 @@
        </div>
    </div>
 
+   <!-- Join Room Modal -->
+   <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+       <div class="section-box" style="background: var(--panel-color); max-width: 400px; width: 100%; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; text-align: center;">
+           <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Join Adventure Room</h3>
+           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 13px; color: var(--text-color); font-family: sans-serif;">
+               Enter your ally's 5-character Room Code to connect on the same screen:
+           </p>
+           <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
+           <div style="display: flex; justify-content: center; gap: 15px;">
+               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
+           </div>
+       </div>
+   </div>
+
    <!-- Finalize Confirmation Modal -->
    <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
        <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
@@ -229,7 +260,7 @@
        // Unique browser session identifier to establish character sheet authorship
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
-       // Base configuration parameters
+       // Base configuration parameters (will be overwritten by environment variables)
        let firebaseConfig = { 
            apiKey: "AIzaSyBwhb89muxr_8A5ltW0gPAY6jh0wgYPjuw", 
            authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
@@ -239,11 +270,16 @@
            appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0" 
        };
 
+       // Robust check for enviromental configuration parameters
        if (typeof __firebase_config !== 'undefined') {
            try {
-               firebaseConfig = JSON.parse(__firebase_config);
+               if (typeof __firebase_config === 'string') {
+                   firebaseConfig = JSON.parse(__firebase_config);
+               } else if (typeof __firebase_config === 'object' && __firebase_config !== null) {
+                   firebaseConfig = __firebase_config;
+               }
            } catch(e) {
-               console.warn("Environmental configuration fallback bypassed.");
+               console.warn("Environmental configuration fallback bypassed.", e);
            }
        }
 
@@ -280,6 +316,7 @@
                }
            } catch (err) {
                console.error("Authentication handshake failure:", err);
+               showNotification("Adventure server authentication failed.");
            }
        }
 
@@ -428,7 +465,7 @@
        };
 
        // Shared memory variables
-       let tempPlayers = {}; // Converted to nested object to support seamless concurrent updates
+       let tempPlayers = {}; 
        let players = [];
        let maxPartyHP = 0;
        let currentPartyHP = 0;
@@ -545,21 +582,7 @@
                            <path d="M60 350 V150 A90 90 0 0 1 240 150 V350" fill="none" stroke="#1c1c28" stroke-width="4" />
                            <rect x="70" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
                            <rect x="155" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
-                           <line x1="90" y1="160" x2="90" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
-                           <line x1="120" y1="160" x2="120" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
-                           <line x1="180" y1="160" x2="180" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
-                           <line x1="210" y1="160" x2="210" y2="350" stroke="#f4a261" stroke-width="2" stroke-opacity="0.7" />
                            <circle cx="150" cy="150" r="40" fill="none" stroke="#f4a261" stroke-width="2" stroke-opacity="0.5" />
-                           <g transform="translate(35, 180)">
-                               <path d="M0 0 L10 30 L5 30 L0 0" fill="#444" />
-                               <circle cx="5" cy="-5" r="8" fill="#e76f51" />
-                               <circle cx="5" cy="-5" r="4" fill="#f4a261" />
-                           </g>
-                           <g transform="translate(255, 180)">
-                               <path d="M0 0 L10 30 L5 30 L0 0" fill="#444" />
-                               <circle cx="5" cy="-5" r="8" fill="#e76f51" />
-                               <circle cx="5" cy="-5" r="4" fill="#f4a261" />
-                           </g>
                            <ellipse cx="150" cy="250" rx="90" ry="110" fill="url(#glowEntrance)" />
                            <text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text>
                        </svg>
@@ -574,17 +597,12 @@
                                </radialGradient>
                            </defs>
                            <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M70 320 C70 200, 110 130, 150 130 C190 130, 230 200, 230 320" fill="#111" stroke="#e76f51" stroke-width="2" />
                            <ellipse cx="135" cy="180" rx="6" ry="3" fill="#ff0000" />
                            <ellipse cx="165" cy="180" rx="6" ry="3" fill="#ff0000" />
-                           <path d="M120 145 Q90 110 110 80 Q120 110 130 140" fill="#111" stroke="#e76f51" stroke-width="1.5" />
-                           <path d="M180 145 Q210 110 190 80 Q180 110 170 140" fill="#111" stroke="#e76f51" stroke-width="1.5" />
                            <g stroke="#e2e2e9" stroke-width="4" stroke-linecap="round">
                                <line x1="80" y1="340" x2="220" y2="220" />
                                <line x1="220" y1="340" x2="80" y2="220" />
                            </g>
-                           <circle cx="95" cy="328" r="6" fill="#f4a261" />
-                           <circle cx="205" cy="328" r="6" fill="#f4a261" />
                            <circle cx="150" cy="220" r="80" fill="url(#glowCombat)" />
                            <text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text>
                        </svg>
@@ -599,17 +617,10 @@
                                </radialGradient>
                            </defs>
                            <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M80 350 L120 250 L180 250 L220 350 Z" fill="#16161f" stroke="#2a2a3a" stroke-width="3" />
-                           <path d="M130 280 L140 270 L140 310" stroke="#a2d2ff" stroke-width="2" stroke-linecap="round" fill="none" />
-                           <path d="M160 275 L170 295 L155 310" stroke="#a2d2ff" stroke-width="2" stroke-linecap="round" fill="none" />
                            <g transform="translate(110, 110)">
                                <polygon points="40,0 80,20 40,40 0,20" fill="#1b1c29" stroke="#a2d2ff" stroke-width="2" />
-                               <polygon points="0,20 40,40 40,80 0,60" fill="#13141f" stroke="#a2d2ff" stroke-width="2" />
-                               <polygon points="40,40 80,20 80,60 40,80" fill="#0f1017" stroke="#a2d2ff" stroke-width="2" />
                                <circle cx="40" cy="40" r="12" fill="#a2d2ff" opacity="0.8" />
                            </g>
-                           <text x="70" y="150" fill="#a2d2ff" font-family="monospace" font-size="12" opacity="0.6">᚛</text>
-                           <text x="220" y="130" fill="#a2d2ff" font-family="monospace" font-size="12" opacity="0.6">᚜</text>
                            <circle cx="150" cy="150" r="70" fill="url(#glowPuzzle)" />
                            <text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text>
                        </svg>
@@ -624,17 +635,7 @@
                                </linearGradient>
                            </defs>
                            <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M0 250 L100 250 L80 400 L0 400 Z" fill="#16161f" stroke="#222" stroke-width="2" />
-                           <path d="M200 250 L300 250 L300 400 L220 400 Z" fill="#16161f" stroke="#222" stroke-width="2" />
                            <rect x="75" y="280" width="150" height="120" fill="url(#lavaGrad)" opacity="0.9" />
-                           <line x1="90" y1="245" x2="140" y2="310" stroke="#f4a261" stroke-width="10" stroke-linecap="round" />
-                           <line x1="210" y1="245" x2="170" y2="295" stroke="#f4a261" stroke-width="10" stroke-linecap="round" />
-                           <circle cx="110" cy="330" r="3" fill="#fff" />
-                           <circle cx="180" cy="310" r="2" fill="#fff" />
-                           <circle cx="140" cy="270" r="4" fill="#f4a261" />
-                           <circle cx="160" cy="340" r="3" fill="#ff9f1c" />
-                           <polygon points="120,130 135,140 125,150 115,140" fill="#2a2a3a" />
-                           <polygon points="170,120 180,135 165,140" fill="#2a2a3a" />
                            <text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text>
                        </svg>
                    `;
@@ -648,16 +649,7 @@
                                </radialGradient>
                            </defs>
                            <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M0 400 Q80 150 150 150 Q220 150 300 400" fill="none" stroke="#16161f" stroke-width="20" />
-                           <circle cx="70" cy="100" r="1.5" fill="#fff" opacity="0.5" />
-                           <circle cx="120" cy="80" r="1" fill="#fff" opacity="0.8" />
-                           <circle cx="180" cy="90" r="2" fill="#fff" opacity="0.6" />
-                           <circle cx="230" cy="110" r="1" fill="#fff" opacity="0.4" />
-                           <line x1="120" y1="320" x2="180" y2="300" stroke="#5c3d2e" stroke-width="8" stroke-linecap="round" />
-                           <line x1="180" y1="320" x2="120" y2="300" stroke="#5c3d2e" stroke-width="8" stroke-linecap="round" />
                            <path d="M130 300 Q150 220 150 230 Q170 300 130 300 Z" fill="#e76f51" />
-                           <path d="M140 300 Q150 240 150 250 Q160 300 140 300 Z" fill="#f4a261" />
-                           <path d="M145 300 Q150 260 150 270 Q155 300 145 300 Z" fill="#ffe3a8" />
                            <circle cx="150" cy="280" r="80" fill="url(#fireGlow)" />
                            <text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text>
                        </svg>
@@ -667,16 +659,6 @@
                        <svg ${svgAttrs}>
                            <rect width="300" height="400" fill="#0a0505"/>
                            <path d="M80 350 V220 A40 40 0 0 1 160 220 V350" fill="#1c1313" stroke="#e76f51" stroke-width="2" />
-                           <line x1="120" y1="240" x2="120" y2="290" stroke="#e76f51" stroke-width="2" />
-                           <line x1="105" y1="255" x2="135" y2="255" stroke="#e76f51" stroke-width="2" />
-                           <g transform="translate(180, 260) rotate(45)">
-                               <line x1="0" y1="0" x2="0" y2="60" stroke="#3d2a2a" stroke-width="4" stroke-linecap="round" />
-                               <line x1="-15" y1="15" x2="15" y2="15" stroke="#3d2a2a" stroke-width="4" />
-                               <circle cx="0" cy="0" r="4" fill="#3d2a2a" />
-                           </g>
-                           <path d="M135 150 C135 120 165 120 165 150 C165 165 155 175 155 175 H145 L145 175 C145 175 135 165 135 150 Z" fill="#e76f51" opacity="0.6" />
-                           <circle cx="145" cy="145" r="3" fill="#000" />
-                           <circle cx="155" cy="145" r="3" fill="#000" />
                            <text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text>
                        </svg>
                    `;
@@ -690,17 +672,7 @@
                                </radialGradient>
                            </defs>
                            <rect width="300" height="400" fill="#0c0e0c"/>
-                           <polygon points="50,350 250,350 180,180 120,180" fill="#161f16" stroke="#2a3a2a" stroke-width="3" />
-                           <line x1="110" y1="300" x2="190" y2="300" stroke="#2a3a2a" stroke-width="2" />
-                           <line x1="120" y1="260" x2="180" y2="260" stroke="#2a3a2a" stroke-width="2" />
-                           <line x1="130" y1="220" x2="170" y2="220" stroke="#2a3a2a" stroke-width="2" />
-                           <polygon points="120,180 180,180 170,120 130,120" fill="#fff" />
                            <circle cx="150" cy="150" r="60" fill="url(#sunGlow)" />
-                           <line x1="150" y1="150" x2="80" y2="100" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
-                           <line x1="150" y1="150" x2="220" y2="100" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
-                           <line x1="150" y1="150" x2="100" y2="220" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
-                           <line x1="150" y1="150" x2="200" y2="220" stroke="#f4a261" stroke-width="1.5" stroke-dasharray="4" />
-                           <path d="M110 100 Q150 120 190 100" fill="none" stroke="#2a9d8f" stroke-width="3" stroke-linecap="round" />
                            <text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text>
                        </svg>
                    `;
@@ -767,7 +739,6 @@
            return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
        }
 
-       // Custom safe system messages
        function showNotification(text) {
            let box = document.getElementById('custom-notification');
            if (!box) {
@@ -779,6 +750,41 @@
            box.innerText = text;
            box.style.opacity = '1';
            setTimeout(() => { box.style.opacity = '0'; }, 3000);
+       }
+
+       function copyLobbyLink() {
+           const url = window.location.href;
+           const tempInput = document.createElement("input");
+           tempInput.style.position = "absolute";
+           tempInput.style.left = "-9999px";
+           tempInput.value = url;
+           document.body.appendChild(tempInput);
+           tempInput.select();
+           try {
+               document.execCommand("copy");
+               showNotification("Lobby invitation link copied! Share with your friends.");
+           } catch (err) {
+               console.error("Link copying fallback failed", err);
+           }
+           document.body.removeChild(tempInput);
+       }
+
+       function openJoinModal() {
+           document.getElementById('join-modal').style.display = 'flex';
+       }
+       function closeJoinModal() {
+           document.getElementById('join-modal').style.display = 'none';
+       }
+       function executeJoinLobby() {
+           const codeInput = document.getElementById('input-join-room-id');
+           if (!codeInput) return;
+           const rawCode = codeInput.value.trim().toUpperCase();
+           if (rawCode.length < 3) {
+               showNotification("Please enter a valid lobby code.");
+               return;
+           }
+           window.location.hash = `room=${rawCode}`;
+           window.location.reload();
        }
 
        async function updatePlayerName(slotId, val) {
@@ -827,7 +833,10 @@
        }
 
        async function addPlayerSlot() {
-           if (!auth.currentUser || !roomRef) return;
+           if (!auth.currentUser || !roomRef) {
+               showNotification("Lobby connection is still initializing. Please wait...");
+               return;
+           }
            const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
            const newSlot = {
                id: slotId,
@@ -844,6 +853,7 @@
                });
            } catch(err) {
                console.error("Slot registration failed:", err);
+               showNotification("Could not add character slot. Retrying connection...");
            }
        }
 
@@ -888,10 +898,12 @@
            if (!auth.currentUser || !roomRef) return;
            let derivedPlayers = [];
            let totalCapacity = 0;
-           const tempPlayersList = Object.values(tempPlayers);
+           
+           // Ensure deterministic sorting of attributes finalization
+           const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
 
-           for (let i = 0; i < tempPlayersList.length; i++) {
-               let tp = tempPlayersList[i];
+           for (let i = 0; i < sortedTempPlayers.length; i++) {
+               let tp = sortedTempPlayers[i];
                let br = parseInt(document.getElementById(`roll_${tp.id}_brawn`).value) || 0;
                let bn = parseInt(document.getElementById(`roll_${tp.id}_brains`).value) || 0;
                let ag = parseInt(document.getElementById(`roll_${tp.id}_agility`).value) || 0;
@@ -920,6 +932,7 @@
            if (!auth.currentUser || !roomRef) return;
            try {
                await deleteDoc(roomRef);
+               window.location.reload();
            } catch (err) {
                console.error("Dungeon state deletion rejected:", err);
            }
@@ -929,14 +942,16 @@
        function closeFinalizeModal() { document.getElementById('finalize-modal').style.display = 'none'; }
        async function executeFinalize() { closeFinalizeModal(); await archiveAndFinalize(); }
 
-       // Render rolling board dynamically
        function renderRollingListFromState() {
            document.getElementById('setup-screen').style.display = 'none';
            document.getElementById('rolling-screen').style.display = 'block';
            document.getElementById('game-view').style.display = 'none';
 
            let listHtml = "";
-           Object.values(tempPlayers).forEach((p) => {
+           // Sorted consistently to maintain exactly sync'd positions across different clients
+           const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+
+           sortedTempPlayers.forEach((p) => {
                listHtml += `
                    <div class="rolling-row">
                        <strong>${p.avatar} ( ${p.name || 'Unnamed'} )</strong>
@@ -1491,7 +1506,9 @@
                document.getElementById('setup-screen').style.display = 'block';
                
                const container = document.getElementById('dynamic-player-container');
-               const tempPlayersList = Object.values(tempPlayers);
+               
+               // Consistently sort temp players so indexing doesn't jump position during typing
+               const tempPlayersList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
                
                while (container.children.length < tempPlayersList.length) {
                    const slot = document.createElement('div');
@@ -1587,7 +1604,6 @@
        }
 
        async function init() {
-           // Programmatically bind DOM events to avoid ES Module asynchronous execution timing races
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1607,6 +1623,12 @@
 
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
+           // Bind newly added lobby modal interactions
+           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
+           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
+           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
+           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
+
            await initAuth();
            onAuthStateChanged(auth, async (user) => {
                currentUser = user;
@@ -1615,17 +1637,65 @@
                    return;
                }
                
-               let instanceId = "sandbox-local-channel";
+               let instanceId = "";
+               let insideDiscord = false;
+               
+               // Check if we are inside a Discord Activity Session
                try {
-                   instanceId = await setupDiscordSdk();
+                   const discId = await setupDiscordSdk();
+                   if (discId && discId !== "sandbox-local-channel") {
+                       instanceId = discId;
+                       insideDiscord = true;
+                   }
                } catch (discordErr) {
                    console.warn("Discord SDK connection offline or unavailable.");
+               }
+
+               // Web lobby / browser sandbox fallbacks
+               if (!insideDiscord) {
+                   const hash = window.location.hash;
+                   const match = hash.match(/room=([A-Z0-9]+)/i);
+                   if (match && match[1]) {
+                       instanceId = match[1].toUpperCase();
+                   } else {
+                       // Generate a 5-character randomized Lobby identifier
+                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                       window.location.hash = `room=${instanceId}`;
+                   }
                }
                
                roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
                onSnapshot(roomRef, (snapshot) => {
                    if (!auth.currentUser) return;
+                   
+                   // Highlight synchronization dot to green to give visual status feedback
+                   const dot = document.getElementById('status-dot');
+                   const statusText = document.getElementById('status-text');
+                   const codeBadge = document.getElementById('room-code-badge');
+                   const copyBtn = document.getElementById('btn-copy-link');
+                   const joinBtn = document.getElementById('btn-open-join-modal');
+                   
+                   if (dot) {
+                       dot.style.background = "var(--success-color)";
+                       dot.style.animation = "none";
+                   }
+                   if (statusText) {
+                       statusText.innerText = "Synchronized";
+                       statusText.style.color = "var(--success-color)";
+                   }
+                   if (codeBadge) {
+                       codeBadge.style.display = "inline-block";
+                       codeBadge.innerText = `ROOM: ${instanceId}`;
+                   }
+                   if (copyBtn) copyBtn.style.display = "inline-block";
+                   if (joinBtn) joinBtn.style.display = "inline-block";
+
+                   // Unlock registration buttons
+                   document.getElementById('btn-add-character').removeAttribute('disabled');
+                   document.getElementById('btn-add-character').innerText = "+ Add Character";
+                   document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
+
                    if (snapshot.exists()) {
                        const data = snapshot.data();
                        syncFromFirebaseData(data);
@@ -1662,6 +1732,13 @@
                    }
                }, (err) => {
                    console.error("Real-time synchronization subscription failed:", err);
+                   const dot = document.getElementById('status-dot');
+                   const statusText = document.getElementById('status-text');
+                   if (dot) dot.style.background = "var(--danger-color)";
+                   if (statusText) {
+                       statusText.innerText = "Connection Refused (Strict Mode)";
+                       statusText.style.color = "var(--danger-color)";
+                   }
                });
            });
        }
