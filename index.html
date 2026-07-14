@@ -19,15 +19,25 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       h1 { color: var(--accent-color); text-align: center; margin-bottom: 20px; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+       
+       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
+       /* Status indicator bar animation */
+       @keyframes pulse {
+           0% { transform: scale(0.9); opacity: 0.5; }
+           50% { transform: scale(1.15); opacity: 1; }
+           100% { transform: scale(0.9); opacity: 0.5; }
+       }
+
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
-       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; }
+       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
        .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
-       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; }
+       .player-slot input:disabled, .player-slot select:disabled { opacity: 0.5; cursor: not-allowed; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
 
        .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -36,7 +46,7 @@
 
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
-       button:disabled { background: #333; color: #777; cursor: not-allowed; }
+       button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
        button.danger { background: var(--danger-color); color: white; }
        button.success { background: var(--success-color); color: white; }
       
@@ -61,7 +71,7 @@
            align-items: center;
            justify-content: center;
        }
-       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -86,23 +96,20 @@
       
        summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
        summary.dc-reveal:hover { color: var(--accent-color); }
-
-       @keyframes pulse {
-           0% { transform: scale(0.9); opacity: 0.5; }
-           50% { transform: scale(1.15); opacity: 1; }
-           100% { transform: scale(0.9); opacity: 0.5; }
-       }
    </style>
 </head>
 <body>
 
    <div class="container">
-       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+       <div class="header-container">
            <div>
                <h1>Oubliettes & Wyverns</h1>
                <div id="room-connection-status" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; font-family: sans-serif; font-size: 13px; flex-wrap: wrap;">
-                   <span id="status-dot" style="width: 8px; height: 8px; background: #ffb703; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
-                   <span id="status-text" style="color: #ffb703; font-weight: bold;">Loading...</span>
+                   <span id="status-dot" style="width: 8px; height: 8px; background: #e76f51; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+                   <span id="status-text" style="color: #aaa; font-weight: bold;">Authenticating...</span>
+                   <span id="room-code-badge" style="display: none; background: rgba(244,162,97,0.15); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">ROOM: ---</span>
+                   <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
+                   <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
                </div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
@@ -121,7 +128,7 @@
        <!-- Attribute Matrix Stage -->
        <div class="section-box" id="rolling-screen" style="display: none;">
            <div class="section-title">Attribute Allocation Matrix</div>
-           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes.</p>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
            <div id="rolling-list"></div>
            <button id="btn-finalize-stats" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
@@ -171,8 +178,8 @@
                                <!-- Standard Check Controller -->
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
-                                   <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-                                   <button id="roll-check-btn" style="width: 100%; margin-bottom: 10px;">Roll standard die</button>
+                                   <select id="active-player-select" onchange="window.updateHostDCReveal()" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <button id="roll-check-btn" onclick="window.attemptEncounter()">Roll standard die</button>
                                </div>
 
                                <!-- Backup Combined Check Controller -->
@@ -180,8 +187,8 @@
                                    <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
                                    <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="backup-roll-btn" class="success" style="flex:1;">Roll and Combine</button>
-                                       <button id="decline-backup-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="backup-roll-btn" class="success" onclick="window.attemptBackup()" style="flex:1;">Roll and Combine</button>
+                                       <button id="decline-backup-btn" class="danger" onclick="window.declineBackup()" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
 
@@ -190,16 +197,16 @@
                                    <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
                                    <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="weyr-roll-btn" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
-                                       <button id="decline-weyr-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="weyr-roll-btn" class="success" onclick="window.attemptWeyr()" style="flex:1;">Roll and Sum Weyr (D30)</button>
+                                       <button id="decline-weyr-btn" class="danger" onclick="window.declineWeyr()" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
                               
                                <label style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Host Overrides</label>
                                <div class="host-controls">
-                                   <button id="btn-force-pass" class="success">Force Pass</button>
-                                   <button id="btn-force-fail" class="danger">Force Fail</button>
-                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;">Force TPK</button>
+                                   <button id="btn-force-pass" class="success" onclick="window.attemptEncounter(true)">Force Pass</button>
+                                   <button id="btn-force-fail" class="danger" onclick="window.attemptEncounter(false)">Force Fail</button>
+                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;" onclick="window.triggerHostTPK()">Force TPK</button>
                                </div>
                            </div>
                        </div>
@@ -213,6 +220,21 @@
        </div>
    </div>
 
+   <!-- Join Room Modal -->
+   <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+       <div class="section-box" style="background: var(--panel-color); max-width: 400px; width: 100%; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; text-align: center;">
+           <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Join Adventure Room</h3>
+           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 13px; color: var(--text-color); font-family: sans-serif;">
+               Enter your ally's 5-character Room Code to connect on the same screen:
+           </p>
+           <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
+           <div style="display: flex; justify-content: center; gap: 15px;">
+               <button class="success" id="btn-execute-join" onclick="window.executeJoinLobby()" style="padding: 10px 20px;">Join Lobby</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join" onclick="window.closeJoinModal()">Cancel</button>
+           </div>
+       </div>
+   </div>
+
    <!-- Finalize Confirmation Modal -->
    <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
        <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
@@ -221,8 +243,8 @@
                This will wipe the active room state instantly and reset the multiplayer configuration back to setup. Do you proceed?
            </p>
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="danger" id="btn-execute-finalize" style="padding: 10px 20px;">Yes, WIPE State</button>
-               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize">Cancel</button>
+               <button class="danger" id="btn-execute-finalize" onclick="window.executeFinalize()" style="padding: 10px 20px;">Yes, WIPE State</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize" onclick="window.closeFinalizeModal()">Cancel</button>
            </div>
        </div>
    </div>
@@ -231,9 +253,9 @@
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
 
    <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
        // Local vs Server connectivity states
        let isMultiplayer = true; 
@@ -285,7 +307,6 @@
            console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
        }
 
-       // Vocabulary lists for adventure generation
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -446,8 +467,72 @@
        let currentActiveDC = 0;
        let isHostTPK = false; 
 
-       // High-Fidelity Unsplash Dark Fantasy Stock Assets (100% reliable inside Sandboxed Frames)
        const driveImages = {
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
+           combat: [
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+           ],
+           puzzle: [
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+           ],
+           hazard: [
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+           ],
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
+       };
+
+       // Backup high-quality unsplash links in case of loading errors (e.g. strict domain security policies)
+       const fallbackImages = {
            entrance: [
                "https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80",
                "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
@@ -623,17 +708,32 @@
            const svgContainer = document.getElementById('fallback-svg-container');
            if (!imgElement || !svgContainer) return;
 
-           const imgArray = driveImages[category];
-           if (imgArray && imgArray.length > 0) {
-               const selectedImg = imgArray[Math.floor(Math.random() * imgArray.length)];
-               imgElement.src = selectedImg;
+           // Step 1: Attempt user custom Google Drive thumbnails
+           const driveImgArray = driveImages[category];
+           if (driveImgArray && driveImgArray.length > 0) {
+               const primaryImg = driveImgArray[Math.floor(Math.random() * driveImgArray.length)];
+               imgElement.src = primaryImg;
                imgElement.style.display = 'block';
                svgContainer.style.display = 'none';
                
+               // Step 2: Fall back to high-res Unsplash stocks if Drive thumbnail is blocked/unauthorized
                imgElement.onerror = () => {
-                   imgElement.style.display = 'none';
-                   svgContainer.style.display = 'block';
-                   svgContainer.innerHTML = getFantasySVG(category);
+                   const fallbackArray = fallbackImages[category];
+                   if (fallbackArray && fallbackArray.length > 0) {
+                       const secondaryImg = fallbackArray[Math.floor(Math.random() * fallbackArray.length)];
+                       imgElement.src = secondaryImg;
+                       
+                       imgElement.onerror = () => {
+                           // Step 3: Ultimate vector fallback
+                           imgElement.style.display = 'none';
+                           svgContainer.style.display = 'block';
+                           svgContainer.innerHTML = getFantasySVG(category);
+                       };
+                   } else {
+                       imgElement.style.display = 'none';
+                       svgContainer.style.display = 'block';
+                       svgContainer.innerHTML = getFantasySVG(category);
+                   }
                };
            } else {
                imgElement.style.display = 'none';
@@ -682,6 +782,41 @@
            box.innerText = text;
            box.style.opacity = '1';
            setTimeout(() => { box.style.opacity = '0'; }, 3000);
+       }
+
+       function copyLobbyLink() {
+           const url = window.location.href;
+           const tempInput = document.createElement("input");
+           tempInput.style.position = "absolute";
+           tempInput.style.left = "-9999px";
+           tempInput.value = url;
+           document.body.appendChild(tempInput);
+           tempInput.select();
+           try {
+               document.execCommand("copy");
+               showNotification("Lobby invitation link copied! Share with your friends.");
+           } catch (err) {
+               console.error("Link copying fallback failed", err);
+           }
+           document.body.removeChild(tempInput);
+       }
+
+       function openJoinModal() {
+           document.getElementById('join-modal').style.display = 'flex';
+       }
+       function closeJoinModal() {
+           document.getElementById('join-modal').style.display = 'none';
+       }
+       function executeJoinLobby() {
+           const codeInput = document.getElementById('input-join-room-id');
+           if (!codeInput) return;
+           const rawCode = codeInput.value.trim().toUpperCase();
+           if (rawCode.length < 3) {
+               showNotification("Please enter a valid lobby code.");
+               return;
+           }
+           window.location.hash = `room=${rawCode}`;
+           window.location.reload();
        }
 
        function switchToLocalOnly() {
@@ -918,32 +1053,22 @@
                                <div class="stat-roll-box">
                                    <span>⚔️ Brawn:</span>
                                    <input type="number" id="roll_${p.id}_brawn" value="${p.brawn || 0}" onchange="window.updateTempStat('${p.id}', 'brawn', this.value)">
-                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="brawn" data-die="6">d6</button>
+                                   <button type="button" onclick="window.rollStat('${p.id}', 'brawn', 6)">d6</button>
                                </div>
                                <div class="stat-roll-box">
                                    <span>🧠 Brains:</span>
                                    <input type="number" id="roll_${p.id}_brains" value="${p.brains || 0}" onchange="window.updateTempStat('${p.id}', 'brains', this.value)">
-                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="brains" data-die="10">d10</button>
+                                   <button type="button" onclick="window.rollStat('${p.id}', 'brains', 10)">d10</button>
                                </div>
                                <div class="stat-roll-box">
                                    <span>🏃 Agility:</span>
                                    <input type="number" id="roll_${p.id}_agility" value="${p.agility || 0}" onchange="window.updateTempStat('${p.id}', 'agility', this.value)">
-                                   <button type="button" class="roll-trigger-btn" data-slot="${p.id}" data-stat="agility" data-die="20">d20</button>
+                                   <button type="button" onclick="window.rollStat('${p.id}', 'agility', 20)">d20</button>
                                </div>
                            </div>
                        </div>`;
                });
                document.getElementById('rolling-list').innerHTML = listHtml;
-
-               // Programmatically bind freshly generated rolling dice buttons
-               document.querySelectorAll('.roll-trigger-btn').forEach(btn => {
-                   btn.addEventListener('click', (e) => {
-                       const slot = btn.getAttribute('data-slot');
-                       const stat = btn.getAttribute('data-stat');
-                       const die = parseInt(btn.getAttribute('data-die'));
-                       rollStat(slot, stat, die);
-                   });
-               });
            }
 
            // Explicitly update values of attributes dynamically so inputs never override each other
@@ -987,20 +1112,12 @@
        }
 
        function renderSyncedChoices() {
-           let choicesHtml = `<div class="choice-card" id="btn-choice-0"><h4>➡️ Descend into ${currentOptions[0].title}</h4><p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p></div>
-                              <div class="choice-card" id="btn-choice-1"><h4>➡️ Route toward ${currentOptions[1].title}</h4><p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p></div>`;
+           let choicesHtml = `<div class="choice-card" onclick="window.selectPath(0)"><h4>➡️ Descend into ${currentOptions[0].title}</h4><p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p></div>
+                              <div class="choice-card" onclick="window.selectPath(1)"><h4>➡️ Route toward ${currentOptions[1].title}</h4><p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p></div>`;
            if (currentPartyHP < maxPartyHP) {
-               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" id="btn-choice-camp"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
+               choicesHtml += `<div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="window.selectCamp()"><h4>⛺ Set Up Camp</h4><p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p></div>`;
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
-
-           // Programmatically bind dynamic navigation elements
-           const opt0 = document.getElementById('btn-choice-0');
-           const opt1 = document.getElementById('btn-choice-1');
-           const optCamp = document.getElementById('btn-choice-camp');
-           if (opt0) opt0.addEventListener('click', () => selectPath(0));
-           if (opt1) opt1.addEventListener('click', () => selectPath(1));
-           if (optCamp) optCamp.addEventListener('click', selectCamp);
        }
 
        async function selectPath(idx) {
@@ -1332,14 +1449,9 @@
                <div id="tpk-undo-container" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--danger-color); border-radius: 8px; background: rgba(231, 111, 81, 0.05); text-align: center;">
                    <p style="color: var(--danger-color); font-size: 13px; font-family: sans-serif; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">👑 Host Intervention Console</p>
                    <p style="font-size: 13px; color: #bbb; margin-bottom: 15px; font-family: sans-serif;">Did the party carelessly stumble into their doom? You can rewind time to the last encounter and restore partial vitality.</p>
-                   <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
+                   <button id="btn-undo-tpk" class="success" onclick="window.undoTPK()" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
                </div>
            `;
-
-           const undoBtn = document.getElementById('btn-undo-tpk');
-           if (undoBtn) {
-               undoBtn.addEventListener('click', undoTPK);
-           }
        }
 
        function handleWin() {
@@ -1546,27 +1658,34 @@
            }
        }
 
-       async function performAuth() {
-           let user = null;
-           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-               try {
-                   console.log("Attempting custom server credentials authentication...");
-                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                   user = cred.user;
-               } catch (tokenErr) {
-                   console.warn("Server custom token declined. Falling back to secure guest token...", tokenErr);
+       async function setupDiscordSdk() {
+           if (!discordSdk) return "sandbox-local-channel";
+           console.log("Initializing Discord SDK...");
+           await discordSdk.ready();
+           console.log("Discord SDK is ready!");
+           
+           const { code } = await discordSdk.commands.authorize({
+               client_id: "1521393614528450622",
+               response_type: "code",
+               state: "",
+               prompt: "none",
+               scope: ["identify", "guilds"]
+           });
+           console.log("Authorization code received!");
+           return discordSdk.instanceId || "discord-activity-dev-room";
+       }
+
+       async function initAuth() {
+           try {
+               if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                   await signInWithCustomToken(auth, __initial_auth_token);
+               } else {
+                   await signInAnonymously(auth);
                }
+           } catch (err) {
+               console.error("Authentication handshake failure:", err);
+               showNotification("Adventure server authentication failed.");
            }
-           if (!user) {
-               try {
-                   console.log("Attempting guest session token allocation...");
-                   const cred = await signInAnonymously(auth);
-                   user = cred.user;
-               } catch (anonErr) {
-                   console.error("All authentication routes rejected:", anonErr);
-               }
-           }
-           return user;
        }
 
        async function init() {
@@ -1578,131 +1697,112 @@
            document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
            document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
 
-           document.getElementById('roll-check-btn').addEventListener('click', () => attemptEncounter());
-           document.getElementById('backup-roll-btn').addEventListener('click', attemptBackup);
-           document.getElementById('decline-backup-btn').addEventListener('click', declineBackup);
-           document.getElementById('weyr-roll-btn').addEventListener('click', attemptWeyr);
-           document.getElementById('decline-weyr-btn').addEventListener('click', declineWeyr);
-
-           document.getElementById('btn-force-pass').addEventListener('click', () => attemptEncounter(true));
-           document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
-           document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
-
-           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
+           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
+           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
 
            // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
            initializeLocalState();
 
            // Execute safe authentication setup
-           const user = await performAuth();
-           if (!user) {
-               console.warn("Authentication failed completely. Running in local-only/in-memory mode.");
-               switchToLocalOnly();
-               return;
-           }
+           await initAuth();
+           onAuthStateChanged(auth, async (user) => {
+               currentUser = user;
+               if (!user) {
+                   document.getElementById('setup-screen').style.display = 'block';
+                   return;
+               }
 
-           currentUser = user;
-
-           let instanceId = "";
-           let detectedInsideDiscord = false;
-           
-           // Resolve room/instance ID using a safe, zero-failure lookup
-           const urlParams = new URLSearchParams(window.location.search);
-           const discordInstanceId = urlParams.get('instance_id') || urlParams.get('channel_id');
-
-           if (discordInstanceId) {
-               instanceId = discordInstanceId;
-               detectedInsideDiscord = true;
-           } else {
-               // Safe Discord SDK ready evaluation
+               let instanceId = "";
+               let detectedInsideDiscord = false;
+               
+               // Safely authorize Discord Embedded Session
                try {
-                   if (discordSdk) {
-                       const readyPromise = discordSdk.ready();
-                       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord handshake timeout")), 2500));
-                       await Promise.race([readyPromise, timeoutPromise]);
-                       
-                       if (discordSdk.instanceId) {
-                           instanceId = discordSdk.instanceId;
-                           detectedInsideDiscord = true;
-                       }
+                   const discId = await setupDiscordSdk();
+                   if (discId && discId !== "sandbox-local-channel") {
+                       instanceId = discId;
+                       detectedInsideDiscord = true;
                    }
                } catch (discordErr) {
-                   console.warn("Discord SDK connection bypassed. Standing by in sandbox browser layout.");
+                   console.warn("Discord SDK connection offline or bypassed. Sandbox browser mode loaded.");
                }
-           }
 
-           insideDiscord = detectedInsideDiscord;
+               insideDiscord = detectedInsideDiscord;
 
-           if (insideDiscord) {
-               // Completely strip and hide all browser web-lobby and server diagnostic elements instantly
-               const connStatus = document.getElementById('room-connection-status');
-               if (connStatus) {
-                   connStatus.style.setProperty('display', 'none', 'important');
-               }
-           } else {
-               // Standard web sandbox/browser canvas fallback
-               // Default to a constant "SANDBOX-LOBBY" room ID so player 1 and 2 automatically see each other in our canvas previews!
-               const hash = window.location.hash;
-               const match = hash.match(/room=([A-Z0-9]+)/i);
-               if (match && match[1]) {
-                   instanceId = match[1].toUpperCase();
-               } else {
-                   instanceId = "SANDBOX-LOBBY";
-                   window.location.hash = `room=${instanceId}`;
-               }
-           }
-
-           // Programmatically unlock the setup buttons immediately on load
-           const addBtn = document.getElementById('btn-add-character');
-           const advanceBtn = document.getElementById('advance-to-rolling-btn');
-           if (addBtn) {
-               addBtn.removeAttribute('disabled');
-               addBtn.innerText = "+ Add Character";
-           }
-           if (advanceBtn) {
-               advanceBtn.removeAttribute('disabled');
-               advanceBtn.innerText = "Proceed to Attribute Allocation";
-           }
-           
-           // strict collection structures mapping (RULE 1)
-           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
-
-           onSnapshot(roomRef, (snapshot) => {
-               if (!auth.currentUser) return; // strict authentication guard (RULE 3)
-               
-               isMultiplayer = true; 
-               
-               const dot = document.getElementById('status-dot');
-               const statusText = document.getElementById('status-text');
-               const connStatus = document.getElementById('room-connection-status');
-               
-               if (insideDiscord) {
-                   if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-               } else {
-                   if (connStatus) connStatus.style.display = "flex";
-                   if (dot) {
-                       dot.style.background = "var(--success-color)";
-                       dot.style.animation = "none";
-                   }
-                   if (statusText) {
-                       statusText.innerText = `Synchronized: ${instanceId}`;
-                       statusText.style.color = "var(--success-color)";
+               // Web lobby / browser sandbox fallback setup
+               if (!insideDiscord) {
+                   const hash = window.location.hash;
+                   const match = hash.match(/room=([A-Z0-9]+)/i);
+                   if (match && match[1]) {
+                       instanceId = match[1].toUpperCase();
+                   } else {
+                       // Generate a 5-character randomized Lobby identifier
+                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                       window.location.hash = `room=${instanceId}`;
                    }
                }
 
-               if (snapshot.exists()) {
-                   const data = snapshot.data();
-                   syncFromFirebaseData(data);
-               } else {
-                   // Synchronize current local scratchpad upward
-                   setDoc(roomRef, localRoomState);
+               // Programmatically unlock the setup buttons immediately on load
+               const addBtn = document.getElementById('btn-add-character');
+               const advanceBtn = document.getElementById('advance-to-rolling-btn');
+               if (addBtn) {
+                   addBtn.removeAttribute('disabled');
+                   addBtn.innerText = "+ Add Character";
                }
-           }, (err) => {
-               console.error("Firebase sync error. Falling back to local offline mode:", err);
-               switchToLocalOnly();
+               if (advanceBtn) {
+                   advanceBtn.removeAttribute('disabled');
+                   advanceBtn.innerText = "Proceed to Attribute Allocation";
+               }
+               
+               // Setup document reference mapping (strict collection structures mapping)
+               roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+
+               onSnapshot(roomRef, (snapshot) => {
+                   if (!auth.currentUser) return; // strict authentication guard
+                   
+                   isMultiplayer = true; 
+                   
+                   const dot = document.getElementById('status-dot');
+                   const statusText = document.getElementById('status-text');
+                   const connStatus = document.getElementById('room-connection-status');
+                   const codeBadge = document.getElementById('room-code-badge');
+                   const copyBtn = document.getElementById('btn-copy-link');
+                   const joinBtn = document.getElementById('btn-open-join-modal');
+                   
+                   if (insideDiscord) {
+                       if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
+                   } else {
+                       if (connStatus) connStatus.style.display = "flex";
+                       if (dot) {
+                           dot.style.background = "var(--success-color)";
+                           dot.style.animation = "none";
+                       }
+                       if (statusText) {
+                           statusText.innerText = `Synchronized`;
+                           statusText.style.color = "var(--success-color)";
+                       }
+                       if (codeBadge) {
+                           codeBadge.style.display = "inline-block";
+                           codeBadge.innerText = `ROOM: ${instanceId}`;
+                       }
+                       if (copyBtn) copyBtn.style.display = "inline-block";
+                       if (joinBtn) joinBtn.style.display = "inline-block";
+                   }
+
+                   if (snapshot.exists()) {
+                       const data = snapshot.data();
+                       syncFromFirebaseData(data);
+                   } else {
+                       // Synchronize current local state upward
+                       setDoc(roomRef, localRoomState);
+                   }
+               }, (err) => {
+                   console.error("Firebase sync error. Falling back to local offline mode:", err);
+                   switchToLocalOnly();
+               });
            });
        }
 
+       // Global exports to guarantee the dynamically rendered onclick handlers match perfectly
        window.updateTempStat = updateTempStat;
        window.rollStat = rollStat;
        window.removePlayerSlot = removePlayerSlot;
@@ -1710,6 +1810,19 @@
        window.updatePlayerClass = updatePlayerClass;
        window.selectPath = selectPath;
        window.selectCamp = selectCamp;
+       window.updateHostDCReveal = updateHostDCReveal;
+       window.attemptEncounter = attemptEncounter;
+       window.attemptBackup = attemptBackup;
+       window.declineBackup = declineBackup;
+       window.attemptWeyr = attemptWeyr;
+       window.declineWeyr = declineWeyr;
+       window.triggerHostTPK = triggerHostTPK;
+       window.undoTPK = undoTPK;
+       window.confirmFinalize = confirmFinalize;
+       window.closeFinalizeModal = closeFinalizeModal;
+       window.executeFinalize = executeFinalize;
+       window.closeJoinModal = closeJoinModal;
+       window.executeJoinLobby = executeJoinLobby;
 
        window.onload = function () {
            init();
