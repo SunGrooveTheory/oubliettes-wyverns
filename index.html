@@ -19,25 +19,15 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       
-       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+       h1 { color: var(--accent-color); text-align: center; margin-bottom: 20px; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
-       /* Status indicator bar animation */
-       @keyframes pulse {
-           0% { transform: scale(0.9); opacity: 0.5; }
-           50% { transform: scale(1.15); opacity: 1; }
-           100% { transform: scale(0.9); opacity: 0.5; }
-       }
-
        .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
        .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
        .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
-       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
+       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; }
        .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
-       .player-slot input:disabled, .player-slot select:disabled { opacity: 0.5; cursor: not-allowed; }
-       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; }
 
        .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
@@ -46,7 +36,7 @@
 
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
-       button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
+       button:disabled { background: #333; color: #777; cursor: not-allowed; }
        button.danger { background: var(--danger-color); color: white; }
        button.success { background: var(--success-color); color: white; }
       
@@ -71,6 +61,7 @@
            align-items: center;
            justify-content: center;
        }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -95,17 +86,24 @@
       
        summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
        summary.dc-reveal:hover { color: var(--accent-color); }
+
+       /* Status pulse animation */
+       @keyframes pulse {
+           0% { transform: scale(0.9); opacity: 0.5; }
+           50% { transform: scale(1.15); opacity: 1; }
+           100% { transform: scale(0.9); opacity: 0.5; }
+       }
    </style>
 </head>
 <body>
 
    <div class="container">
-       <div class="header-container">
+       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
            <div>
                <h1>Oubliettes & Wyverns</h1>
                <div id="room-connection-status" style="display: flex; align-items: center; gap: 10px; margin-top: 6px; font-family: sans-serif; font-size: 13px; flex-wrap: wrap;">
-                   <span id="status-dot" style="width: 8px; height: 8px; background: #e76f51; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
-                   <span id="status-text" style="color: #aaa; font-weight: bold;">Authenticating...</span>
+                   <span id="status-dot" style="width: 8px; height: 8px; background: #ffb703; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite;"></span>
+                   <span id="status-text" style="color: #ffb703; font-weight: bold;">Loading...</span>
                    <span id="room-code-badge" style="display: none; background: rgba(244,162,97,0.15); color: var(--accent-color); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; letter-spacing: 0.5px;">ROOM: ---</span>
                    <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
                    <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
@@ -127,7 +125,7 @@
        <!-- Attribute Matrix Stage -->
        <div class="section-box" id="rolling-screen" style="display: none;">
            <div class="section-title">Attribute Allocation Matrix</div>
-           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes.</p>
            <div id="rolling-list"></div>
            <button id="btn-finalize-stats" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
@@ -248,10 +246,17 @@
        </div>
    </div>
 
+   <!-- Optional Discord Embedded SDK script fallback -->
+   <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
+
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+       // Local vs Server connectivity states
+       let isMultiplayer = true; 
+       let localRoomState = {};
 
        // Authentication variables
        let currentUser = null;
@@ -270,7 +275,7 @@
            appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0" 
        };
 
-       // Robust check for enviromental configuration parameters
+       // Robust check for environmental configuration parameters
        if (typeof __firebase_config !== 'undefined') {
            try {
                if (typeof __firebase_config === 'string') {
@@ -288,12 +293,25 @@
        const auth = getAuth(app);
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
-       const discordSdk = typeof DiscordSDK !== 'undefined' ? new DiscordSDK("1521393614528450622") : null;
+       // Safe Discord SDK registration
+       let discordSdk = null;
+       try {
+           if (typeof DiscordSDK !== 'undefined') {
+               discordSdk = new DiscordSDK("1521393614528450622");
+           }
+       } catch (discordErr) {
+           console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
+       }
 
        async function setupDiscordSdk() {
            if (!discordSdk) return "sandbox-local-channel";
            console.log("Initializing Discord SDK...");
-           await discordSdk.ready();
+           
+           // Wrap SDK ready in a timeout to protect standalone browser canvas previews
+           const readyPromise = discordSdk.ready();
+           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord handshake timeout")), 2500));
+           
+           await Promise.race([readyPromise, timeoutPromise]);
            console.log("Discord SDK is ready!");
            
            const { code } = await discordSdk.commands.authorize({
@@ -305,19 +323,6 @@
            });
            console.log("Authorization code received!");
            return discordSdk.instanceId || "discord-activity-dev-room";
-       }
-
-       async function initAuth() {
-           try {
-               if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                   await signInWithCustomToken(auth, __initial_auth_token);
-               } else {
-                   await signInAnonymously(auth);
-               }
-           } catch (err) {
-               console.error("Authentication handshake failure:", err);
-               showNotification("Adventure server authentication failed.");
-           }
        }
 
        // Vocabulary lists for adventure generation
@@ -787,56 +792,131 @@
            window.location.reload();
        }
 
-       async function updatePlayerName(slotId, val) {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}.name`]: val
-               });
-           } catch(err) {
-               console.error("Name sync failed:", err);
+       function switchToLocalOnly() {
+           if (!isMultiplayer) return;
+           isMultiplayer = false;
+           console.log("Switching to offline/local-only backup mode.");
+           
+           const dot = document.getElementById('status-dot');
+           const statusText = document.getElementById('status-text');
+           if (dot) {
+               dot.style.background = "#ffb703"; 
+               dot.style.animation = "pulse 2.0s infinite";
            }
+           if (statusText) {
+               statusText.innerText = "Offline Mode (In-Memory)";
+               statusText.style.color = "#ffb703";
+           }
+
+           // Instantly unlock UI controls to recover playability
+           document.getElementById('btn-add-character').removeAttribute('disabled');
+           document.getElementById('btn-add-character').innerText = "+ Add Character";
+           document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
+           document.getElementById('advance-to-rolling-btn').innerText = "Proceed to Attribute Allocation";
+       }
+
+       function initializeLocalState() {
+           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           localRoomState = {
+               tempPlayers: {
+                   [slotId]: {
+                       id: slotId,
+                       name: "",
+                       avatar: classicClasses[0],
+                       brawn: 0,
+                       brains: 0,
+                       agility: 0,
+                       owner: SESSION_ID
+                   }
+               },
+               players: [],
+               maxPartyHP: 0,
+               currentPartyHP: 0,
+               stageCount: 0,
+               currentEncounter: null,
+               currentOptions: [],
+               isHostTPK: false
+           };
+           syncFromFirebaseData(localRoomState);
+       }
+
+       function applyLocalUpdates(updates) {
+           for (const [key, val] of Object.entries(updates)) {
+               // Handle modular deletion checks
+               const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue') || val === deleteField();
+
+               if (key.includes('.')) {
+                   const parts = key.split('.');
+                   let current = localRoomState;
+                   for (let i = 0; i < parts.length - 1; i++) {
+                       if (!current[parts[i]]) current[parts[i]] = {};
+                       current = current[parts[i]];
+                   }
+                   const lastPart = parts[parts.length - 1];
+                   if (isDelete) {
+                       delete current[lastPart];
+                   } else {
+                       current[lastPart] = val;
+                   }
+               } else {
+                   if (isDelete) {
+                       delete localRoomState[key];
+                   } else {
+                       localRoomState[key] = val;
+                   }
+               }
+           }
+           syncFromFirebaseData(localRoomState);
+       }
+
+       async function safeUpdateDoc(updates) {
+           if (isMultiplayer && roomRef) {
+               try {
+                   await updateDoc(roomRef, updates);
+               } catch (err) {
+                   console.error("Multiplayer broadcast failed, moving locally:", err);
+                   switchToLocalOnly();
+                   applyLocalUpdates(updates);
+               }
+           } else {
+               applyLocalUpdates(updates);
+           }
+       }
+
+       async function safeSetDoc(data) {
+           if (isMultiplayer && roomRef) {
+               try {
+                   await setDoc(roomRef, data);
+               } catch (err) {
+                   console.error("Multiplayer setup failed, moving locally:", err);
+                   switchToLocalOnly();
+                   localRoomState = data;
+                   syncFromFirebaseData(localRoomState);
+               }
+           } else {
+               localRoomState = data;
+               syncFromFirebaseData(localRoomState);
+           }
+       }
+
+       async function updatePlayerName(slotId, val) {
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.name`]: val });
        }
 
        async function updatePlayerClass(slotId, val) {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}.avatar`]: val
-               });
-           } catch(err) {
-               console.error("Class sync failed:", err);
-           }
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.avatar`]: val });
        }
 
        async function updateTempStat(slotId, stat, val) {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0
-               });
-           } catch(err) {
-               console.error("Stat update failed:", err);
-           }
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0 });
        }
 
        async function rollStat(slotId, stat, max) {
-           if (!auth.currentUser || !roomRef) return;
            let r = Math.floor(Math.random() * max) + 1;
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}.${stat}`]: r
-               });
-           } catch (err) {
-               console.error("Dice roll sync failed:", err);
-           }
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: r });
        }
 
        async function addPlayerSlot() {
-           if (!auth.currentUser || !roomRef) {
-               showNotification("Lobby connection is still initializing. Please wait...");
-               return;
-           }
            const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
            const newSlot = {
                id: slotId,
@@ -847,29 +927,14 @@
                agility: 0,
                owner: SESSION_ID
            };
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}`]: newSlot
-               });
-           } catch(err) {
-               console.error("Slot registration failed:", err);
-               showNotification("Could not add character slot. Retrying connection...");
-           }
+           await safeUpdateDoc({ [`tempPlayers.${slotId}`]: newSlot });
        }
 
        async function removePlayerSlot(slotId) {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   [`tempPlayers.${slotId}`]: deleteField()
-               });
-           } catch(err) {
-               console.error("Slot removal failed:", err);
-           }
+           await safeUpdateDoc({ [`tempPlayers.${slotId}`]: deleteField() });
        }
 
        async function goToRollingScreen() {
-           if (!auth.currentUser || !roomRef) return;
            const tempPlayersList = Object.values(tempPlayers);
            let emptyCheck = false;
            tempPlayersList.forEach(p => {
@@ -887,19 +952,13 @@
                return;
            }
 
-           try {
-               await updateDoc(roomRef, { stageCount: 0.5 });
-           } catch(err) {
-               console.error("Proceeding status failed to broadcast:", err);
-           }
+           await safeUpdateDoc({ stageCount: 0.5 });
        }
 
        async function finalizeStatsAndStart() {
-           if (!auth.currentUser || !roomRef) return;
            let derivedPlayers = [];
            let totalCapacity = 0;
            
-           // Ensure deterministic sorting of attributes finalization
            const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
 
            for (let i = 0; i < sortedTempPlayers.length; i++) {
@@ -913,28 +972,27 @@
 
            let startingHP = Math.max(50, totalCapacity + (derivedPlayers.length * 10));
            
-           try {
-               await updateDoc(roomRef, {
-                   players: derivedPlayers,
-                   maxPartyHP: startingHP,
-                   currentPartyHP: startingHP,
-                   stageCount: 1,
-                   currentEncounter: null,
-                   currentOptions: [],
-                   isHostTPK: false
-               });
-           } catch(err) {
-               console.error("Game launch failed:", err);
-           }
+           await safeUpdateDoc({
+               players: derivedPlayers,
+               maxPartyHP: startingHP,
+               currentPartyHP: startingHP,
+               stageCount: 1,
+               currentEncounter: null,
+               currentOptions: [],
+               isHostTPK: false
+           });
        }
 
        async function archiveAndFinalize() {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await deleteDoc(roomRef);
+           if (isMultiplayer && auth.currentUser && roomRef) {
+               try {
+                   await deleteDoc(roomRef);
+                   window.location.reload();
+               } catch (err) {
+                   console.error("Dungeon state deletion rejected:", err);
+               }
+           } else {
                window.location.reload();
-           } catch (err) {
-               console.error("Dungeon state deletion rejected:", err);
            }
        }
 
@@ -948,7 +1006,6 @@
            document.getElementById('game-view').style.display = 'none';
 
            let listHtml = "";
-           // Sorted consistently to maintain exactly sync'd positions across different clients
            const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
 
            sortedTempPlayers.forEach((p) => {
@@ -985,7 +1042,6 @@
        }
 
        async function generateAdventureChoices() {
-           if (!auth.currentUser || !roomRef) return;
            let title1 = generateDynamicLocationTitle(), title2 = generateDynamicLocationTitle();
            while(title2 === title1) { title2 = generateDynamicLocationTitle(); }
            let c1 = getChallengeMapping(), c2 = getChallengeMapping();
@@ -995,20 +1051,16 @@
                { title: title2, type: c2.type, stat: c2.stat, header: c2.header }
            ];
 
-           try {
-               await updateDoc(roomRef, {
-                   currentOptions: newOptions,
-                   currentEncounter: null,
-                   backupRollActive: false,
-                   weyrRollActive: false,
-                   firstRollerIndex: null,
-                   firstRollTotal: 0,
-                   secondRollerIndex: null,
-                   secondRollTotal: 0
-               });
-           } catch(err) {
-               console.error("Adventure navigation pathing failed:", err);
-           }
+           await safeUpdateDoc({
+               currentOptions: newOptions,
+               currentEncounter: null,
+               backupRollActive: false,
+               weyrRollActive: false,
+               firstRollerIndex: null,
+               firstRollTotal: 0,
+               secondRollerIndex: null,
+               secondRollTotal: 0
+           });
        }
 
        function renderSyncedChoices() {
@@ -1021,7 +1073,6 @@
        }
 
        async function selectPath(idx) {
-           if (!auth.currentUser || !roomRef) return;
            let nextStage = stageCount + 1;
            let chosen = currentOptions[idx];
 
@@ -1043,18 +1094,13 @@
                isCamp: false 
            };
 
-           try {
-               await updateDoc(roomRef, {
-                   stageCount: nextStage,
-                   currentEncounter: newEncounter
-               });
-           } catch(err) {
-               console.error("Path selection failed:", err);
-           }
+           await safeUpdateDoc({
+               stageCount: nextStage,
+               currentEncounter: newEncounter
+           });
        }
 
        async function selectCamp() {
-           if (!auth.currentUser || !roomRef) return;
            let campDescription = constructGranularCampText();
 
            let N = players.length || 1;
@@ -1071,13 +1117,9 @@
                isCamp: true 
            };
 
-           try {
-               await updateDoc(roomRef, {
-                   currentEncounter: campEncounter
-               });
-           } catch(err) {
-               console.error("Camp assembly failed:", err);
-           }
+           await safeUpdateDoc({
+               currentEncounter: campEncounter
+           });
        }
 
        function updateHostDCReveal() {
@@ -1097,7 +1139,7 @@
        }
 
        async function attemptEncounter(hostOverride = null) {
-           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           if (!currentEncounter) return;
            let selectEl = document.getElementById('active-player-select');
            if (!selectEl || selectEl.value === "") return;
            let firstIdx = parseInt(selectEl.value);
@@ -1135,16 +1177,12 @@
                } else {
                    let failText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong>`;
                    if (stageCount >= 58) {
-                       try {
-                           await updateDoc(roomRef, {
-                               backupRollActive: true,
-                               firstRollerIndex: firstIdx,
-                               firstRollTotal: total,
-                               diceLogUpdate: failText + `<br>🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally...`
-                           });
-                       } catch(err) {
-                           console.error("Backup check sequence failure:", err);
-                       }
+                       await safeUpdateDoc({
+                           backupRollActive: true,
+                           firstRollerIndex: firstIdx,
+                           firstRollTotal: total,
+                           diceLogUpdate: failText + `<br>🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally...`
+                       });
                    } else {
                        resolveEncounterFailure(failText + ` <span style="font-size:11px; color:#aaa; display:block;">(Combined Effort unlocks at Stage 58)</span>`);
                    }
@@ -1153,7 +1191,7 @@
        }
 
        async function attemptBackup() {
-           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           if (!currentEncounter) return;
            let backupIdx = parseInt(document.getElementById('backup-player-select').value);
            let backupPlayer = players[backupIdx];
            if (!backupPlayer) return;
@@ -1172,17 +1210,13 @@
                resolveEncounterSuccess(resultLog);
            } else {
                if (stageCount >= 157) {
-                   try {
-                       await updateDoc(roomRef, {
-                           backupRollActive: false,
-                           weyrRollActive: true,
-                           secondRollerIndex: backupIdx,
-                           secondRollTotal: p2Total,
-                           diceLogUpdate: resultLog + `<br>🐲 <strong>Wyvern Weyr Triggered!</strong> Nominate a third operator...`
-                       });
-                   } catch(err) {
-                       console.error("Weyr transition failed:", err);
-                   }
+                   await safeUpdateDoc({
+                       backupRollActive: false,
+                       weyrRollActive: true,
+                       secondRollerIndex: backupIdx,
+                       secondRollTotal: p2Total,
+                       diceLogUpdate: resultLog + `<br>🐲 <strong>Wyvern Weyr Triggered!</strong> Nominate a third operator...`
+                   });
                } else {
                    resolveEncounterFailure(resultLog);
                }
@@ -1190,12 +1224,11 @@
        }
 
        async function declineBackup() {
-           if (!auth.currentUser || !roomRef) return;
            resolveEncounterFailure(`💀 Fate accepted. Support intervention declined.`);
        }
 
        async function attemptWeyr() {
-           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           if (!currentEncounter) return;
            let weyrIdx = parseInt(document.getElementById('weyr-player-select').value);
            let weyrPlayer = players[weyrIdx];
            if (!weyrPlayer) return;
@@ -1211,12 +1244,11 @@
        }
 
        async function declineWeyr() {
-           if (!auth.currentUser || !roomRef) return;
            resolveEncounterFailure(`💀 Fate accepted. Wyvern Weyr declined.`);
        }
 
        async function resolveEncounterSuccess(actionLogMessage) {
-           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           if (!currentEncounter) return;
            let heal = 0;
            let wearAndTear = 0;
            let updatedHP = currentPartyHP;
@@ -1230,22 +1262,18 @@
                updatedHP = Math.max(0, currentPartyHP - wearAndTear);
            }
 
-           try {
-               await updateDoc(roomRef, {
-                   currentPartyHP: updatedHP,
-                   currentEncounter: null,
-                   currentOptions: [],
-                   backupRollActive: false,
-                   weyrRollActive: false,
-                   diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Rest yields +${heal} vitality.` : `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`)
-               });
-           } catch(err) {
-               console.error("Success resolution broadcast failed:", err);
-           }
+           await safeUpdateDoc({
+               currentPartyHP: updatedHP,
+               currentEncounter: null,
+               currentOptions: [],
+               backupRollActive: false,
+               weyrRollActive: false,
+               diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Rest yields +${heal} vitality.` : `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`)
+           });
        }
 
        async function resolveEncounterFailure(actionLogMessage) {
-           if (!auth.currentUser || !roomRef || !currentEncounter) return;
+           if (!currentEncounter) return;
            let heal = 0;
            let damage = 0;
            let updatedHP = currentPartyHP;
@@ -1258,48 +1286,34 @@
                updatedHP = Math.max(0, currentPartyHP - damage);
            }
 
-           try {
-               await updateDoc(roomRef, {
-                   currentPartyHP: updatedHP,
-                   currentEncounter: null,
-                   currentOptions: [],
-                   backupRollActive: false,
-                   weyrRollActive: false,
-                   diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Perimeter breached. Minimal rest: +${heal} vitality.` : `⚔️ Strike landed! Group sustained -${damage} damage.`)
-               });
-           } catch(err) {
-               console.error("Failure resolution broadcast failed:", err);
-           }
+           await safeUpdateDoc({
+               currentPartyHP: updatedHP,
+               currentEncounter: null,
+               currentOptions: [],
+               backupRollActive: false,
+               weyrRollActive: false,
+               diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Perimeter breached. Minimal rest: +${heal} vitality.` : `⚔️ Strike landed! Group sustained -${damage} damage.`)
+           });
        }
 
        async function triggerHostTPK() {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   currentPartyHP: 0,
-                   isHostTPK: true,
-                   currentEncounter: null,
-                   currentOptions: [],
-                   diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced immediate TPK.`
-               });
-           } catch(err) {
-               console.error("TPK broadcast failed:", err);
-           }
+           await safeUpdateDoc({
+               currentPartyHP: 0,
+               isHostTPK: true,
+               currentEncounter: null,
+               currentOptions: [],
+               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced immediate TPK.`
+           });
        }
 
        async function undoTPK() {
-           if (!auth.currentUser || !roomRef) return;
-           try {
-               await updateDoc(roomRef, {
-                   currentPartyHP: Math.ceil(maxPartyHP * 0.25),
-                   isHostTPK: false,
-                   currentEncounter: null,
-                   currentOptions: [],
-                   diceLogUpdate: `👑 <strong>Host Intervention:</strong> Redefined outcome. Rewound time to the portal.`
-               });
-           } catch(err) {
-               console.error("TPK undo failed:", err);
-           }
+           await safeUpdateDoc({
+               currentPartyHP: Math.ceil(maxPartyHP * 0.25),
+               isHostTPK: false,
+               currentEncounter: null,
+               currentOptions: [],
+               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Redefined outcome. Rewound time to the portal.`
+           });
        }
 
        function logDice(msg) {
@@ -1442,8 +1456,10 @@
            if (data.diceLogUpdate) {
                logDice(data.diceLogUpdate);
                // Clear message instantly after consuming to prevent recursive loops
-               if (auth.currentUser && roomRef) {
+               if (isMultiplayer && auth.currentUser && roomRef) {
                    updateDoc(roomRef, { diceLogUpdate: deleteField() });
+               } else if (!isMultiplayer) {
+                   delete localRoomState.diceLogUpdate;
                }
            }
 
@@ -1491,7 +1507,6 @@
                        updateBoardImage("entrance");
                        
                        if (currentOptions.length === 0) {
-                           // Nominate paths collaboratively
                            generateAdventureChoices();
                        } else {
                            renderSyncedChoices();
@@ -1507,7 +1522,6 @@
                
                const container = document.getElementById('dynamic-player-container');
                
-               // Consistently sort temp players so indexing doesn't jump position during typing
                const tempPlayersList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
                
                while (container.children.length < tempPlayersList.length) {
@@ -1603,6 +1617,33 @@
            }
        }
 
+       async function performAuth() {
+           let user = null;
+           // 1. Prioritize custom authentication token
+           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+               try {
+                   console.log("Attempting custom server credentials authentication...");
+                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                   user = cred.user;
+                   console.log("Token-based credentials authentication completed.");
+               } catch (tokenErr) {
+                   console.warn("Server custom token declined. Falling back to secure guest token...", tokenErr);
+               }
+           }
+           // 2. Direct anonymous fallback to ensure user always gains entrance instantly
+           if (!user) {
+               try {
+                   console.log("Attempting guest session token allocation...");
+                   const cred = await signInAnonymously(auth);
+                   user = cred.user;
+                   console.log("Guest token authentication completed.");
+               } catch (anonErr) {
+                   console.error("All authentication routes rejected:", anonErr);
+               }
+           }
+           return user;
+       }
+
        async function init() {
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
@@ -1623,127 +1664,96 @@
 
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Bind newly added lobby modal interactions
+           // Bind lobby modal actions
            document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
            document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
            document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
            document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
 
-           await initAuth();
-           onAuthStateChanged(auth, async (user) => {
-               currentUser = user;
-               if (!user) {
-                   document.getElementById('setup-screen').style.display = 'block';
-                   return;
+           // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
+           initializeLocalState();
+
+           // Execute safe authentication setup
+           const user = await performAuth();
+           if (!user) {
+               console.warn("Authentication failed completely. Running in local-only/in-memory mode.");
+               switchToLocalOnly();
+               return;
+           }
+
+           currentUser = user;
+
+           let instanceId = "";
+           let insideDiscord = false;
+           
+           try {
+               const discId = await setupDiscordSdk();
+               if (discId && discId !== "sandbox-local-channel") {
+                   instanceId = discId;
+                   insideDiscord = true;
                }
-               
-               let instanceId = "";
-               let insideDiscord = false;
-               
-               // Check if we are inside a Discord Activity Session
-               try {
-                   const discId = await setupDiscordSdk();
-                   if (discId && discId !== "sandbox-local-channel") {
-                       instanceId = discId;
-                       insideDiscord = true;
-                   }
-               } catch (discordErr) {
-                   console.warn("Discord SDK connection offline or unavailable.");
+           } catch (discordErr) {
+               console.warn("Discord SDK connection bypassed. Standing by in sandbox browser layout.");
+           }
+
+           if (!insideDiscord) {
+               const hash = window.location.hash;
+               const match = hash.match(/room=([A-Z0-9]+)/i);
+               if (match && match[1]) {
+                   instanceId = match[1].toUpperCase();
+               } else {
+                   instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                   window.location.hash = `room=${instanceId}`;
                }
+           }
+           
+           // strict collection structures mapping (RULE 1)
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
-               // Web lobby / browser sandbox fallbacks
-               if (!insideDiscord) {
-                   const hash = window.location.hash;
-                   const match = hash.match(/room=([A-Z0-9]+)/i);
-                   if (match && match[1]) {
-                       instanceId = match[1].toUpperCase();
-                   } else {
-                       // Generate a 5-character randomized Lobby identifier
-                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                       window.location.hash = `room=${instanceId}`;
-                   }
-               }
+           onSnapshot(roomRef, (snapshot) => {
+               if (!auth.currentUser) return; // strict authentication guard (RULE 3)
                
-               roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
+               isMultiplayer = true; 
+               
+               const dot = document.getElementById('status-dot');
+               const statusText = document.getElementById('status-text');
+               const codeBadge = document.getElementById('room-code-badge');
+               const copyBtn = document.getElementById('btn-copy-link');
+               const joinBtn = document.getElementById('btn-open-join-modal');
+               
+               if (dot) {
+                   dot.style.background = "var(--success-color)";
+                   dot.style.animation = "none";
+               }
+               if (statusText) {
+                   statusText.innerText = "Synchronized";
+                   statusText.style.color = "var(--success-color)";
+               }
+               if (codeBadge) {
+                   codeBadge.style.display = "inline-block";
+                   codeBadge.innerText = `ROOM: ${instanceId}`;
+               }
+               if (copyBtn) copyBtn.style.display = "inline-block";
+               if (joinBtn) joinBtn.style.display = "inline-block";
 
-               onSnapshot(roomRef, (snapshot) => {
-                   if (!auth.currentUser) return;
-                   
-                   // Highlight synchronization dot to green to give visual status feedback
-                   const dot = document.getElementById('status-dot');
-                   const statusText = document.getElementById('status-text');
-                   const codeBadge = document.getElementById('room-code-badge');
-                   const copyBtn = document.getElementById('btn-copy-link');
-                   const joinBtn = document.getElementById('btn-open-join-modal');
-                   
-                   if (dot) {
-                       dot.style.background = "var(--success-color)";
-                       dot.style.animation = "none";
-                   }
-                   if (statusText) {
-                       statusText.innerText = "Synchronized";
-                       statusText.style.color = "var(--success-color)";
-                   }
-                   if (codeBadge) {
-                       codeBadge.style.display = "inline-block";
-                       codeBadge.innerText = `ROOM: ${instanceId}`;
-                   }
-                   if (copyBtn) copyBtn.style.display = "inline-block";
-                   if (joinBtn) joinBtn.style.display = "inline-block";
+               document.getElementById('btn-add-character').removeAttribute('disabled');
+               document.getElementById('btn-add-character').innerText = "+ Add Character";
+               document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
 
-                   // Unlock registration buttons
-                   document.getElementById('btn-add-character').removeAttribute('disabled');
-                   document.getElementById('btn-add-character').innerText = "+ Add Character";
-                   document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
-
-                   if (snapshot.exists()) {
-                       const data = snapshot.data();
-                       syncFromFirebaseData(data);
-                   } else {
-                       const inputs = document.querySelectorAll('.p-name-input');
-                       let activeRegistryTyping = false;
-                       inputs.forEach(i => { if (i === document.activeElement) activeRegistryTyping = true; });
-                       
-                       if (!activeRegistryTyping) {
-                           // Initialize collaborative session safely
-                           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
-                           const initialSlot = {
-                               id: slotId,
-                               name: "",
-                               avatar: classicClasses[0],
-                               brawn: 0,
-                               brains: 0,
-                               agility: 0,
-                               owner: SESSION_ID
-                           };
-                           setDoc(roomRef, {
-                               tempPlayers: {
-                                   [slotId]: initialSlot
-                               },
-                               players: [],
-                               maxPartyHP: 0,
-                               currentPartyHP: 0,
-                               stageCount: 0,
-                               currentEncounter: null,
-                               currentOptions: [],
-                               isHostTPK: false
-                           });
-                       }
-                   }
-               }, (err) => {
-                   console.error("Real-time synchronization subscription failed:", err);
-                   const dot = document.getElementById('status-dot');
-                   const statusText = document.getElementById('status-text');
-                   if (dot) dot.style.background = "var(--danger-color)";
-                   if (statusText) {
-                       statusText.innerText = "Connection Refused (Strict Mode)";
-                       statusText.style.color = "var(--danger-color)";
-                   }
-               });
+               if (snapshot.exists()) {
+                   const data = snapshot.data();
+                   syncFromFirebaseData(data);
+               } else {
+                   // Synchronize current local scratchpad upward
+                   setDoc(roomRef, localRoomState);
+               }
+           }, (err) => {
+               console.error("Firebase sync error. Falling back to local offline mode:", err);
+               switchToLocalOnly();
            });
        }
 
-       // Global window exports to keep dynamically compiled HTML templates running perfectly
+       // Global window exports
        window.updateTempStat = updateTempStat;
        window.rollStat = rollStat;
        window.removePlayerSlot = removePlayerSlot;
