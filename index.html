@@ -83,6 +83,12 @@
       
        .host-controls { display: flex; gap: 8px; margin-top: 10px; }
        .host-controls button { flex: 1; font-size: 12px; padding: 6px; }
+
+       @keyframes pulse {
+           0% { transform: scale(0.9); opacity: 0.5; }
+           50% { transform: scale(1.15); opacity: 1; }
+           100% { transform: scale(0.9); opacity: 0.5; }
+       }
    </style>
 </head>
 <body>
@@ -91,6 +97,13 @@
        <div class="flex justify-between items-center border-b border-[#2a2a3a] pb-[15px] mb-[20px] flex-wrap gap-[15px]">
            <div>
                <h1 class="text-3xl font-normal text-[#f4a261]">Oubliettes & Wyverns</h1>
+               <div id="room-connection-status" class="flex items-center gap-[10px] mt-[6px] font-sans text-[13px] flex-wrap">
+                   <span id="status-dot" class="w-[8px] h-[8px] bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
+                   <span id="status-text" class="text-[#aaa] font-bold">Authenticating...</span>
+                   <span id="room-code-badge" class="hidden bg-[#f4a261]/15 text-[#f4a261] px-[8px] py-[2px] rounded font-bold font-mono tracking-[0.5px]">ROOM: ---</span>
+                   <button id="btn-copy-link" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Copy Share Link</button>
+                   <button id="btn-open-join-modal" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Join Another Lobby</button>
+               </div>
            </div>
            <button id="btn-finalize" class="danger text-[13px] py-[8px] px-[14px]">Finalize Game</button>
        </div>
@@ -209,6 +222,21 @@
            <div style="display: flex; justify-content: center; gap: 15px;">
                <button class="danger" id="btn-execute-finalize" style="padding: 10px 20px;">Yes, WIPE State</button>
                <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize">Cancel</button>
+           </div>
+       </div>
+   </div>
+
+   <!-- Join Room Modal -->
+   <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+       <div class="section-box" style="background: var(--panel-color); max-width: 400px; width: 100%; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; text-align: center;">
+           <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 20px;">Join Adventure Room</h3>
+           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 13px; color: var(--text-color); font-family: sans-serif;">
+               Enter your ally's 5-character Room Code to connect on the same screen:
+           </p>
+           <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
+           <div style="display: flex; justify-content: center; gap: 15px;">
+               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
            </div>
        </div>
    </div>
@@ -570,6 +598,43 @@
            setTimeout(() => { box.style.opacity = '0'; }, 3500);
        }
 
+       function copyLobbyLink() {
+           const url = window.location.href;
+           const tempInput = document.createElement("input");
+           tempInput.style.position = "absolute";
+           tempInput.style.left = "-9999px";
+           tempInput.value = url;
+           document.body.appendChild(tempInput);
+           tempInput.select();
+           try {
+               document.execCommand("copy");
+               showNotification("Lobby invitation link copied! Share with your friends.");
+           } catch (err) {
+               console.error("Link copying fallback failed", err);
+           }
+           document.body.removeChild(tempInput);
+       }
+
+       function openJoinModal() {
+           document.getElementById('join-modal').style.display = 'flex';
+       }
+       
+       function closeJoinModal() {
+           document.getElementById('join-modal').style.display = 'none';
+       }
+       
+       function executeJoinLobby() {
+           const codeInput = document.getElementById('input-join-room-id');
+           if (!codeInput) return;
+           const rawCode = codeInput.value.trim().toUpperCase();
+           if (rawCode.length < 3) {
+               showNotification("Please enter a valid lobby code.");
+               return;
+           }
+           window.location.hash = `room=${rawCode}`;
+           window.location.reload();
+       }
+
        function constructGranularText(type, locationName) {
            let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
            let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
@@ -690,6 +755,7 @@
        }
 
        async function addPlayerSlot() {
+           const myId = auth.currentUser ? auth.currentUser.uid : SESSION_ID;
            const customId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
            const slotId = 'slot_' + customId;
            const heroName = generateDefaultName();
@@ -701,7 +767,7 @@
                brawn: 0,
                brains: 0,
                agility: 0,
-               owner: customId
+               owner: myId
            };
            await safeUpdateDoc({ [`tempPlayers.${slotId}`]: newSlot });
        }
@@ -1564,6 +1630,16 @@
 
        function switchToLocalOnly() {
            isMultiplayer = false;
+           const dot = document.getElementById('status-dot');
+           const statusText = document.getElementById('status-text');
+           if (dot) {
+               dot.style.background = "#ffb703"; 
+               dot.style.animation = "pulse 2.0s infinite";
+           }
+           if (statusText) {
+               statusText.innerText = "Sandbox Mode";
+               statusText.style.color = "#ffb703";
+           }
        }
 
        function listenToLobby(lobbyId) {
@@ -1572,11 +1648,33 @@
 
            unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
                isMultiplayer = true; 
+               
+               const dot = document.getElementById('status-dot');
+               const statusText = document.getElementById('status-text');
+               const codeBadge = document.getElementById('room-code-badge');
+               const copyBtn = document.getElementById('btn-copy-link');
+               const joinBtn = document.getElementById('btn-open-join-modal');
+               
+               if (dot) {
+                   dot.style.background = "var(--success-color)";
+                   dot.style.animation = "none";
+               }
+               if (statusText) {
+                   statusText.innerText = `Synchronized`;
+                   statusText.style.color = "var(--success-color)";
+               }
+               if (codeBadge) {
+                   codeBadge.classList.remove('hidden');
+                   codeBadge.innerText = `ROOM: ${lobbyId}`;
+               }
+               if (copyBtn) copyBtn.classList.remove('hidden');
+               if (joinBtn) joinBtn.classList.remove('hidden');
+
                if (snapshot.exists()) {
                    const data = snapshot.data();
                    syncFromFirebaseData(data);
                } else {
-                   setDoc(roomRef, localRoomState);
+                   setDoc(roomRef, localRoomState, { merge: true });
                }
            }, (err) => {
                console.error("Lobby snapshot failed:", err);
@@ -1593,13 +1691,29 @@
            document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
+           // Connection controller buttons
+           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
+           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
+           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
+           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
+
            setupGlobalDelegation();
 
-           // 📱 Extract Discord Query variables immediately to bypass mobile delay fallbacks
+           // 📱 Extract Discord Query variables with manual hash override fallbacks
            const params = new URLSearchParams(window.location.search);
            const channelId = params.get('channel_id') || params.get('channelId');
            const instanceIdParam = params.get('instance_id') || params.get('instanceId');
-           let resolvedLobbyId = instanceIdParam || channelId || "SANDBOX-LOBBY";
+           
+           let resolvedLobbyId = "SANDBOX-LOBBY";
+           const hashMatch = window.location.hash.match(/room=([A-Z0-9]+)/i);
+           if (hashMatch && hashMatch[1]) {
+               resolvedLobbyId = hashMatch[1].toUpperCase();
+           } else if (instanceIdParam || channelId) {
+               resolvedLobbyId = instanceIdParam || channelId;
+           } else {
+               resolvedLobbyId = Math.random().toString(36).substring(2, 7).toUpperCase();
+           }
+           window.location.hash = `room=${resolvedLobbyId}`;
 
            // Silent Authorization
            const user = await performAuth();
