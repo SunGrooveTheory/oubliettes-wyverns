@@ -94,7 +94,6 @@
        <div class="header-container">
            <div>
                <h1>Oubliettes & Wyverns</h1>
-               <div style="font-family: sans-serif; font-size: 12px; color: #888; margin-top: 4px;" id="network-info-label">Initiating secure campaign connection...</div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
@@ -225,7 +224,7 @@
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        let isMultiplayer = true; 
        let localRoomState = {};
@@ -258,6 +257,7 @@
 
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
+       // Standard getAuth resolves the "already-initialized" multi-load crash perfectly
        const auth = getAuth(app);
        
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
@@ -589,11 +589,6 @@
 
        function switchToLocalOnly() {
            isMultiplayer = false;
-           const networkLabel = document.getElementById('network-info-label');
-           if (networkLabel) {
-               networkLabel.innerText = "Standalone Sandbox Active (Offline)";
-               networkLabel.style.color = "var(--danger-color)";
-           }
            showNotification("Connection fallback active. Operating in standalone mode.");
        }
 
@@ -657,7 +652,7 @@
        }
 
        async function safeUpdateDoc(updates) {
-           if (isMultiplayer && roomRef && auth.currentUser) {
+           if (isMultiplayer && roomRef) {
                try {
                    await updateDoc(roomRef, updates);
                } catch (err) {
@@ -670,7 +665,7 @@
        }
 
        async function safeSetDoc(data) {
-           if (isMultiplayer && roomRef && auth.currentUser) {
+           if (isMultiplayer && roomRef) {
                try {
                    await setDoc(roomRef, data);
                } catch (err) {
@@ -792,7 +787,7 @@
        }
 
        async function archiveAndFinalize() {
-           if (isMultiplayer && roomRef && auth.currentUser) {
+           if (isMultiplayer && roomRef) {
                try {
                    await deleteDoc(roomRef);
                    window.location.reload();
@@ -1284,7 +1279,7 @@
 
            if (data.diceLogUpdate) {
                logDice(data.diceLogUpdate);
-               if (isMultiplayer && roomRef && auth.currentUser) {
+               if (isMultiplayer && roomRef) {
                    updateDoc(roomRef, { diceLogUpdate: deleteField() });
                } else if (!isMultiplayer) {
                    delete localRoomState.diceLogUpdate;
@@ -1456,37 +1451,20 @@
 
        async function performAuth() {
            let user = null;
-
-           // FORCE In-Memory Persistence to bypass sandboxed iframe restrictions
-           try {
-               await setPersistence(auth, inMemoryPersistence);
-               console.log("In-Memory auth persistence successfully locked.");
-           } catch (persistErr) {
-               console.warn("Auth persistence switch warning:", persistErr);
-           }
-
-           // Sanitize incoming token string inputs to remove literal empty evaluations
-           const rawToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-           const token = (rawToken && rawToken !== 'undefined' && rawToken !== 'null' && rawToken.trim() !== '') ? rawToken : null;
-
-           if (token) {
+           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                try {
-                   console.log("Attempting Custom Token Authentication...");
-                   const cred = await signInWithCustomToken(auth, token);
+                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
                    user = cred.user;
-                   console.log("Custom token authentication succeeded.");
                } catch (tokenErr) {
-                   console.warn("Custom token authentication bypassed, attempting anonymous:", tokenErr);
+                   console.warn("Custom token authentication bypassed, trying anonymous.", tokenErr);
                }
            }
            if (!user) {
                try {
-                   console.log("Attempting Anonymous Authentication...");
                    const cred = await signInAnonymously(auth);
                    user = cred.user;
-                   console.log("Anonymous authentication succeeded.");
                } catch (anonErr) {
-                   console.error("Anonymous authentication failed completely:", anonErr);
+                   console.error("Anonymous authentication failed:", anonErr);
                    showNotification("Authentication offline. Standard connection rules loaded.");
                }
            }
@@ -1600,16 +1578,7 @@
                unsubscribeSnapshot();
            }
 
-           // Strict path and segment character sanitization
-           const sanitizedLobbyId = lobbyId.replace(/[^a-zA-Z0-9-_]/g, '');
-
-           const infoLabel = document.getElementById('network-info-label');
-           if (infoLabel) {
-               infoLabel.innerText = `Synchronized Session: ${sanitizedLobbyId}`;
-               infoLabel.style.color = "var(--success-color)";
-           }
-
-           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', sanitizedLobbyId);
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
 
            unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
                isMultiplayer = true; 
@@ -1618,9 +1587,7 @@
                    const data = snapshot.data();
                    syncFromFirebaseData(data);
                } else {
-                   if (auth.currentUser) {
-                       setDoc(roomRef, localRoomState);
-                   }
+                   setDoc(roomRef, localRoomState);
                }
            }, (err) => {
                console.error("Lobby connection suspended:", err);
