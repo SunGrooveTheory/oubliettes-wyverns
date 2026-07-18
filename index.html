@@ -100,7 +100,7 @@
                <div id="room-connection-status" class="flex items-center gap-[10px] mt-[6px] font-sans text-[13px] flex-wrap">
                    <span id="status-dot" class="w-[8px] h-[8px] bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
                    <span id="status-text" class="text-[#aaa] font-bold">Authenticating...</span>
-                   <span id="room-code-badge" class="hidden bg-[#f4a261]/15 text-[#f4a261] px-[8px] py-[2px] rounded font-bold font-mono tracking-[0.5px]">ROOM: ---</span>
+                   <span id="room-code-badge" class="bg-[#f4a261]/15 text-[#f4a261] px-[8px] py-[2px] rounded font-bold font-mono tracking-[0.5px]">ROOM: RESOLVING...</span>
                    <button id="btn-copy-link" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Copy Share Link</button>
                    <button id="btn-open-join-modal" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Join Another Lobby</button>
                </div>
@@ -1317,439 +1317,447 @@
            if (!data) return;
 
            tempPlayers = data.tempPlayers || {};
-           players = data.players || [];
-           maxPartyHP = data.maxPartyHP || 0;
-           currentPartyHP = data.currentPartyHP || 0;
-           stageCount = data.stageCount || 0;
-           currentEncounter = data.currentEncounter || null;
-           currentOptions = data.currentOptions || [];
-           backupRollActive = data.backupRollActive || false;
-           weyrRollActive = data.weyrRollActive || false;
-           firstRollerIndex = data.firstRollerIndex !== undefined ? data.firstRollerIndex : null;
-           firstRollTotal = data.firstRollTotal || 0;
-           secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
-           secondRollTotal = data.secondRollTotal || 0;
-           isHostTPK = data.isHostTPK || false;
+       players = data.players || [];
+       maxPartyHP = data.maxPartyHP || 0;
+       currentPartyHP = data.currentPartyHP || 0;
+       stageCount = data.stageCount || 0;
+       currentEncounter = data.currentEncounter || null;
+       currentOptions = data.currentOptions || [];
+       backupRollActive = data.backupRollActive || false;
+       weyrRollActive = data.weyrRollActive || false;
+       firstRollerIndex = data.firstRollerIndex !== undefined ? data.firstRollerIndex : null;
+       firstRollTotal = data.firstRollTotal || 0;
+       secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
+       secondRollTotal = data.secondRollTotal || 0;
+       isHostTPK = data.isHostTPK || false;
 
-           if (data.diceLogUpdate) {
-               logDice(data.diceLogUpdate);
-               if (isMultiplayer && roomRef) {
-                   updateDoc(roomRef, { diceLogUpdate: deleteField() });
-               } else if (!isMultiplayer) {
-                   delete localRoomState.diceLogUpdate;
-               }
+       if (data.diceLogUpdate) {
+           logDice(data.diceLogUpdate);
+           if (isMultiplayer && roomRef) {
+               updateDoc(roomRef, { diceLogUpdate: deleteField() });
+           } else if (!isMultiplayer) {
+               delete localRoomState.diceLogUpdate;
            }
+       }
 
-           const myId = auth.currentUser ? auth.currentUser.uid : SESSION_ID;
+       const myId = auth.currentUser ? auth.currentUser.uid : SESSION_ID;
 
-           // Mid-Game Join Handler: Dynamically appends incoming users to active adventure roster in real-time
-           if (stageCount >= 1) {
-               const hasActiveCharacter = players.some(p => p.owner === myId);
-               if (!hasActiveCharacter) {
-                   const generatedHeroName = myDiscordUsername || generateDefaultName();
-                   const newMidGamePlayer = {
-                       name: generatedHeroName,
-                       avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
-                       brawn: Math.floor(Math.random() * 6) + 4,
-                       brains: Math.floor(Math.random() * 10) + 4,
-                       agility: Math.floor(Math.random() * 20) + 4,
-                       owner: myId
-                   };
-                   
-                   const updatedRoster = [...players, newMidGamePlayer];
-                   const hpBoost = newMidGamePlayer.brawn + newMidGamePlayer.brains + newMidGamePlayer.agility + 15;
-                   
-                   await safeUpdateDoc({
-                       players: updatedRoster,
-                       maxPartyHP: maxPartyHP + hpBoost,
-                       currentPartyHP: currentPartyHP + hpBoost,
-                       diceLogUpdate: `🤝 <strong>${newMidGamePlayer.name}</strong> joined the VC and appended to the active Vanguard roster mid-adventure! Vitality increased by +${hpBoost}.`
-                   });
-                   return;
-               }
-           }
-
-           // Automatic safe registry self-spawn mapping
-           const tempPlayersList = Object.values(tempPlayers);
-           const hasMySlot = tempPlayersList.some(p => p.owner === myId);
-
-           if (!hasMySlot && stageCount === 0 && isMultiplayer) {
-               if (!window.autoAddingSlot) {
-                   window.autoAddingSlot = true;
-                   const targetName = myDiscordUsername || generateDefaultName();
-                   addPlayerSlotForOwner(myId, targetName).then(() => {
-                       window.autoAddingSlot = false;
-                   }).catch((err) => {
-                       console.warn("Auto adding slot bypassed:", err);
-                       window.autoAddingSlot = false;
-                   });
-               }
-           }
-
-           // Core Phase Switching Machine
-           if (stageCount >= 1) {
-               document.getElementById('setup-screen').style.display = 'none';
-               document.getElementById('rolling-screen').style.display = 'none';
-               document.getElementById('game-view').style.display = 'block';
-               updateHPDisplay();
-               renderCharacterSheetsFromState();
-
-               if (currentEncounter) {
-                   document.getElementById('navigation-block').style.display = 'none';
-                   let encUI = document.getElementById('encounter-interface');
-                   encUI.className = `encounter-box ${currentEncounter.type}`;
-                   encUI.style.display = 'block';
-                   document.getElementById('story-text').innerHTML = currentEncounter.desc;
-                   document.getElementById('encounter-title').innerText = currentEncounter.title;
-                   document.getElementById('encounter-stat').innerText = currentEncounter.stat;
-                   updateHostDCReveal();
-                   updateBoardImage(currentEncounter.isCamp ? "camp" : currentEncounter.type);
-
-                   if (weyrRollActive) {
-                       document.getElementById('standard-roll-controls').style.display = 'none';
-                       document.getElementById('backup-roll-controls').style.display = 'none';
-                       populateWeyrSelect();
-                       document.getElementById('weyr-roll-controls').style.display = 'block';
-                   } else if (backupRollActive) {
-                       document.getElementById('standard-roll-controls').style.display = 'none';
-                       document.getElementById('backup-roll-controls').style.display = 'block';
-                       populateBackupSelect();
-                       document.getElementById('weyr-roll-controls').style.display = 'none';
-                   } else {
-                       document.getElementById('standard-roll-controls').style.display = 'block';
-                       document.getElementById('backup-roll-controls').style.display = 'none';
-                       document.getElementById('weyr-roll-controls').style.display = 'none';
-                   }
-               } else {
-                   document.getElementById('encounter-interface').style.display = 'none';
-                   if (currentPartyHP <= 0) {
-                       handleEnd(isHostTPK);
-                   } else if (stageCount >= 180) {
-                       handleWin();
-                   } else {
-                       document.getElementById('navigation-block').style.display = 'block';
-                       updateBoardImage("entrance");
-                       
-                       if (currentOptions.length === 0) {
-                           generateAdventureChoices();
-                       } else {
-                           renderSyncedChoices();
-                       }
-                   }
-               }
-           } else if (stageCount === 0.5) {
-               renderRollingListFromState();
-           } else {
-               document.getElementById('game-view').style.display = 'none';
-               document.getElementById('rolling-screen').style.display = 'none';
-               document.getElementById('setup-screen').style.display = 'block';
+       // Mid-Game Join Handler: Dynamically appends incoming users to active adventure roster in real-time
+       if (stageCount >= 1) {
+           const hasActiveCharacter = players.some(p => p.owner === myId);
+           if (!hasActiveCharacter) {
+               const generatedHeroName = myDiscordUsername || generateDefaultName();
+               const newMidGamePlayer = {
+                   name: generatedHeroName,
+                   avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
+                   brawn: Math.floor(Math.random() * 6) + 4,
+                   brains: Math.floor(Math.random() * 10) + 4,
+                   agility: Math.floor(Math.random() * 20) + 4,
+                   owner: myId
+               };
                
-               const container = document.getElementById('dynamic-player-container');
-               const sortedList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+               const updatedRoster = [...players, newMidGamePlayer];
+               const hpBoost = newMidGamePlayer.brawn + newMidGamePlayer.brains + newMidGamePlayer.agility + 15;
                
-               while (container.children.length < sortedList.length) {
-                   const slot = document.createElement('div');
-                   slot.className = 'player-slot';
-                   container.appendChild(slot);
-               }
-               while (container.children.length > sortedList.length) {
-                   container.removeChild(container.lastChild);
-               }
-
-               sortedList.forEach((p, idx) => {
-                   const slot = container.children[idx];
-                   slot.id = `slot_${p.id}`;
-
-                   const isMySlot = p.owner === myId;
-
-                   if (isMySlot) {
-                       slot.style.borderColor = "var(--success-color)";
-                       slot.style.boxShadow = "0 0 10px rgba(42,157,143,0.15)";
-                   } else {
-                       slot.style.borderColor = "var(--border-color)";
-                       slot.style.boxShadow = "none";
-                   }
-
-                   let nameInput = slot.querySelector('.p-name-input');
-                   let classSelect = slot.querySelector('.p-class-select');
-
-                   if (!nameInput) {
-                       let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
-                       slot.innerHTML = `
-                           <div class="lock-status-label font-bold uppercase mb-[4px] font-sans text-[11px]"></div>
-                           <button class="remove-btn font-sans text-white bg-[#e76f51] hover:opacity-90 absolute top-[8px] right-[8px] border-none rounded py-[2px] px-[6px] text-[11px] z-10" type="button" data-id="${p.id}">X</button>
-                           <label class="text-[13px]">Character Name:</label>
-                           <input type="text" class="p-name-input" data-id="${p.id}" placeholder="Character Name">
-                           <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
-                           <select class="p-class-select" data-id="${p.id}">
-                               ${classOptions}
-                           </select>
-                       `;
-                       nameInput = slot.querySelector('.p-name-input');
-                       classSelect = slot.querySelector('.p-class-select');
-                   }
-
-                   const statusLabel = slot.querySelector('.lock-status-label');
-                   const removeBtn = slot.querySelector('.remove-btn');
-
-                   let lockStatus = ``;
-                   if (isMySlot) {
-                       lockStatus = `👤 Your Character (Edit)`;
-                       statusLabel.style.color = "var(--success-color)";
-                       removeBtn.style.display = 'block';
-                   } else {
-                       lockStatus = `🔒 Ally's Character (View Only)`;
-                       statusLabel.style.color = "#888";
-                       removeBtn.style.display = 'none';
-                   }
-                   statusLabel.innerText = lockStatus;
-
-                   if (isMySlot) {
-                       if (document.activeElement !== nameInput) {
-                           nameInput.value = p.name || '';
-                       }
-                   } else {
-                       nameInput.value = p.name || '';
-                   }
-                   nameInput.disabled = !isMySlot;
-
-                   if (document.activeElement !== classSelect) {
-                       classSelect.value = p.avatar;
-                   }
-                   classSelect.disabled = !isMySlot;
+               await safeUpdateDoc({
+                   players: updatedRoster,
+                   maxPartyHP: maxPartyHP + hpBoost,
+                   currentPartyHP: currentPartyHP + hpBoost,
+                   diceLogUpdate: `🤝 <strong>${newMidGamePlayer.name}</strong> joined the VC and appended to the active Vanguard roster mid-adventure! Vitality increased by +${hpBoost}.`
                });
-
-               const proceedBtn = document.getElementById('advance-to-rolling-btn');
-               if (proceedBtn) {
-                   if (sortedList.length === 0) {
-                       proceedBtn.disabled = true;
-                       proceedBtn.innerText = "Add character(s) to proceed";
-                   } else {
-                       proceedBtn.disabled = false;
-                       proceedBtn.innerText = "Proceed to Attribute Allocation";
-                   }
-               }
-           }
-       }
-
-       async function performAuth() {
-           let user = null;
-           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-               try {
-                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                   user = cred.user;
-               } catch (tokenErr) {
-                   console.warn("Custom token authentication bypassed, trying anonymous.", tokenErr);
-               }
-           }
-           if (!user) {
-               try {
-                   const cred = await signInAnonymously(auth);
-                   user = cred.user;
-               } catch (anonErr) {
-                   console.error("Anonymous authentication failed:", anonErr);
-               }
-           }
-           return user;
-       }
-
-       function setupGlobalDelegation() {
-           document.addEventListener('input', (e) => {
-               if (e.target.classList.contains('p-name-input')) {
-                   const id = e.target.getAttribute('data-id');
-                   if (tempPlayers[id]) {
-                       tempPlayers[id].name = e.target.value;
-                       updatePlayerName(id, e.target.value);
-                   }
-               }
-           });
-
-           document.addEventListener('change', (e) => {
-               if (e.target.classList.contains('p-class-select')) {
-                   const id = e.target.getAttribute('data-id');
-                   updatePlayerClass(id, e.target.value);
-               }
-               if (e.target.classList.contains('stat-roll-input')) {
-                   const id = e.target.getAttribute('data-id');
-                   const stat = e.target.getAttribute('data-stat');
-                   updateTempStat(id, stat, e.target.value);
-               }
-           });
-
-           document.addEventListener('click', (e) => {
-               const rollBtn = e.target.closest('.roll-btn');
-               if (rollBtn) {
-                   const id = rollBtn.getAttribute('data-id');
-                   const stat = rollBtn.getAttribute('data-stat');
-                   const die = parseInt(rollBtn.getAttribute('data-die'));
-                   rollStat(id, stat, die);
-               }
-
-               const removeBtn = e.target.closest('.remove-btn');
-               if (removeBtn) {
-                   const id = removeBtn.getAttribute('data-id');
-                   removePlayerSlot(id);
-               }
-
-               const choice0 = e.target.closest('#btn-choice-0');
-               if (choice0) selectPath(0);
-
-               const choice1 = e.target.closest('#btn-choice-1');
-               if (choice1) selectPath(1);
-
-               const choiceCamp = e.target.closest('#btn-choice-camp');
-               if (choiceCamp) selectCamp();
-
-               const revealBtn = e.target.closest('#btn-toggle-dc');
-               if (revealBtn) {
-                   const dcBox = document.getElementById('encounter-dc-box');
-                   if (dcBox) {
-                       if (dcBox.style.display === "none") {
-                           dcBox.style.display = "block";
-                           revealBtn.innerText = "🔑 [Host Only] Hide Target DC";
-                       } else {
-                           dcBox.style.display = "none";
-                           revealBtn.innerText = "🔍 [Host Only] Reveal Target DC";
-                       }
-                   }
-               }
-
-               if (e.target.closest('#roll-check-btn')) attemptEncounter();
-               if (e.target.closest('#backup-roll-btn')) attemptBackup();
-               if (e.target.closest('#decline-backup-btn')) declineBackup();
-               if (e.target.closest('#weyr-roll-btn')) attemptWeyr();
-               if (e.target.closest('#decline-weyr-btn')) declineWeyr();
-
-               if (e.target.closest('#btn-force-pass')) attemptEncounter(true);
-               if (e.target.closest('#btn-force-fail')) attemptEncounter(false);
-               if (e.target.closest('#tpk-btn')) triggerHostTPK();
-               if (e.target.closest('#btn-undo-tpk')) undoTPK();
-               if (e.target.closest('#btn-win-restart')) window.location.reload();
-           });
-       }
-
-       function switchToLocalOnly() {
-           isMultiplayer = false;
-           const dot = document.getElementById('status-dot');
-           const statusText = document.getElementById('status-text');
-           if (dot) {
-               dot.style.background = "#ffb703"; 
-               dot.style.animation = "pulse 2.0s infinite";
-           }
-           if (statusText) {
-               statusText.innerText = "Sandbox Mode";
-               statusText.style.color = "#ffb703";
-           }
-       }
-
-       function listenToLobby(lobbyId) {
-           if (unsubscribeSnapshot) unsubscribeSnapshot();
-           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
-
-           unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
-               isMultiplayer = true; 
-               
-               const dot = document.getElementById('status-dot');
-               const statusText = document.getElementById('status-text');
-               const codeBadge = document.getElementById('room-code-badge');
-               const copyBtn = document.getElementById('btn-copy-link');
-               const joinBtn = document.getElementById('btn-open-join-modal');
-               
-               if (dot) {
-                   dot.style.background = "var(--success-color)";
-                   dot.style.animation = "none";
-               }
-               if (statusText) {
-                   statusText.innerText = `Synchronized`;
-                   statusText.style.color = "var(--success-color)";
-               }
-               if (codeBadge) {
-                   codeBadge.classList.remove('hidden');
-                   codeBadge.innerText = `ROOM: ${lobbyId}`;
-               }
-               if (copyBtn) copyBtn.classList.remove('hidden');
-               if (joinBtn) joinBtn.classList.remove('hidden');
-
-               if (snapshot.exists()) {
-                   const data = snapshot.data();
-                   syncFromFirebaseData(data);
-               } else {
-                   setDoc(roomRef, localRoomState, { merge: true });
-               }
-           }, (err) => {
-               console.error("Lobby snapshot failed:", err);
-               switchToLocalOnly();
-           });
-       }
-
-       async function init() {
-           document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
-           document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
-           document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
-           document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
-           document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
-           document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
-           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
-
-           // Connection controller buttons
-           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
-           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
-           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
-           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
-
-           setupGlobalDelegation();
-
-           // 📱 Extract Discord Query variables with manual hash override fallbacks
-           const params = new URLSearchParams(window.location.search);
-           const channelId = params.get('channel_id') || params.get('channelId');
-           const instanceIdParam = params.get('instance_id') || params.get('instanceId');
-           
-           let resolvedLobbyId = "SANDBOX-LOBBY";
-           const hashMatch = window.location.hash.match(/room=([A-Z0-9]+)/i);
-           if (hashMatch && hashMatch[1]) {
-               resolvedLobbyId = hashMatch[1].toUpperCase();
-           } else if (instanceIdParam || channelId) {
-               resolvedLobbyId = instanceIdParam || channelId;
-           } else {
-               resolvedLobbyId = Math.random().toString(36).substring(2, 7).toUpperCase();
-           }
-           window.location.hash = `room=${resolvedLobbyId}`;
-
-           // Silent Authorization
-           const user = await performAuth();
-           if (!user) {
-               switchToLocalOnly();
                return;
            }
+       }
 
-           // Discord SDK non-blocking Ready verification
-           if (discordSdk) {
-               try {
-                   await Promise.race([
-                       discordSdk.ready(),
-                       new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500))
-                   ]);
-                   // Automatically extract user display names for verbatim slot naming
-                   try {
-                       const authResult = await discordSdk.commands.authenticate();
-                       if (authResult && authResult.user) {
-                           myDiscordUsername = authResult.user.global_name || authResult.user.username;
-                       }
-                   } catch (authErr) {
-                       console.warn("Discord SDK details bypassed.", authErr);
+       // Automatic safe registry self-spawn mapping
+       const tempPlayersList = Object.values(tempPlayers);
+       const hasMySlot = tempPlayersList.some(p => p.owner === myId);
+
+       if (!hasMySlot && stageCount === 0 && isMultiplayer) {
+           if (!window.autoAddingSlot) {
+               window.autoAddingSlot = true;
+               const targetName = myDiscordUsername || generateDefaultName();
+               addPlayerSlotForOwner(myId, targetName).then(() => {
+                   window.autoAddingSlot = false;
+               }).catch((err) => {
+                   console.warn("Auto adding slot bypassed:", err);
+                   window.autoAddingSlot = false;
+               });
+           }
+       }
+
+       // Core Phase Switching Machine
+       if (stageCount >= 1) {
+           document.getElementById('setup-screen').style.display = 'none';
+           document.getElementById('rolling-screen').style.display = 'none';
+           document.getElementById('game-view').style.display = 'block';
+           updateHPDisplay();
+           renderCharacterSheetsFromState();
+
+           if (currentEncounter) {
+               document.getElementById('navigation-block').style.display = 'none';
+               let encUI = document.getElementById('encounter-interface');
+               encUI.className = `encounter-box ${currentEncounter.type}`;
+               encUI.style.display = 'block';
+               document.getElementById('story-text').innerHTML = currentEncounter.desc;
+               document.getElementById('encounter-title').innerText = currentEncounter.title;
+               document.getElementById('encounter-stat').innerText = currentEncounter.stat;
+               updateHostDCReveal();
+               updateBoardImage(currentEncounter.isCamp ? "camp" : currentEncounter.type);
+
+               if (weyrRollActive) {
+                   document.getElementById('standard-roll-controls').style.display = 'none';
+                   document.getElementById('backup-roll-controls').style.display = 'none';
+                   populateWeyrSelect();
+                   document.getElementById('weyr-roll-controls').style.display = 'block';
+               } else if (backupRollActive) {
+                   document.getElementById('standard-roll-controls').style.display = 'none';
+                   document.getElementById('backup-roll-controls').style.display = 'block';
+                   populateBackupSelect();
+                   document.getElementById('weyr-roll-controls').style.display = 'none';
+               } else {
+                   document.getElementById('standard-roll-controls').style.display = 'block';
+                   document.getElementById('backup-roll-controls').style.display = 'none';
+                   document.getElementById('weyr-roll-controls').style.display = 'none';
+               }
+           } else {
+               document.getElementById('encounter-interface').style.display = 'none';
+               if (currentPartyHP <= 0) {
+                   handleEnd(isHostTPK);
+               } else if (stageCount >= 180) {
+                   handleWin();
+               } else {
+                   document.getElementById('navigation-block').style.display = 'block';
+                   updateBoardImage("entrance");
+                   
+                   if (currentOptions.length === 0) {
+                       generateAdventureChoices();
+                   } else {
+                       renderSyncedChoices();
                    }
-               } catch (discordErr) {
-                   console.warn("Discord Handshake deferred. Continuing with browser params.");
+               }
+           }
+       } else if (stageCount === 0.5) {
+           renderRollingListFromState();
+       } else {
+           document.getElementById('game-view').style.display = 'none';
+           document.getElementById('rolling-screen').style.display = 'none';
+           document.getElementById('setup-screen').style.display = 'block';
+           
+           const container = document.getElementById('dynamic-player-container');
+           const sortedList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+           
+           while (container.children.length < sortedList.length) {
+               const slot = document.createElement('div');
+               slot.className = 'player-slot';
+               container.appendChild(slot);
+           }
+           while (container.children.length > sortedList.length) {
+               container.removeChild(container.lastChild);
+           }
+
+           sortedList.forEach((p, idx) => {
+               const slot = container.children[idx];
+               slot.id = `slot_${p.id}`;
+
+               const isMySlot = p.owner === myId;
+
+               if (isMySlot) {
+                   slot.style.borderColor = "var(--success-color)";
+                   slot.style.boxShadow = "0 0 10px rgba(42,157,143,0.15)";
+               } else {
+                   slot.style.borderColor = "var(--border-color)";
+                   slot.style.boxShadow = "none";
+               }
+
+               let nameInput = slot.querySelector('.p-name-input');
+               let classSelect = slot.querySelector('.p-class-select');
+
+               if (!nameInput) {
+                   let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+                   slot.innerHTML = `
+                       <div class="lock-status-label font-bold uppercase mb-[4px] font-sans text-[11px]"></div>
+                       <button class="remove-btn font-sans text-white bg-[#e76f51] hover:opacity-90 absolute top-[8px] right-[8px] border-none rounded py-[2px] px-[6px] text-[11px] z-10" type="button" data-id="${p.id}">X</button>
+                       <label class="text-[13px]">Character Name:</label>
+                       <input type="text" class="p-name-input" data-id="${p.id}" placeholder="Character Name">
+                       <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
+                       <select class="p-class-select" data-id="${p.id}">
+                           ${classOptions}
+                       </select>
+                   `;
+                   nameInput = slot.querySelector('.p-name-input');
+                   classSelect = slot.querySelector('.p-class-select');
+               }
+
+               const statusLabel = slot.querySelector('.lock-status-label');
+               const removeBtn = slot.querySelector('.remove-btn');
+
+               let lockStatus = ``;
+               if (isMySlot) {
+                   lockStatus = `👤 Your Character`;
+                   statusLabel.style.color = "var(--success-color)";
+                   removeBtn.style.display = 'block';
+               } else {
+                   lockStatus = `👥 Ally's Character`;
+                   statusLabel.style.color = "#888";
+                   removeBtn.style.display = 'block';
+               }
+               statusLabel.innerText = lockStatus;
+
+               if (document.activeElement !== nameInput) {
+                   nameInput.value = p.name || '';
+               }
+               // GUARANTEED EDITABILITY: Never lock character slots on the client screen
+               nameInput.disabled = false;
+
+               if (document.activeElement !== classSelect) {
+                   classSelect.value = p.avatar;
+               }
+               // GUARANTEED EDITABILITY: Never lock lineage class selection on the client screen
+               classSelect.disabled = false;
+           });
+
+           const proceedBtn = document.getElementById('advance-to-rolling-btn');
+           if (proceedBtn) {
+               if (sortedList.length === 0) {
+                   proceedBtn.disabled = true;
+                   proceedBtn.innerText = "Add character(s) to proceed";
+               } else {
+                   proceedBtn.disabled = false;
+                   proceedBtn.innerText = "Proceed to Attribute Allocation";
+               }
+           }
+       }
+   }
+
+   async function performAuth() {
+       let user = null;
+       if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+           try {
+               const cred = await signInWithCustomToken(auth, __initial_auth_token);
+               user = cred.user;
+           } catch (tokenErr) {
+               console.warn("Custom token authentication bypassed, trying anonymous.", tokenErr);
+           }
+       }
+       if (!user) {
+           try {
+               const cred = await signInAnonymously(auth);
+               user = cred.user;
+           } catch (anonErr) {
+               console.error("Anonymous authentication failed:", anonErr);
+           }
+       }
+       return user;
+   }
+
+   function setupGlobalDelegation() {
+       document.addEventListener('input', (e) => {
+           if (e.target.classList.contains('p-name-input')) {
+               const id = e.target.getAttribute('data-id');
+               if (tempPlayers[id]) {
+                   tempPlayers[id].name = e.target.value;
+               }
+               updatePlayerName(id, e.target.value);
+           }
+       });
+
+       document.addEventListener('change', (e) => {
+           if (e.target.classList.contains('p-class-select')) {
+               const id = e.target.getAttribute('data-id');
+               if (tempPlayers[id]) {
+                   tempPlayers[id].avatar = e.target.value;
+               }
+               updatePlayerClass(id, e.target.value);
+           }
+           if (e.target.classList.contains('stat-roll-input')) {
+               const id = e.target.getAttribute('data-id');
+               const stat = e.target.getAttribute('data-stat');
+               updateTempStat(id, stat, e.target.value);
+           }
+       });
+
+       document.addEventListener('click', (e) => {
+           const rollBtn = e.target.closest('.roll-btn');
+           if (rollBtn) {
+               const id = rollBtn.getAttribute('data-id');
+               const stat = rollBtn.getAttribute('data-stat');
+               const die = parseInt(rollBtn.getAttribute('data-die'));
+               rollStat(id, stat, die);
+           }
+
+           const removeBtn = e.target.closest('.remove-btn');
+           if (removeBtn) {
+               const id = removeBtn.getAttribute('data-id');
+               removePlayerSlot(id);
+           }
+
+           const choice0 = e.target.closest('#btn-choice-0');
+           if (choice0) selectPath(0);
+
+           const choice1 = e.target.closest('#btn-choice-1');
+           if (choice1) selectPath(1);
+
+           const choiceCamp = e.target.closest('#btn-choice-camp');
+           if (choiceCamp) selectCamp();
+
+           const revealBtn = e.target.closest('#btn-toggle-dc');
+           if (revealBtn) {
+               const dcBox = document.getElementById('encounter-dc-box');
+               if (dcBox) {
+                   if (dcBox.style.display === "none") {
+                       dcBox.style.display = "block";
+                       revealBtn.innerText = "🔑 [Host Only] Hide Target DC";
+                   } else {
+                       dcBox.style.display = "none";
+                       revealBtn.innerText = "🔍 [Host Only] Reveal Target DC";
+                   }
                }
            }
 
-           initializeLocalState();
-           listenToLobby(resolvedLobbyId);
+           if (e.target.closest('#roll-check-btn')) attemptEncounter();
+           if (e.target.closest('#backup-roll-btn')) attemptBackup();
+           if (e.target.closest('#decline-backup-btn')) declineBackup();
+           if (e.target.closest('#weyr-roll-btn')) attemptWeyr();
+           if (e.target.closest('#decline-weyr-btn')) declineWeyr();
+
+           if (e.target.closest('#btn-force-pass')) attemptEncounter(true);
+           if (e.target.closest('#btn-force-fail')) attemptEncounter(false);
+           if (e.target.closest('#tpk-btn')) triggerHostTPK();
+           if (e.target.closest('#btn-undo-tpk')) undoTPK();
+           if (e.target.closest('#btn-win-restart')) window.location.reload();
+       });
+   }
+
+   function switchToLocalOnly() {
+       isMultiplayer = false;
+       const dot = document.getElementById('status-dot');
+       const statusText = document.getElementById('status-text');
+       if (dot) {
+           dot.style.background = "#ffb703"; 
+           dot.style.animation = "pulse 2.0s infinite";
+       }
+       if (statusText) {
+           statusText.innerText = "Sandbox Mode";
+           statusText.style.color = "#ffb703";
+       }
+   }
+
+   function listenToLobby(lobbyId) {
+       if (unsubscribeSnapshot) unsubscribeSnapshot();
+       roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
+
+       unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
+           isMultiplayer = true; 
+           
+           const dot = document.getElementById('status-dot');
+           const statusText = document.getElementById('status-text');
+           const codeBadge = document.getElementById('room-code-badge');
+           const copyBtn = document.getElementById('btn-copy-link');
+           const joinBtn = document.getElementById('btn-open-join-modal');
+           
+           if (dot) {
+               dot.style.background = "var(--success-color)";
+               dot.style.animation = "none";
+           }
+           if (statusText) {
+               statusText.innerText = `Synchronized`;
+               statusText.style.color = "var(--success-color)";
+           }
+           if (codeBadge) {
+               codeBadge.innerText = `ROOM CODE: ${lobbyId}`;
+           }
+           if (copyBtn) copyBtn.classList.remove('hidden');
+           if (joinBtn) joinBtn.classList.remove('hidden');
+
+           if (snapshot.exists()) {
+               const data = snapshot.data();
+               syncFromFirebaseData(data);
+           } else {
+               setDoc(roomRef, localRoomState, { merge: true });
+           }
+       }, (err) => {
+           console.error("Lobby snapshot failed:", err);
+           switchToLocalOnly();
+       });
+   }
+
+   async function init() {
+       document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
+       document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
+       document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
+       document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
+       document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
+       document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
+       document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
+
+       // Connection controller buttons
+       document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
+       document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
+       document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
+       document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
+
+       setupGlobalDelegation();
+
+       // 1. Authenticate with Firebase first
+       const user = await performAuth();
+
+       // 2. Authenticate with Discord SDK and extract display names if available
+       if (discordSdk) {
+           try {
+               await Promise.race([
+                   discordSdk.ready(),
+                   new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
+               ]);
+               try {
+                   const authResult = await discordSdk.commands.authenticate();
+                   if (authResult && authResult.user) {
+                       myDiscordUsername = authResult.user.global_name || authResult.user.username;
+                   }
+               } catch (authErr) {
+                   console.warn("Discord SDK authentication failed.", authErr);
+               }
+           } catch (discordErr) {
+               console.warn("Discord Handshake deferred. Continuing with browser params.");
+           }
        }
 
-       window.onload = function () {
-           init();
-       };
-   </script>
+       // 3. Resolve Lobby ID (Auto-placing users in the exact same channel/room instantly)
+       const params = new URLSearchParams(window.location.search);
+       const channelId = params.get('channel_id') || params.get('channelId');
+       const instanceIdParam = params.get('instance_id') || params.get('instanceId');
+       
+       let resolvedLobbyId = "SANDBOX-LOBBY";
+       const hashMatch = window.location.hash.match(/room=([A-Z0-9-]+)/i);
+       if (hashMatch && hashMatch[1]) {
+           resolvedLobbyId = hashMatch[1].toUpperCase();
+       } else if (instanceIdParam || channelId) {
+           resolvedLobbyId = (instanceIdParam || channelId).toUpperCase();
+       } else {
+           resolvedLobbyId = Math.random().toString(36).substring(2, 7).toUpperCase();
+       }
+       window.location.hash = `room=${resolvedLobbyId}`;
+
+       // Instantly update UI Room Badge so they can always see the code
+       const codeBadge = document.getElementById('room-code-badge');
+       if (codeBadge) {
+           codeBadge.innerText = `ROOM CODE: ${resolvedLobbyId}`;
+       }
+
+       // 4. Initialize Local State with verified, loaded Discord global name
+       initializeLocalState();
+
+       // 5. Connect to active multiplayer room
+       if (user) {
+           listenToLobby(resolvedLobbyId);
+       } else {
+           switchToLocalOnly();
+       }
+   }
+
+   window.onload = function () {
+       init();
+   };
+</script>
 </body>
 </html>
