@@ -253,9 +253,9 @@
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
 
    <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        // Local vs Server connectivity states
        let isMultiplayer = true; 
@@ -294,7 +294,12 @@
 
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
-       const auth = getAuth(app);
+       
+       // Force in-memory persistence to bypass sandboxed iframe cookie/storage blocking completely!
+       const auth = initializeAuth(app, {
+           persistence: inMemoryPersistence
+       });
+       
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
        // Safe Discord SDK registration
@@ -450,23 +455,6 @@
            ]
        };
 
-       let tempPlayers = {}; 
-       let players = [];
-       let maxPartyHP = 0;
-       let currentPartyHP = 0;
-       let stageCount = 0;
-       let currentEncounter = null;
-       let currentOptions = [];
-       let backupRollActive = false;
-       let weyrRollActive = false;
-       let firstRollerIndex = null;
-       let firstRollTotal = 0;
-       let secondRollerIndex = null;
-       let secondRollTotal = 0;
-       let currentActiveDC = 0;
-       let isHostTPK = false; 
-
-       // High-Fidelity Stock Assets
        const driveImages = {
            entrance: [
                "https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80",
@@ -512,129 +500,42 @@
            "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
 
+       // Globals used by core mechanics
+       let tempPlayers = {}; 
+       let players = [];
+       let maxPartyHP = 0;
+       let currentPartyHP = 0;
+       let stageCount = 0;
+       let currentEncounter = null;
+       let currentOptions = [];
+       let backupRollActive = false;
+       let weyrRollActive = false;
+       let firstRollerIndex = null;
+       let firstRollTotal = 0;
+       let secondRollerIndex = null;
+       let secondRollTotal = 0;
+       let currentActiveDC = 0;
+       let isHostTPK = false; 
+
        function getFantasySVG(category) {
            const svgAttrs = `viewBox="0 0 300 400" width="100%" height="100%" style="display: block; background: #050507;"`;
-           
            switch (category) {
                case 'entrance':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <linearGradient id="gateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                   <stop offset="0%" stop-color="#2a2a3a" />
-                                   <stop offset="100%" stop-color="#111" />
-                               </linearGradient>
-                               <radialGradient id="glowEntrance" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.3"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" />
-                           <path d="M60 350 V150 A90 90 0 0 1 240 150 V350" fill="none" stroke="#1c1c28" stroke-width="4" />
-                           <rect x="70" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
-                           <rect x="155" y="160" width="75" height="190" fill="url(#gateGrad)" stroke="#222" stroke-width="3" />
-                           <circle cx="150" cy="150" r="40" fill="none" stroke="#f4a261" stroke-width="2" stroke-opacity="0.5" />
-                           <ellipse cx="150" cy="250" rx="90" ry="110" fill="url(#glowEntrance)" />
-                           <text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" /><text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text></svg>`;
                case 'combat':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="glowCombat" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#e76f51" stop-opacity="0.4"/>
-                                   <stop offset="100%" stop-color="#e76f51" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <ellipse cx="135" cy="180" rx="6" ry="3" fill="#ff0000" />
-                           <ellipse cx="165" cy="180" rx="6" ry="3" fill="#ff0000" />
-                           <g stroke="#e2e2e9" stroke-width="4" stroke-linecap="round">
-                               <line x1="80" y1="340" x2="220" y2="220" />
-                               <line x1="220" y1="340" x2="80" y2="220" />
-                           </g>
-                           <circle cx="150" cy="220" r="80" fill="url(#glowCombat)" />
-                           <text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><circle cx="150" cy="220" r="80" fill="#e76f51" opacity="0.3" /><text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text></svg>`;
                case 'puzzle':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="glowPuzzle" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#a2d2ff" stop-opacity="0.4"/>
-                                   <stop offset="100%" stop-color="#a2d2ff" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <g transform="translate(110, 110)">
-                               <polygon points="40,0 80,20 40,40 0,20" fill="#1b1c29" stroke="#a2d2ff" stroke-width="2" />
-                               <circle cx="40" cy="40" r="12" fill="#a2d2ff" opacity="0.8" />
-                           </g>
-                           <circle cx="150" cy="150" r="70" fill="url(#glowPuzzle)" />
-                           <text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><polygon points="150,100 220,180 150,260 80,180" fill="none" stroke="#a2d2ff" stroke-width="3" /><text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text></svg>`;
                case 'hazard':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <linearGradient id="lavaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                   <stop offset="0%" stop-color="#ff9f1c" />
-                                   <stop offset="100%" stop-color="#e76f51" />
-                               </linearGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <rect x="75" y="280" width="150" height="120" fill="url(#lavaGrad)" opacity="0.9" />
-                           <text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><rect x="50" y="250" width="200" height="100" fill="#ff9f1c" opacity="0.4" /><text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text></svg>`;
                case 'camp':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.5"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <path d="M130 300 Q150 220 150 230 Q170 300 130 300 Z" fill="#e76f51" />
-                           <circle cx="150" cy="280" r="80" fill="url(#fireGlow)" />
-                           <text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><circle cx="150" cy="250" r="60" fill="#2a9d8f" opacity="0.4" /><text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text></svg>`;
                case 'death':
-                   return `
-                       <svg ${svgAttrs}>
-                           <rect width="300" height="400" fill="#0a0505"/>
-                           <path d="M80 350 V220 A40 40 0 0 1 160 220 V350" fill="#1c1313" stroke="#e76f51" stroke-width="2" />
-                           <text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0a0505"/><line x1="50" y1="50" x2="250" y2="350" stroke="#e76f51" stroke-width="4" /><text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text></svg>`;
                case 'win':
-                   return `
-                       <svg ${svgAttrs}>
-                           <defs>
-                               <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-                                   <stop offset="0%" stop-color="#f4a261" stop-opacity="0.6"/>
-                                   <stop offset="100%" stop-color="#f4a261" stop-opacity="0"/>
-                               </radialGradient>
-                           </defs>
-                           <rect width="300" height="400" fill="#0c0e0c"/>
-                           <circle cx="150" cy="150" r="60" fill="url(#sunGlow)" />
-                           <text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0e0c"/><circle cx="150" cy="150" r="60" fill="#f4a261" opacity="0.6" /><text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text></svg>`;
                default:
-                   return `
-                       <svg ${svgAttrs}>
-                           <rect width="300" height="400" fill="#0c0c0e"/>
-                           <text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading Scene...</text>
-                       </svg>
-                   `;
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading Scene...</text></svg>`;
            }
        }
 
@@ -662,7 +563,6 @@
            }
        }
 
-       // Helper vocabulary functions
        function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
        function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
        function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
@@ -740,7 +640,6 @@
        }
 
        function switchToLocalOnly() {
-           if (!isMultiplayer) return;
            isMultiplayer = false;
            console.log("Switching to offline/local-only backup mode.");
            
@@ -762,19 +661,28 @@
            }
 
            // Instantly unlock UI controls to recover playability
-           document.getElementById('btn-add-character').removeAttribute('disabled');
-           document.getElementById('btn-add-character').innerText = "+ Add Character";
-           document.getElementById('advance-to-rolling-btn').removeAttribute('disabled');
-           document.getElementById('advance-to-rolling-btn').innerText = "Proceed to Attribute Allocation";
+           const addBtn = document.getElementById('btn-add-character');
+           if (addBtn) {
+               addBtn.removeAttribute('disabled');
+               addBtn.innerText = "+ Add Character";
+           }
+           const advanceBtn = document.getElementById('advance-to-rolling-btn');
+           if (advanceBtn) {
+               advanceBtn.removeAttribute('disabled');
+               advanceBtn.innerText = "Proceed to Attribute Allocation";
+           }
+           
+           // Run local-only render
+           syncFromFirebaseData(localRoomState);
        }
 
        function initializeLocalState() {
-           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           const mySlotId = 'slot_' + SESSION_ID;
            localRoomState = {
                tempPlayers: {
-                   [slotId]: {
-                       id: slotId,
-                       name: "",
+                   [mySlotId]: {
+                       id: mySlotId,
+                       name: "Hero 1",
                        avatar: classicClasses[0],
                        brawn: 0,
                        brains: 0,
@@ -790,35 +698,6 @@
                currentOptions: [],
                isHostTPK: false
            };
-           syncFromFirebaseData(localRoomState);
-       }
-
-       function applyLocalUpdates(updates) {
-           for (const [key, val] of Object.entries(updates)) {
-               const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue') || val === deleteField();
-
-               if (key.includes('.')) {
-                   const parts = key.split('.');
-                   let current = localRoomState;
-                   for (let i = 0; i < parts.length - 1; i++) {
-                       if (!current[parts[i]]) current[parts[i]] = {};
-                       current = current[parts[i]];
-                   }
-                   const lastPart = parts[parts.length - 1];
-                   if (isDelete) {
-                       delete current[lastPart];
-                   } else {
-                       current[lastPart] = val;
-                   }
-               } else {
-                   if (isDelete) {
-                       delete localRoomState[key];
-                   } else {
-                       localRoomState[key] = val;
-                   }
-               }
-           }
-           syncFromFirebaseData(localRoomState);
        }
 
        async function safeUpdateDoc(updates) {
@@ -851,6 +730,34 @@
            }
        }
 
+       function applyLocalUpdates(updates) {
+           for (const [key, val] of Object.entries(updates)) {
+               const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue') || val === deleteField();
+
+               if (key.includes('.')) {
+                   const parts = key.split('.');
+                   let current = localRoomState;
+                   for (let i = 0; i < parts.length - 1; i++) {
+                       if (!current[parts[i]]) current[parts[i]] = {};
+                       current = current[parts[i]];
+                   }
+                   const lastPart = parts[parts.length - 1];
+                   if (isDelete) {
+                       delete current[lastPart];
+                   } else {
+                       current[lastPart] = val;
+                   }
+               } else {
+                   if (isDelete) {
+                       delete localRoomState[key];
+                   } else {
+                       localRoomState[key] = val;
+                   }
+               }
+           }
+           syncFromFirebaseData(localRoomState);
+       }
+
        async function updatePlayerName(slotId, val) {
            await safeUpdateDoc({ [`tempPlayers.${slotId}.name`]: val });
        }
@@ -869,10 +776,11 @@
        }
 
        async function addPlayerSlot() {
-           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           const slotId = 'slot_' + crypto.randomUUID();
+           const index = Object.keys(tempPlayers).length + 1;
            const newSlot = {
                id: slotId,
-               name: "",
+               name: `Hero ${index}`,
                avatar: classicClasses[0],
                brawn: 0,
                brains: 0,
@@ -1067,7 +975,6 @@
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
 
-           // Programmatically attach standard events to bypass sandbox frame click overrides
            const opt0 = document.getElementById('btn-choice-0');
            const opt1 = document.getElementById('btn-choice-1');
            const optCamp = document.getElementById('btn-choice-camp');
@@ -1623,19 +1530,6 @@
            }
        }
 
-       async function setupDiscordSdk() {
-           if (!discordSdk) return "sandbox-local-channel";
-           console.log("Initializing Discord SDK...");
-           
-           // Wrap SDK Handshake in a safe 1.5-second timeout race
-           const readyPromise = discordSdk.ready();
-           const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Discord Handshake Timeout")), 1500));
-           
-           await Promise.race([readyPromise, timeoutPromise]);
-           console.log("Discord SDK ready and authorized!");
-           return discordSdk.instanceId || "discord-activity-dev-room";
-       }
-
        async function initAuth() {
            try {
                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -1645,12 +1539,86 @@
                }
            } catch (err) {
                console.error("Authentication handshake failure:", err);
-               showNotification("Adventure server authentication failed.");
+               showNotification("Authentication failed. Falling back to local Sandbox Mode.");
+               switchToLocalOnly();
            }
        }
 
+       async function joinAndListen(lobbyId) {
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
+           
+           const mySlotId = 'slot_' + SESSION_ID;
+           const mySlot = {
+               id: mySlotId,
+               name: "Hero 1",
+               avatar: classicClasses[0],
+               brawn: 0,
+               brains: 0,
+               agility: 0,
+               owner: SESSION_ID
+           };
+
+           try {
+               // Fetch room state once to see if it exists
+               const snapshot = await getDoc(roomRef);
+               if (!snapshot.exists()) {
+                   // Room is empty/new. Initialize it with our local character state.
+                   const initialRoomState = {
+                       tempPlayers: {
+                           [mySlotId]: mySlot
+                       },
+                       players: [],
+                       maxPartyHP: 0,
+                       currentPartyHP: 0,
+                       stageCount: 0,
+                       currentEncounter: null,
+                       currentOptions: [],
+                       isHostTPK: false
+                   };
+                   await setDoc(roomRef, initialRoomState);
+               } else {
+                   // Room already exists. Safely APPEND our personal character to the active registry.
+                   const data = snapshot.data();
+                   if (!data.tempPlayers || !data.tempPlayers[mySlotId]) {
+                       const count = Object.keys(data.tempPlayers || {}).length + 1;
+                       mySlot.name = `Hero ${count}`;
+                       await updateDoc(roomRef, {
+                           [`tempPlayers.${mySlotId}`]: mySlot
+                       });
+                   }
+               }
+           } catch (err) {
+               console.error("Multiplayer join setup failed:", err);
+           }
+
+           // Start clean real-time listener subscription
+           onSnapshot(roomRef, (snapshot) => {
+               if (!auth.currentUser) return;
+               isMultiplayer = true;
+
+               const dot = document.getElementById('status-dot');
+               const statusText = document.getElementById('status-text');
+               if (dot) {
+                   dot.style.background = "var(--success-color)";
+                   dot.style.animation = "none";
+               }
+               if (statusText) {
+                   statusText.innerText = "Synchronized";
+                   statusText.style.color = "var(--success-color)";
+               }
+
+               if (snapshot.exists()) {
+                   const data = snapshot.data();
+                   syncFromFirebaseData(data);
+               }
+           }, (err) => {
+               console.error("Firestore sync subscription failed:", err);
+               switchToLocalOnly();
+           });
+       }
+
        async function init() {
-           // Programmatic event bindings to prevent standard frame click blocks
+           // Programmatic event bindings
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1674,177 +1642,90 @@
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
+           // Initialize local backup state instantly
            initializeLocalState();
+
+           // Mark as initialized to coordinate safety recovery script
+           window.gameInitialized = true;
+
+           // Safety fallback: if auth hangs for more than 4 seconds, fallback to local sandbox cleanly
+           const safetyAuthTimeout = setTimeout(() => {
+               if (!currentUser) {
+                   console.warn("Authentication timer expired. Fallback Sandbox Mode activated.");
+                   switchToLocalOnly();
+               }
+           }, 4000);
 
            // Execute safe authentication setup
            await initAuth();
-           onAuthStateChanged(auth, async (user) => {
-               currentUser = user;
-               if (!user) {
-                   document.getElementById('setup-screen').style.display = 'block';
-                   return;
+           
+           currentUser = auth.currentUser;
+           if (!currentUser) {
+               // Fallback auth triggered
+               switchToLocalOnly();
+               return;
+           }
+
+           clearTimeout(safetyAuthTimeout);
+
+           // Resolve lobby ID synchronously from Discord URL query params or fallback hash
+           const params = new URLSearchParams(window.location.search);
+           const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
+           
+           let instanceId = "";
+           if (discordInstanceId) {
+               instanceId = discordInstanceId.toUpperCase();
+               insideDiscord = true;
+           } else {
+               const hash = window.location.hash;
+               const match = hash.match(/room=([A-Z0-9-]+)/i);
+               if (match && match[1]) {
+                   instanceId = match[1].toUpperCase();
+               } else {
+                   // Generate a clean 5-character randomized Lobby identifier
+                   instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                   window.location.hash = `room=${instanceId}`;
                }
+               insideDiscord = false;
+           }
 
-               let instanceId = "";
-               let detectedInsideDiscord = false;
-               
-               // Safely authorize Discord Embedded Session
-               try {
-                   const discId = await setupDiscordSdk();
-                   if (discId && discId !== "sandbox-local-channel") {
-                       instanceId = discId;
-                       detectedInsideDiscord = true;
-                   }
-               } catch (discordErr) {
-                   console.warn("Discord SDK timed out or bypassed. Sandboxed browser mode loaded.");
-               }
+           // Unlocks setup controls
+           const addBtn = document.getElementById('btn-add-character');
+           const advanceBtn = document.getElementById('advance-to-rolling-btn');
+           if (addBtn) {
+               addBtn.removeAttribute('disabled');
+               addBtn.innerText = "+ Add Character";
+           }
+           if (advanceBtn) {
+               advanceBtn.removeAttribute('disabled');
+               advanceBtn.innerText = "Proceed to Attribute Allocation";
+           }
 
-               insideDiscord = detectedInsideDiscord;
-
-               // Web lobby / browser sandbox fallback setup
-               if (!insideDiscord) {
-                   const hash = window.location.hash;
-                   const match = hash.match(/room=([A-Z0-9]+)/i);
-                   if (match && match[1]) {
-                       instanceId = match[1].toUpperCase();
-                   } else {
-                       // Generate a 5-character randomized Lobby identifier
-                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                       window.location.hash = `room=${instanceId}`;
-                   }
-               }
-
-               // Programmatically unlock the setup buttons immediately on load
-               const addBtn = document.getElementById('btn-add-character');
-               const advanceBtn = document.getElementById('advance-to-rolling-btn');
-               if (addBtn) {
-                   addBtn.removeAttribute('disabled');
-                   addBtn.innerText = "+ Add Character";
-               }
-               if (advanceBtn) {
-                   advanceBtn.removeAttribute('disabled');
-                   advanceBtn.innerText = "Proceed to Attribute Allocation";
-               }
-               
-               // Setup document reference mapping (strict collection structures mapping)
-               roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
-
-               onSnapshot(roomRef, (snapshot) => {
-                   if (!auth.currentUser) return; // strict authentication guard
-                   
-                   isMultiplayer = true; 
-                   
-                   const dot = document.getElementById('status-dot');
-                   const statusText = document.getElementById('status-text');
-                   const connStatus = document.getElementById('room-connection-status');
-                   const codeBadge = document.getElementById('room-code-badge');
-                   const copyBtn = document.getElementById('btn-copy-link');
-                   const joinBtn = document.getElementById('btn-open-join-modal');
-                   
-                   if (insideDiscord) {
-                       if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-                   } else {
-                       if (connStatus) connStatus.style.display = "flex";
-                       if (dot) {
-                           dot.style.background = "var(--success-color)";
-                           dot.style.animation = "none";
-                       }
-                       if (statusText) {
-                           statusText.innerText = `Synchronized`;
-                           statusText.style.color = "var(--success-color)";
-                       }
-                       if (codeBadge) {
-                           codeBadge.style.display = "inline-block";
-                           codeBadge.innerText = `ROOM: ${instanceId}`;
-                       }
-                       if (copyBtn) copyBtn.style.display = "inline-block";
-                       if (joinBtn) joinBtn.style.display = "inline-block";
-                   }
-
-                   if (snapshot.exists()) {
-                       const data = snapshot.data();
-                       syncFromFirebaseData(data);
-                   } else {
-                       // Synchronize current local state upward
-                       setDoc(roomRef, localRoomState);
-                   }
-               }, (err) => {
-                   console.error("Firebase sync error. Falling back to local offline mode:", err);
-                   switchToLocalOnly();
-               });
-           });
+           // Connect to active room safely
+           await joinAndListen(instanceId);
        }
 
-       // Global exports for remove buttons
+       // Global exports
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
 
-       async function init() {
-           // Programmatic event bindings to prevent standard frame click blocks
-           document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
-           document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
-           document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
-           document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
-           document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
-           document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
+       window.onload = function () {
+           init();
+       };
+   </script>
 
-           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
-           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
-           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
-           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
-
-           document.getElementById('roll-check-btn').addEventListener('click', () => attemptEncounter());
-           document.getElementById('backup-roll-btn').addEventListener('click', attemptBackup);
-           document.getElementById('decline-backup-btn').addEventListener('click', declineBackup);
-           document.getElementById('weyr-roll-btn').addEventListener('click', attemptWeyr);
-           document.getElementById('decline-weyr-btn').addEventListener('click', declineWeyr);
-
-           document.getElementById('btn-force-pass').addEventListener('click', () => attemptEncounter(true));
-           document.getElementById('btn-force-fail').addEventListener('click', () => attemptEncounter(false));
-           document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
-           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
-
-           // Initialize local backup state instantly (ensures responsive GUI buttons immediately)
-           initializeLocalState();
-
-           // Execute safe authentication setup
-           await initAuth();
-           onAuthStateChanged(auth, async (user) => {
-               currentUser = user;
-               if (!user) {
-                   document.getElementById('setup-screen').style.display = 'block';
-                   return;
-               }
-
-               // Resolve lobby ID synchronously from Discord URL query params or fallback hash
-               const params = new URLSearchParams(window.location.search);
-               const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
+   <!-- Absolute HTML Safety Recovery Gate (Guarantees playability even if scripts block) -->
+   <script>
+       setTimeout(function() {
+           var addBtn = document.getElementById('btn-add-character');
+           var advanceBtn = document.getElementById('advance-to-rolling-btn');
+           var statusText = document.getElementById('status-text');
+           var statusDot = document.getElementById('status-dot');
+           
+           if (!window.gameInitialized || (addBtn && addBtn.hasAttribute('disabled'))) {
+               console.warn("Main modular game sequence stalled or blocked by environment. Activating direct recovery.");
                
-               let instanceId = "";
-               let detectedInsideDiscord = false;
-
-               if (discordInstanceId) {
-                   instanceId = discordInstanceId.toUpperCase();
-                   detectedInsideDiscord = true;
-                   insideDiscord = true;
-               } else {
-                   const hash = window.location.hash;
-                   const match = hash.match(/room=([A-Z0-9-]+)/i);
-                   if (match && match[1]) {
-                       instanceId = match[1].toUpperCase();
-                   } else {
-                       // Generate a 5-character randomized Lobby identifier
-                       instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                       window.location.hash = `room=${instanceId}`;
-                   }
-                   insideDiscord = false;
-               }
-
-               // Programmatically unlock the setup buttons immediately on load
-               const addBtn = document.getElementById('btn-add-character');
-               const advanceBtn = document.getElementById('advance-to-rolling-btn');
                if (addBtn) {
                    addBtn.removeAttribute('disabled');
                    addBtn.innerText = "+ Add Character";
@@ -1853,68 +1734,16 @@
                    advanceBtn.removeAttribute('disabled');
                    advanceBtn.innerText = "Proceed to Attribute Allocation";
                }
-               
-               // Setup document reference mapping (strict collection structures mapping)
-               roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
-
-               // Try running Discord SDK ready state in the background without blocking core database flow
-               if (discordSdk) {
-                   discordSdk.ready().then(() => {
-                       console.log("Discord SDK successfully loaded in background.");
-                   }).catch(err => {
-                       console.warn("Optional Discord SDK background load deferred:", err);
-                   });
+               if (statusText) {
+                   statusText.innerText = "Sandbox Mode (Recovery)";
+                   statusText.style.color = "#ffb703";
                }
-
-               onSnapshot(roomRef, (snapshot) => {
-                   if (!auth.currentUser) return; // strict authentication guard
-                   
-                   isMultiplayer = true; 
-                   
-                   const dot = document.getElementById('status-dot');
-                   const statusText = document.getElementById('status-text');
-                   const connStatus = document.getElementById('room-connection-status');
-                   const codeBadge = document.getElementById('room-code-badge');
-                   const copyBtn = document.getElementById('btn-copy-link');
-                   const joinBtn = document.getElementById('btn-open-join-modal');
-                   
-                   if (insideDiscord) {
-                       if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-                   } else {
-                       if (connStatus) connStatus.style.display = "flex";
-                       if (dot) {
-                           dot.style.background = "var(--success-color)";
-                           dot.style.animation = "none";
-                       }
-                       if (statusText) {
-                           statusText.innerText = `Synchronized`;
-                           statusText.style.color = "var(--success-color)";
-                       }
-                       if (codeBadge) {
-                           codeBadge.style.display = "inline-block";
-                           codeBadge.innerText = `ROOM: ${instanceId}`;
-                       }
-                       if (copyBtn) copyBtn.style.display = "inline-block";
-                       if (joinBtn) joinBtn.style.display = "inline-block";
-                   }
-
-                   if (snapshot.exists()) {
-                       const data = snapshot.data();
-                       syncFromFirebaseData(data);
-                   } else {
-                       // Synchronize current local state upward
-                       setDoc(roomRef, localRoomState);
-                   }
-               }, (err) => {
-                   console.error("Firebase sync error. Falling back to local offline mode:", err);
-                   switchToLocalOnly();
-               });
-           });
-       }
-
-       window.onload = function () {
-           init();
-       };
+               if (statusDot) {
+                   statusDot.style.background = "#ffb703";
+                   statusDot.style.animation = "pulse 2.0s infinite";
+               }
+           }
+       }, 5000);
    </script>
 </body>
 </html>
