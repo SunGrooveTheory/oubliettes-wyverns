@@ -1,60 +1,255 @@
-<!-- ... existing code ... -->
-       <div class="flex justify-between items-center border-b border-[#2a2a3a] pb-[15px] mb-[20px] flex-wrap gap-[15px]">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Oubliettes & Wyverns</title>
+   <style>
+       :root {
+           --bg-color: #0c0c0e;
+           --panel-color: #16161f;
+           --accent-color: #f4a261;
+           --text-color: #e2e2e9;
+           --border-color: #2a2a3a;
+           --success-color: #2a9d8f;
+           --danger-color: #e76f51;
+           --magic-color: #a2d2ff;
+       }
+       * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; }
+       body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
+
+       .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+       
+       .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+      
+       .section-box { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+       .section-title { font-size: 15px; font-weight: bold; color: var(--accent-color); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+       .setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
+       .player-slot { background: #0f0f14; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); position: relative; transition: border-color 0.25s, box-shadow 0.25s; }
+       .player-slot input, .player-slot select { width: 100%; padding: 8px; margin-top: 6px; background: #16161f; color: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: sans-serif; }
+       .remove-btn { position: absolute; top: 8px; right: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 11px; cursor: pointer; z-index: 5; }
+
+       .rolling-row { display: flex; flex-direction: column; background: #0f0f14; padding: 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent-color); }
+       .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+       .stat-roll-box { background: #16161f; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+       .stat-roll-box input { width: 50px; text-align: center; font-weight: bold; color: var(--accent-color); background: #0c0c0e; border: 1px solid var(--border-color); padding: 4px; border-radius: 4px; }
+
+       button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
+       button:hover { opacity: 0.9; transform: translateY(-1px); }
+       button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
+       button.danger { background: var(--danger-color); color: white; }
+       button.success { background: var(--success-color); color: white; }
+      
+       .sheet-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+       details.sheet-row { background: #0f0f14; border-radius: 6px; border-left: 4px solid var(--accent-color); }
+       summary.sheet-header { padding: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; list-style: none; }
+       .sheet-stats { padding: 10px; border-top: 1px solid var(--border-color); background: #13131c; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+       .stat-line { display: flex; justify-content: space-between; background: #16161f; padding: 4px 8px; border-radius: 4px; }
+
+       .game-board { display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap; }
+       .map-visual { flex: 1.1; min-width: 320px; background: #0f0f14; border-radius: 8px; padding: 15px; text-align: center; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+       .img-frame {
+           width: 100%;
+           aspect-ratio: 3 / 4;
+           margin-top: 10px;
+           border-radius: 6px;
+           overflow: hidden;
+           border: 1px solid var(--border-color);
+           background: #050507;
+           position: relative;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+       }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+       .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
+       .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
+
+       .choice-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+       .choice-card { background: #16161f; border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; cursor: pointer; transition: 0.2s; text-align: left; display: flex; flex-direction: column; justify-content: space-between; }
+       .choice-card:hover { border-color: var(--accent-color); background: #1c1c28; }
+       .choice-card h4 { color: var(--accent-color); margin-bottom: 6px; font-size: 15px; font-weight: normal; }
+       .choice-card p { font-size: 13px; color: #bbb; line-height: 1.4; font-family: sans-serif; }
+
+       .encounter-box { padding: 15px; border-left: 4px solid var(--accent-color); border-radius: 4px; background: rgba(254, 254, 254, 0.02); }
+       .encounter-box.combat { border-color: var(--danger-color); }
+       .encounter-box.puzzle { border-color: var(--magic-color); }
+       .encounter-box.hazard { border-color: var(--accent-color); }
+      
+       #dice-log { height: 120px; overflow-y: auto; background: #050507; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #999; margin-top: 12px; text-align: left; border: 1px solid #1c1c24; }
+       .highlight { color: var(--accent-color); font-weight: bold; }
+       .story-paragraph { font-family: 'Georgia', serif; font-size: 16px; line-height: 1.8; color: #ddd; margin-bottom: 14px; text-align: justify; }
+      
+       .host-controls { display: flex; gap: 8px; margin-top: 10px; }
+       .host-controls button { flex: 1; font-size: 12px; padding: 6px; }
+   </style>
+</head>
+<body>
+
+   <!-- STREAMING_CHUNK: Structuring the main HTML workspace panels -->
+   <div class="container">
+       <div class="header-container">
            <div>
-               <h1 class="text-3xl font-normal text-[#f4a261]">Oubliettes & Wyverns</h1>
-               <div id="room-connection-status" class="flex items-center gap-[10px] mt-[6px] font-sans text-[13px] flex-wrap">
-                   <span id="status-dot" class="w-[8px] h-[8px] bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
-                   <span id="status-text" class="text-[#aaa] font-bold">Authenticating...</span>
-                   <span id="room-code-badge" class="bg-[#f4a261]/15 text-[#f4a261] px-[8px] py-[2px] rounded font-bold font-mono tracking-[0.5px]">ROOM: RESOLVING...</span>
-                   <button id="btn-copy-link" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Copy Share Link</button>
-                   <button id="btn-open-join-modal" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-[8px] py-[2px] rounded text-[11px] hover:bg-[#2a2a3a]">Join Another Lobby</button>
-               </div>
+               <h1 style="display: inline-block; margin-right: 15px;">Oubliettes & Wyverns</h1>
+               <span id="connection-indicator" style="font-size: 12px; font-family: sans-serif; padding: 4px 10px; border-radius: 20px; background: #7a1d1d; color: white; font-weight: bold;">Sandbox Mode (Local Fallback)</span>
            </div>
-           <button id="btn-finalize" class="danger text-[13px] py-[8px] px-[14px]">Finalize Game</button>
+           <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
        </div>
 
-       <!-- Setup Stage Box -->
+       <!-- Connection Code Sync Hub -->
+       <div class="section-box" id="conn-sync-hub" style="background: rgba(244,162,97,0.05); border: 1px dashed var(--accent-color);">
+           <div class="section-title">📡 VC / DM Room Sync Connection</div>
+           <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+               <div>
+                   Current Room Code: <strong id="sync-room-display" style="font-size: 18px; color: var(--accent-color); font-family: monospace; letter-spacing: 1px;">SANDBOX-LOBBY</strong>
+               </div>
+               <div style="display: flex; gap: 10px;">
+                   <button id="btn-copy-room-id" style="padding: 6px 12px; font-size: 12px; background: #2a2a35; color: white;">Copy Room Code</button>
+                   <input type="text" id="input-sync-room-id" placeholder="Paste Ally's Room Code Here" style="background: #16161f; color: white; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 12px; width: 200px; text-transform: uppercase;">
+                   <button id="btn-connect-sync" class="success" style="padding: 6px 12px; font-size: 12px;">Link Rooms</button>
+               </div>
+           </div>
+       </div>
+
+       <!-- Character Setup Stage -->
        <div class="section-box" id="setup-screen">
-           <div class="bg-[#13131c] border border-[#f4a261]/20 rounded-lg p-4 mb-5 font-sans">
-               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                   <div>
-                       <div class="text-[12px] uppercase tracking-wider text-[#aaa] font-bold">🎮 Connection Status</div>
-                       <div class="flex items-center gap-2 mt-1">
-                           <span id="connection-status-dot" class="w-2.5 h-2.5 bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
-                           <span id="connection-status-text" class="text-white font-bold text-sm">Authenticating...</span>
+           <div class="section-title">Character Registry</div>
+           <div class="setup-grid" id="dynamic-player-container"></div>
+           <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Force Add Character</button>
+               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;">Proceed to Attribute Allocation</button>
+           </div>
+       </div>
+
+       <!-- Attribute Matrix Stage -->
+       <div class="section-box" id="rolling-screen" style="display: none;">
+           <div class="section-title">Attribute Allocation Matrix</div>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes.</p>
+           <div id="rolling-list"></div>
+           <button id="btn-finalize-stats" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
+       </div>
+
+       <!-- Active Board Interface Stage -->
+       <div id="game-view" style="display:none;">
+           <div class="status-bar">
+               <div>🗺️ Stage Count: <span id="stage-counter" style="color:var(--accent-color);">0</span> <span id="wyvern-alert" style="color: var(--danger-color); font-size: 12px; margin-left: 8px; display: none;">🔥 WYVERN TIER ACTIVATED</span></div>
+               <div>❤️ Current Group Vitality: <span id="party-hp" style="color:var(--success-color);">100</span></div>
+           </div>
+
+           <div class="section-box">
+               <div class="section-title">Character Sheets</div>
+               <div class="sheet-container" id="sheets-list"></div>
+           </div>
+
+           <div class="section-box">
+               <div class="section-title">Environmental Feedback</div>
+               <div class="game-board">
+                   <div class="map-visual">
+                       <strong id="location-name" style="color: var(--accent-color); font-size: 19px; min-height: 28px;">Initialization</strong>
+                       <div class="img-frame" id="map-img-container">
+                           <img id="map-img" style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Location Image">
+                           <div id="fallback-svg-container" style="width: 100%; height: 100%; display: block;"></div>
                        </div>
+                       <div id="dice-log"></div>
                    </div>
-                   <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                       <div class="bg-[#0c0c0e] px-3 py-2 rounded border border-[#2a2a3a] flex items-center justify-between gap-3">
-                           <span class="text-xs text-[#888]">YOUR CODE:</span>
-                           <strong id="active-room-code" class="text-[#f4a261] font-mono tracking-wider">RESOLVING...</strong>
-                           <button id="btn-copy-room" class="text-[10px] bg-[#1c1c28] hover:bg-[#2a2a3a] border border-[#2a2a3a] text-white px-2 py-1 rounded">Copy</button>
+                  
+                   <div class="story-panel">
+                       <div id="story-text"></div>
+                      
+                       <div class="encounter-box" id="encounter-interface" style="display:none;">
+                           <strong id="encounter-title" style="font-size: 17px;"></strong>
+                           <p id="encounter-desc" style="margin: 10px 0; font-size: 14px; color: #ddd; line-height: 1.5; font-family: sans-serif;"></p>
+                          
+                           <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px; margin-bottom: 12px; font-size: 14px; font-family: sans-serif;">
+                               Action Variable Required: <strong id="encounter-stat" style="color: white; text-transform: uppercase;"></strong>
+                               
+                               <div style="margin-top: 8px;">
+                                   <button id="btn-toggle-dc" style="background: transparent; color: #888; font-family: sans-serif; font-size: 12px; border: none; padding: 4px 0; cursor: pointer; text-decoration: underline;">🔍 [Host Only] Reveal Target DC</button>
+                                   <div id="encounter-dc-box" style="display: none; margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--danger-color);">
+                                       Target DC Threshold: <strong id="encounter-dc" class="highlight"></strong>
+                                   </div>
+                               </div>
+                           </div>
+                          
+                           <div id="action-area">
+                               <!-- Standard Check Controller -->
+                               <div id="standard-roll-controls">
+                                   <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
+                                   <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <button id="roll-check-btn" style="width: 100%; margin-bottom: 10px;">Roll standard die</button>
+                               </div>
+
+                               <!-- Backup Combined Check Controller -->
+                               <div id="backup-roll-controls" style="display:none; background: rgba(244,162,97,0.05); border: 1px dashed var(--accent-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                                   <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
+                                   <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <div style="display:flex; gap:8px;">
+                                       <button id="backup-roll-btn" class="success" style="flex:1;">Roll and Combine</button>
+                                       <button id="decline-backup-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                   </div>
+                               </div>
+
+                               <!-- Wyvern Weyr (Triple Check) Controller -->
+                               <div id="weyr-roll-controls" style="display:none; background: rgba(162,97,244,0.05); border: 1px dashed var(--magic-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                                   <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
+                                   <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+                                   <div style="display:flex; gap:8px;">
+                                       <button id="weyr-roll-btn" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
+                                       <button id="decline-weyr-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                   </div>
+                               </div>
+                              
+                               <label style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Host Overrides</label>
+                               <div class="host-controls">
+                                   <button id="btn-force-pass" class="success">Force Pass</button>
+                                   <button id="btn-force-fail" class="danger">Force Fail</button>
+                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;">Force TPK</button>
+                               </div>
+                           </div>
                        </div>
-                       <div class="flex gap-1">
-                           <input type="text" id="input-direct-join-code" placeholder="ENTER CODE" class="bg-[#0c0c0e] text-white placeholder-[#555] border border-[#2a2a3a] rounded px-3 py-2 text-sm font-mono tracking-wider w-32 uppercase text-center focus:border-[#f4a261] focus:outline-none">
-                           <button id="btn-direct-join" class="bg-[#2a9d8f] hover:bg-[#207a6f] text-white font-bold px-4 py-2 rounded text-sm font-sans transition">Join</button>
+
+                       <div id="navigation-block">
+                           <div class="choice-container" id="direction-choices"></div>
                        </div>
                    </div>
                </div>
            </div>
+       </div>
+   </div>
 
-           <div class="section-title">Character Registry</div>
-           <p class="text-[13px] text-[#aaa] font-sans mb-[15px]">Every adventurer receives an instantly registered character slot. Customize your name and class below.</p>
-           <div class="setup-grid" id="dynamic-player-container"></div>
-<!-- ... existing code ... -->
-   <!-- Core Discord Activity SDK Import -->
-   <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK offline mode activated.')"></script>
+   <!-- Finalize Confirmation Modal -->
+   <div id="finalize-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+       <div class="section-box" style="background: var(--panel-color); max-width: 450px; width: 100%; border: 2px solid var(--danger-color); padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 0 30px rgba(231,111,81,0.2);">
+           <h3 style="color: var(--danger-color); margin-bottom: 15px; font-size: 20px; font-family: 'Georgia', serif;">Finalize Game Session?</h3>
+           <p style="line-height: 1.6; margin-bottom: 20px; font-size: 14px; color: var(--text-color); font-family: sans-serif;">
+               This will wipe the active room state instantly and reset the multiplayer configuration back to setup. Do you proceed?
+           </p>
+           <div style="display: flex; justify-content: center; gap: 15px;">
+               <button class="danger" id="btn-execute-finalize" style="padding: 10px 20px;">Yes, WIPE State</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize">Cancel</button>
+           </div>
+       </div>
+   </div>
+
+   <!-- STREAMING_CHUNK: Injecting the Discord App SDK & modular script setups -->
+   <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK offline fallback activated.')"></script>
 
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { doc, onSnapshot, updateDoc, setDoc, deleteDoc, deleteField, initializeFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        let isMultiplayer = true; 
        let localRoomState = {};
+       let insideDiscord = false; 
+
+       let currentUser = null;
        let roomRef = null;
        let unsubscribeSnapshot = null;
-       let myDiscordUsername = "";
+       let myDiscordUsername = "Adventurer";
 
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 
@@ -69,71 +264,1405 @@
 
        if (typeof __firebase_config !== 'undefined') {
            try {
-               if (typeof __firebase_config === 'string') firebaseConfig = JSON.parse(__firebase_config);
-               else if (typeof __firebase_config === 'object') firebaseConfig = __firebase_config;
+               if (typeof __firebase_config === 'string') {
+                   firebaseConfig = JSON.parse(__firebase_config);
+               } else if (typeof __firebase_config === 'object' && __firebase_config !== null) {
+                   firebaseConfig = __firebase_config;
+               }
            } catch(e) {
                console.warn("Environmental configuration fallback bypassed.", e);
            }
        }
 
+       // Core initialization of Firebase modules
        const app = initializeApp(firebaseConfig);
-       const db = getFirestore(app);
+       
+       // FORCE LONG POLLING: This bypasses iframe WebSocket blocking inside Discord!
+       const db = initializeFirestore(app, {
+           experimentalForceLongPolling: true
+       });
        
        const auth = getAuth(app);
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
+       // Initializing safe Discord SDK Context
        let discordSdk = null;
-<!-- ... existing code ... -->
-       function switchToLocalOnly() {
-           isMultiplayer = false;
-           const dot = document.getElementById('status-dot');
-           const statusText = document.getElementById('status-text');
-           
-           const hubDot = document.getElementById('connection-status-dot');
-           const hubStatusText = document.getElementById('connection-status-text');
-
-           const applyStatus = (d, t, bg, textVal) => {
-               if (d) { d.style.background = bg; d.style.animation = "pulse 2.0s infinite"; }
-               if (t) { t.innerText = textVal; t.style.color = bg; }
-           };
-
-           applyStatus(dot, statusText, "#ffb703", "Sandbox Mode");
-           applyStatus(hubDot, hubStatusText, "#ffb703", "Sandbox Mode (Offline)");
+       try {
+           if (typeof DiscordSDK !== 'undefined') {
+               discordSdk = new DiscordSDK({ clientId: "1521393614528450622" });
+           }
+       } catch (discordErr) {
+           console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
        }
 
-       function listenToLobby(lobbyId) {
+       // Portfolio Array containing the primary asset pool
+       const driveImages = {
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
+           combat: [
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+           ],
+           puzzle: [
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+           ],
+           hazard: [
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+           ],
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
+       };
+
+       // Full Vocabulary Database for Story Generation (Restored Verbatim)
+       const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
+       const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
+       const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
+       const matterNouns = ["slime", "mist", "smoke", "ash", "dust", "blood", "crystal", "fog", "venom", "liquid", "gas", "poison", "rot", "acid", "mud", "frost", "salt", "ice", "darkness", "spark", "water", "sand", "clay", "tar", "embers"];
+       const adjectives = ["dark", "ancient", "frozen", "ruined", "slimy", "sharp", "eerie", "cursed", "shadowy", "glowing", "stone", "poisonous", "broken", "wild", "gilded", "tarnished", "silent", "whispering", "pulsing", "abandoned", "haunted", "dreaded", "unholy", "veiled", "shattered", "bleak", "doomed", "rotting", "forbidden", "golden", "iron", "burning", "cold", "deep", "lost", "magical", "mystic", "heavy", "quiet"];
+       const verbs = ["breaks", "shakes", "howls", "falls", "screams", "burns", "moves", "chokes", "appears", "glows", "whispers", "shines", "summons", "heaves", "shivers", "bleeds", "groans", "hisses", "stares", "looms", "twists", "flickers", "drips", "bubbles", "sounds", "scrapes", "gasps"];
+
+       // Comprehensive Prose Stems (Restored Verbatim)
+       const stems = {
+           approaches: [
+               (loc) => `After walking for hours through the cold stone tunnels, your group finally reaches <strong>${loc}</strong>. `,
+               (loc) => `A heavy iron door opens with a loud sound, pushing your party into the dark space of <strong>${loc}</strong>. `,
+               (loc) => `Your team climbs down a broken stone staircase, finally stepping onto the floor of <strong>${loc}</strong>. `,
+               (loc) => `A crack in the rock wall opens up, and your party steps through into <strong>${loc}</strong>. `,
+               (loc) => `Pushing through a thick, ${getWord(adjectives)} mist, you see the strange shapes of <strong>${loc}</strong>. `,
+               (loc) => `The passage suddenly becomes wider. Your torches light up the dark corners of <strong>${loc}</strong>. `,
+               (loc) => `Crawling through a narrow, dusty tunnel, you finally step out into <strong>${loc}</strong>. `,
+               (loc) => `A heavy silence fills the air as your boots touch the cold floor of <strong>${loc}</strong>. `,
+               (loc) => `The bad smell of old stone grows stronger as your team enters <strong>${loc}</strong>. `,
+               (loc) => `Slipping past a massive, ${getWord(adjectives)} gate, your party enters <strong>${loc}</strong>. `,
+               (loc) => `Strange whispers guide your path until you suddenly walk into the open space of <strong>${loc}</strong>. `
+           ],
+           sensory: [
+               () => `The air here is thick with the smell of ${getWord(adjectives)} smoke and wet stone. `,
+               () => `The light from your torches is weak, but you can see a large, ${getWord(adjectives)} ${getWord(relicNouns)}. `,
+               () => `A low, deep sound like a heartbeat ${getWord(verbs)} from under the stone floor. `,
+               () => `The walls are wet with a ${getWord(adjectives)} liquid, dripping slowly onto a broken ${getWord(relicNouns)}. `,
+               () => `Strange, ${getWord(adjectives)} plants grow on the ceiling, casting a soft light over the room. `,
+               () => `The air suddenly becomes freezing cold, and you can see your own breath. `,
+               () => `You find the broken remains of a ${getWord(adjectives)} ${getWord(threatNouns)} on the ground. `,
+               () => `Every step you take ${getWord(verbs)} off the high ceiling, making it very hard to be quiet. `,
+               () => `Your metal weapons feel heavy, as if pulled by a force from a nearby ${getWord(relicNouns)}. `,
+               () => `Small pieces of ${getWord(adjectives)} dust float in the air around you. `,
+               () => `You feel a strange energy in the air as you cross the threshold of this chamber. `
+           ],
+           combatComp: [
+               () => `Without warning, the shadows move. A large beast, covered in ${getWord(adjectives)} ${getWord(matterNouns)}, ${getWord(verbs)} out of the dark. `,
+               () => `The quiet is broken as a pack of ${getWord(adjectives)} monsters jumps from the dark, ready to attack. `,
+               () => `A giant guardian, made of ${getWord(adjectives)} stone and iron, stands up and blocks your path. `,
+               () => `The ceiling suddenly ${getWord(verbs)}, and a fast, angry ${getWord(threatNouns)} drops directly into your group. `,
+               () => `A pool of dark liquid on the floor rises, turning into a dangerous, ${getWord(adjectives)} shape. `,
+               () => `Your team is surprised! A group of ${getWord(adjectives)} enemies comes out of hidden spaces with weapons ready. `,
+               () => `The air turns cold as a shadow warrior, holding a rusted weapon, rushes forward to fight. `,
+               () => `An angry sound ${getWord(verbs)} through the room just before a massive beast attacks your front line. `
+           ],
+           combatImpact: [
+               () => `The creature roars loudly. Running away from this <strong>${getWord(threatNouns)}</strong> is not possible; someone must stand and fight. `,
+               () => `To survive this sudden attack, your team must use raw physical power to push the enemy back. `,
+               () => `Draw your weapons immediately before the <strong>${getWord(threatNouns)}</strong> can break your armor. `,
+               () => `The monster moves incredibly fast, leaving a trail of ${getWord(matterNouns)}. Strong, quick force is your only way to survive. `,
+               () => `Falling rocks block your way back. Your team must face this <strong>${getWord(threatNouns)}</strong> and win. `,
+               () => `The enemy is very angry and fast. Your party must fight back with strength, or face defeat. `,
+               () => `Raise your shields! Stand strong against the <strong>${getWord(threatNouns)}</strong> and strike back with your swords. `
+           ],
+           puzzleComp: [
+               () => `Your progress is stopped by a locked door. The surface is carved with ${getWord(adjectives)} signs that ${getWord(verbs)} softly. `,
+               () => `A massive machine made of metal gears blocks the room, locked tight by a ${getWord(adjectives)} ${getWord(relicNouns)}. `,
+               () => `The exit is blocked by a wall of blue energy that ${getWord(verbs)} when you get close to it. `,
+               () => `Before you stands a stone pedestal with a locked puzzle box, smelling of ${getWord(adjectives)} herbs. `,
+               () => `The floor ahead is a grid of stone plates, each carved with a different, ${getWord(adjectives)} sign. `,
+               () => `A magical barrier blocks your path, powered by three ${getWord(adjectives)} crystals that are out of place. `,
+               () => `An ancient riddle is written on the stone wall, guarded by a sleeping ${getWord(threatNouns)}. `,
+               () => `To open the path, you must balance a set of heavy stone weights that are jammed with old ${getWord(matterNouns)}. `
+           ],
+           puzzleImpact: [
+               () => `Touching the <strong>${getWord(relicNouns)}</strong> without thinking will set off a dangerous trap. It requires a smart plan to solve. `,
+               () => `Physical strength will not help you here. Your team must use logic and intellect to solve the ${getWord(adjectives)} puzzle. `,
+               () => `You need a deep understanding of magic and machines to bypass this <strong>${getWord(relicNouns)}</strong> safely. `,
+               () => `One wrong move will lock the <strong>${getWord(relicNouns)}</strong> forever. A careful mind is your best tool right now. `,
+               () => `The trap triggers are very small and hidden. You must be extremely smart to disarm the <strong>${getWord(relicNouns)}</strong>. `,
+               () => `The ${getWord(adjectives)} signs need a logical answer. Someone must step up and study the symbols carefully. `
+           ],
+           hazardComp: [
+               () => `As your team steps forward, the floor beneath you ${getWord(verbs)}. You have triggered a hidden trap. `,
+               () => `A sudden shaking moves the room, causing the ${getWord(adjectives)} ceiling to crack and drop stones. `,
+               () => `Your foot hits a thin wire. Suddenly, the walls fire a set of sharp, ${getWord(adjectives)} blades. `,
+               () => `The stone ground splits open, venting a dangerous cloud of ${getWord(adjectives)} poison gas. `,
+               () => `The floor suddenly tilts like a ship, threatening to slide your team into a deep <strong>${getWord(locationNouns)}</strong>. `,
+               () => `Without warning, a stream of hot, boiling ${getWord(matterNouns)} shoots from the pipes in the wall. `,
+               () => `A giant stone block falls from the ceiling, dropping quickly toward your front line. `,
+               () => `The old stone bridge breaks under your weight, falling down into the dark abyss below. `
+           ],
+           hazardImpact: [
+               () => `A wave of rocks falls from above. Only fast reflexes can pull your team out of the danger zone of the <strong>${getWord(locationNouns)}</strong>. `,
+               () => `Speed is everything! Your group must dodge the incoming ${getWord(adjectives)} trap before it strikes. `,
+               () => `There is no time to think, only to move. You need great agility to escape the collapsing <strong>${getWord(locationNouns)}</strong>. `,
+               () => `Your team must jump across the falling stone path with perfect balance, or fall into the deep <strong>${getWord(locationNouns)}</strong>. `,
+               () => `Nimble footwork is the only way to escape the crushing stones of the <strong>${getWord(locationNouns)}</strong>. `,
+               () => `The room is breaking apart. Quick movement is needed to reach safe ground on the other side. `
+           ],
+           campSetup: [
+               () => `Seeing how tired everyone is, the adventurers stop near a quiet, safe ${getWord(relicNouns)}. `,
+               () => `The team retreats into a small cave, blocking the entrance with ${getWord(adjectives)} rocks. `,
+               () => `Your group finds a quiet spot inside an old, broken shrine, deciding to set up camp. `,
+               () => `Fatigue makes your arms heavy. Your party stops in a quiet stone vault to rest and sleep. `
+           ],
+           campAction: [
+               () => `A small, warm fire is lit on the stone. It casts a ${getWord(adjectives)} glow on the walls. `,
+               () => `Bedrolls are placed in a tight circle while the scout watches the dark tunnel. `,
+               () => `Armor is taken off and simple food is shared in quiet whispers to stay hidden. `,
+               () => `We begin to clean our wounds, using our limited supplies to heal our sore bodies. `
+           ],
+           campOutcome: [
+               () => `However, the Oubliette is never completely safe. Keeping watch over the <strong>${getWord(locationNouns)}</strong> requires focus. `,
+               () => `Rest is hard to find here. Someone must stay awake to watch for <strong>${getWord(threatNouns)}s</strong> in the dark. `,
+               () => `But the shadows seem to move closer to your fire. You must watch the <strong>${getWord(relicNouns)}</strong> carefully. `,
+               () => `Cold air begins to fill the room, threatening to keep your tired team from sleeping well. `
+           ]
+       };
+
+       const resolutionTemplates = {
+           obstacleSuccess: [
+               () => `Your team works together perfectly. With a final effort, you bypass the ${getWord(adjectives)} threat and secure the path.`,
+               () => `Using fast teamwork, your group slips through the narrow passage just before the trap goes off.`,
+               () => `A quick, smart action completely disables the trap before the ${getWord(adjectives)} ${getWord(relicNouns)} can harm anyone.`,
+               () => `With great discipline, your warriors protect the group, letting everyone pass the danger safely.`,
+               () => `You move as a single, coordinated team, escaping the danger zone without a single major mistake.`
+           ],
+           obstacleFailure: [
+               () => `Confusion breaks out. A sudden blast of ${getWord(adjectives)} ${getWord(matterNouns)} hits the group, throwing everyone to the floor.`,
+               () => `A bad step triggers the main trap, venting hot, dangerous ${getWord(matterNouns)} that burns your armor.`,
+               () => `The <strong>${getWord(threatNouns)}</strong> manages to isolate your team, dealing heavy damage before you can recover.`,
+               () => `The machine goes off with a loud sound, hitting several party members with sharp debris.`,
+               () => `The ceiling collapses in a shower of heavy stones, crushing your shields and hurting the party.`
+           ],
+           campSuccess: [
+               () => `Your sentries do an excellent job. The camp remains quiet and safe, letting your team heal their deep wounds.`,
+               () => `A quiet, peaceful night lets everyone sleep deeply under a hidden stone ledge.`,
+               () => `Protected by the walls of the old shrine, the team rests well, clearing their minds of fear.`
+           ],
+           campFailure: [
+               () => `Scary sounds from the dark tunnels keep your sentries on high alert, making it impossible to sleep well.`,
+               () => `A leak of poison gas forces your team to wake up in the dark and move your camp immediately.`,
+               () => `A cold wind sweeps through the chamber, keeping your tired adventurers awake and cold all night.`
+           ],
+           deathTemplates: [
+               () => `Their weapons shatter into useless iron dust, and their shields splinter. The vanguard falls to the frozen stones of the oubliette, entirely overrun by the gathering shadows.`,
+               () => `The crushing weight of their wounds drags the proud adventurers to their knees. One by one, they slip into a silent sleep, their final breaths mixing with the ancient, damp mist of the underworld.`,
+               () => `The corridor falls into a sudden, terrible silence. Your last torch sputters and dies, leaving only the laughter of invisible, lurking beasts echoing in the absolute dark.`,
+               () => `There are no dramatic battle cries or legendary last stands. The quiet, wet ground claims your squad, and the shifting passages of the labyrinth close over your remains forever.`,
+               () => `An icy wind sweeps through the rock crevices, snuffing out the party's remaining life. The Oubliette adds another set of nameless bones to its catacombs.`
+           ]
+       };
+
+       // Running state allocations
+       let tempPlayers = {}; 
+       let players = [];
+       let maxPartyHP = 0;
+       let currentPartyHP = 0;
+       let stageCount = 0;
+       let currentEncounter = null;
+       let currentOptions = [];
+       let backupRollActive = false;
+       let weyrRollActive = false;
+       let firstRollerIndex = null;
+       let firstRollTotal = 0;
+       let secondRollerIndex = null;
+       let secondRollTotal = 0;
+       let currentActiveDC = 0;
+       let isHostTPK = false; 
+
+       const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
+
+       const classAffinities = {
+           "🛡️ Paladin": { combat: -4, puzzle: 1, hazard: 2, camp: 0 },
+           "🧙 Wizard": { combat: 2, puzzle: -5, hazard: 0, camp: 0 },
+           "🎴 Cleric": { combat: -1, puzzle: -2, hazard: 1, camp: -3 },
+           "👣 Thief": { combat: 0, puzzle: -1, hazard: -5, camp: 0 },
+           "🧝‍♀️ Elf": { combat: 0, puzzle: -2, hazard: -3, camp: 0 },
+           "⛏️ Dwarf": { combat: -3, puzzle: -1, hazard: 1, camp: 0 },
+           "🏡 Halfling": { combat: 1, puzzle: 0, hazard: -4, camp: 0 },
+           "🐻 Druid": { combat: -1, puzzle: 0, hazard: -1, camp: -3 },
+           "📜 Bard": { combat: -2, puzzle: -2, hazard: -2, camp: -1 },
+           "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
+       };
+
+       // STREAMING_CHUNK: Setting up visual generation routines
+       function getFantasySVG(category) {
+           const svgAttrs = `viewBox="0 0 300 400" width="100%" height="100%" style="display: block; background: #050507;"`;
+           switch (category) {
+               case 'entrance':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><path d="M50 350 V150 A100 100 0 0 1 250 150 V350" fill="none" stroke="#2a2a3a" stroke-width="12" /><text x="150" y="80" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">OUBLIETTE ENTRANCE</text></svg>`;
+               case 'combat':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><circle cx="150" cy="220" r="80" fill="red" opacity="0.1" /><text x="150" y="60" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">AGGRESSIVE ENCOUNTER</text></svg>`;
+               case 'puzzle':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="50" fill="#a2d2ff" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SACRED PUZZLE MATRIX</text></svg>`;
+               case 'hazard':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="60" fill="#f4a261" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">UNSTABLE CASCADE</text></svg>`;
+               case 'camp':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="50" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">SAFE HAVEN REST</text></svg>`;
+               case 'death':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0a0505"/><text x="150" y="70" fill="#e76f51" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">VANGUARD DESTROYED</text></svg>`;
+               case 'win':
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0e0c"/><text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text></svg>`;
+               default:
+                   return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading...</text></svg>`;
+           }
+       }
+
+       function updateBoardImage(category) {
+           const imgElement = document.getElementById('map-img');
+           const svgContainer = document.getElementById('fallback-svg-container');
+           if (!imgElement || !svgContainer) return;
+
+           const imgArray = driveImages[category];
+           if (imgArray && imgArray.length > 0) {
+               const selectedImg = imgArray[Math.floor(Math.random() * imgArray.length)];
+               imgElement.src = selectedImg;
+               imgElement.style.display = 'block';
+               svgContainer.style.display = 'none';
+               
+               imgElement.onerror = () => {
+                   imgElement.style.display = 'none';
+                   svgContainer.style.display = 'block';
+                   svgContainer.innerHTML = getFantasySVG(category);
+               };
+           } else {
+               imgElement.style.display = 'none';
+               svgContainer.style.display = 'block';
+               svgContainer.innerHTML = getFantasySVG(category);
+           }
+       }
+
+       function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+       function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
+       function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
+
+       function constructGranularText(type, locationName) {
+           let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
+           let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
+           let complication, impact;
+           if (type === "combat") {
+               complication = stems.combatComp[Math.floor(Math.random() * stems.combatComp.length)]();
+               impact = stems.combatImpact[Math.floor(Math.random() * stems.combatImpact.length)]();
+           } else if (type === "puzzle") {
+               complication = stems.puzzleComp[Math.floor(Math.random() * stems.puzzleComp.length)]();
+               impact = stems.puzzleImpact[Math.floor(Math.random() * stems.puzzleImpact.length)]();
+           } else {
+               complication = stems.hazardComp[Math.floor(Math.random() * stems.hazardComp.length)]();
+               impact = stems.hazardImpact[Math.floor(Math.random() * stems.hazardImpact.length)]();
+           }
+           return `<p class="story-paragraph">${approach}${sensory}</p><p class="story-paragraph">${complication}${impact}</p>`;
+       }
+
+       function constructGranularCampText() {
+           let setup = stems.campSetup[Math.floor(Math.random() * stems.campSetup.length)]();
+           let action = stems.campAction[Math.floor(Math.random() * stems.campAction.length)]();
+           let outcome = stems.campOutcome[Math.floor(Math.random() * stems.campOutcome.length)]();
+           return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
+       }
+
+       function showNotification(text) {
+           let box = document.getElementById('custom-notification');
+           if (!box) {
+               box = document.createElement('div');
+               box.id = 'custom-notification';
+               box.style = "position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--danger-color); color: white; padding: 12px 24px; border-radius: 8px; font-family: sans-serif; font-size: 14px; z-index: 10000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-weight: bold; transition: opacity 0.3s;";
+               document.body.appendChild(box);
+           }
+           box.innerText = text;
+           box.style.opacity = '1';
+           setTimeout(() => { box.style.opacity = '0'; }, 3000);
+       }
+
+       // Switch completely to Sandbox mode visually
+       function switchToLocalOnly() {
+           isMultiplayer = false;
+           const indicator = document.getElementById('connection-indicator');
+           if (indicator) {
+               indicator.innerText = "Sandbox Mode (Offline)";
+               indicator.style.background = "#ffb703";
+           }
+       }
+
+       // Automatically generate a default local state context
+       function initializeLocalState() {
+           const slotId = 'slot_' + SESSION_ID;
+           localRoomState = {
+               tempPlayers: {
+                   [slotId]: {
+                       id: slotId,
+                       name: myDiscordUsername,
+                       avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
+                       brawn: 0,
+                       brains: 0,
+                       agility: 0,
+                       owner: SESSION_ID
+                   }
+               },
+               players: [],
+               maxPartyHP: 0,
+               currentPartyHP: 0,
+               stageCount: 0,
+               currentEncounter: null,
+               currentOptions: [],
+               isHostTPK: false
+           };
+           syncFromFirebaseData(localRoomState);
+       }
+
+       function applyLocalUpdates(updates) {
+           for (const [key, val] of Object.entries(updates)) {
+               const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue');
+
+               if (key.includes('.')) {
+                   const parts = key.split('.');
+                   let current = localRoomState;
+                   for (let i = 0; i < parts.length - 1; i++) {
+                       if (!current[parts[i]]) current[parts[i]] = {};
+                       current = current[parts[i]];
+                   }
+                   const lastPart = parts[parts.length - 1];
+                   if (isDelete) {
+                       delete current[lastPart];
+                   } else {
+                       current[lastPart] = val;
+                   }
+               } else {
+                   if (isDelete) {
+                       delete localRoomState[key];
+                   } else {
+                       localRoomState[key] = val;
+                   }
+               }
+           }
+           syncFromFirebaseData(localRoomState);
+       }
+
+       // STREAMING_CHUNK: Designing data transport wrapper calls
+       async function safeUpdateDoc(updates) {
+           if (isMultiplayer && roomRef) {
+               try {
+                   await updateDoc(roomRef, updates);
+               } catch (err) {
+                   console.error("Multiplayer sync failed, moving to sandbox mode:", err);
+                   switchToLocalOnly();
+                   applyLocalUpdates(updates);
+               }
+           } else {
+               applyLocalUpdates(updates);
+           }
+       }
+
+       async function safeSetDoc(data) {
+           if (isMultiplayer && roomRef) {
+               try {
+                   await setDoc(roomRef, data, { merge: true });
+               } catch (err) {
+                   console.error("Multiplayer sync failed, moving to sandbox mode:", err);
+                   switchToLocalOnly();
+                   localRoomState = data;
+                   syncFromFirebaseData(localRoomState);
+               }
+           } else {
+               localRoomState = data;
+               syncFromFirebaseData(localRoomState);
+           }
+       }
+
+       async function updatePlayerName(slotId, val) {
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.name`]: val });
+       }
+
+       async function updatePlayerClass(slotId, val) {
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.avatar`]: val });
+       }
+
+       async function updateTempStat(slotId, stat, val) {
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0 });
+       }
+
+       async function rollStat(slotId, stat, max) {
+           let r = Math.floor(Math.random() * max) + 1;
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: r });
+       }
+
+       async function addPlayerSlot() {
+           const slotId = 'slot_' + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+           const newSlot = {
+               id: slotId,
+               name: "Hero Slot",
+               avatar: classicClasses[Math.floor(Math.random() * classicClasses.length)],
+               brawn: 0,
+               brains: 0,
+               agility: 0,
+               owner: SESSION_ID
+           };
+           await safeUpdateDoc({ [`tempPlayers.${slotId}`]: newSlot });
+       }
+
+       async function removePlayerSlot(slotId) {
+           if (isMultiplayer && roomRef) {
+               await updateDoc(roomRef, { [`tempPlayers.${slotId}`]: deleteField() });
+           } else {
+               delete localRoomState.tempPlayers[slotId];
+               syncFromFirebaseData(localRoomState);
+           }
+       }
+
+       async function goToRollingScreen() {
+           const tempPlayersList = Object.values(tempPlayers);
+           let emptyCheck = false;
+           tempPlayersList.forEach(p => {
+               if (!p.name || p.name.trim() === "") {
+                   emptyCheck = true;
+               }
+           });
+
+           if (tempPlayersList.length === 0) { 
+               showNotification("Registry error: Vanguards must contain at least one member."); 
+               return; 
+           }
+           if (emptyCheck) {
+               showNotification("Validation error: All characters must have a registered name.");
+               return;
+           }
+
+           await safeUpdateDoc({ stageCount: 0.5 });
+       }
+
+       async function finalizeStatsAndStart() {
+           let derivedPlayers = [];
+           let totalCapacity = 0;
+           
+           const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+
+           for (let i = 0; i < sortedTempPlayers.length; i++) {
+               let tp = sortedTempPlayers[i];
+               let br = parseInt(document.getElementById(`roll_${tp.id}_brawn`).value) || 0;
+               let bn = parseInt(document.getElementById(`roll_${tp.id}_brains`).value) || 0;
+               let ag = parseInt(document.getElementById(`roll_${tp.id}_agility`).value) || 0;
+               derivedPlayers.push({ name: tp.name, avatar: tp.avatar, brawn: br, brains: bn, agility: ag });
+               totalCapacity += (br + bn + ag);
+           }
+
+           let startingHP = Math.max(50, totalCapacity + (derivedPlayers.length * 10));
+           
+           await safeUpdateDoc({
+               players: derivedPlayers,
+               maxPartyHP: startingHP,
+               currentPartyHP: startingHP,
+               stageCount: 1,
+               currentEncounter: null,
+               currentOptions: [],
+               isHostTPK: false
+           });
+       }
+
+       // STREAMING_CHUNK: Managing dungeon navigation blocks
+       async function archiveAndFinalize() {
+           if (isMultiplayer && auth.currentUser && roomRef) {
+               try {
+                   await deleteDoc(roomRef);
+                   window.location.reload();
+               } catch (err) {
+                   console.error("Dungeon state deletion failed:", err);
+               }
+           } else {
+               window.location.reload();
+           }
+       }
+
+       function confirmFinalize() { document.getElementById('finalize-modal').style.display = 'flex'; }
+       function closeFinalizeModal() { document.getElementById('finalize-modal').style.display = 'none'; }
+       async function executeFinalize() { closeFinalizeModal(); await archiveAndFinalize(); }
+
+       let lastRenderedRollingPlayersJSON = "";
+       function renderRollingListFromState() {
+           document.getElementById('setup-screen').style.display = 'none';
+           document.getElementById('rolling-screen').style.display = 'block';
+           document.getElementById('game-view').style.display = 'none';
+
+           const sortedTempPlayers = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+           const currentJSON = JSON.stringify(sortedTempPlayers.map(p => ({id: p.id, name: p.name, avatar: p.avatar})));
+
+           if (currentJSON !== lastRenderedRollingPlayersJSON) {
+               lastRenderedRollingPlayersJSON = currentJSON;
+               let listHtml = "";
+               sortedTempPlayers.forEach((p) => {
+                   listHtml += `
+                       <div class="rolling-row" id="rolling_row_${p.id}">
+                           <strong>${p.avatar} ( ${p.name || 'Unnamed'} )</strong>
+                           <div class="rolling-stats-grid">
+                               <div class="stat-roll-box">
+                                   <span>⚔️ Brawn:</span>
+                                   <input type="number" id="roll_${p.id}_brawn" class="stat-roll-input" data-id="${p.id}" data-stat="brawn" value="${p.brawn || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="brawn" data-die="6">d6</button>
+                               </div>
+                               <div class="stat-roll-box">
+                                   <span>🧠 Brains:</span>
+                                   <input type="number" id="roll_${p.id}_brains" class="stat-roll-input" data-id="${p.id}" data-stat="brains" value="${p.brains || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="brains" data-die="10">d10</button>
+                               </div>
+                               <div class="stat-roll-box">
+                                   <span>🏃 Agility:</span>
+                                   <input type="number" id="roll_${p.id}_agility" class="stat-roll-input" data-id="${p.id}" data-stat="agility" value="${p.agility || 0}">
+                                   <button type="button" class="roll-btn" data-id="${p.id}" data-stat="agility" data-die="20">d20</button>
+                               </div>
+                           </div>
+                       </div>`;
+               });
+               document.getElementById('rolling-list').innerHTML = listHtml;
+           }
+
+           sortedTempPlayers.forEach(p => {
+               const bInput = document.getElementById(`roll_${p.id}_brawn`);
+               const brInput = document.getElementById(`roll_${p.id}_brains`);
+               const aInput = document.getElementById(`roll_${p.id}_agility`);
+               if (bInput && document.activeElement !== bInput) bInput.value = p.brawn || 0;
+               if (brInput && document.activeElement !== brInput) brInput.value = p.brains || 0;
+               if (aInput && document.activeElement !== aInput) aInput.value = p.agility || 0;
+           });
+       }
+
+       function getChallengeMapping() {
+           const roll = Math.random();
+           if (roll < 0.35) return { type: "combat", stat: "Brawn", header: "Aggressive Threat" };
+           if (roll < 0.70) return { type: "puzzle", stat: "Brains", header: "Mechanical Barrier System" };
+           return { type: "hazard", stat: "Agility", header: "Unstable Cascade" };
+       }
+
+       async function generateAdventureChoices() {
+           let title1 = generateDynamicLocationTitle(), title2 = generateDynamicLocationTitle();
+           while(title2 === title1) { title2 = generateDynamicLocationTitle(); }
+           let c1 = getChallengeMapping(), c2 = getChallengeMapping();
+           
+           const newOptions = [
+               { title: title1, type: c1.type, stat: c1.stat, header: c1.header }, 
+               { title: title2, type: c2.type, stat: c2.stat, header: c2.header }
+           ];
+
+           await safeUpdateDoc({
+               currentOptions: newOptions,
+               currentEncounter: null,
+               backupRollActive: false,
+               weyrRollActive: false,
+               firstRollerIndex: null,
+               firstRollTotal: 0,
+               secondRollerIndex: null,
+               secondRollTotal: 0
+           });
+       }
+
+       function renderSyncedChoices() {
+           if (!currentOptions || currentOptions.length < 2) return;
+           let choicesHtml = `
+               <div class="choice-card" id="btn-choice-0">
+                   <h4>➡️ Descend into ${currentOptions[0].title}</h4>
+                   <p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p>
+               </div>
+               <div class="choice-card" id="btn-choice-1">
+                   <h4>➡️ Route toward ${currentOptions[1].title}</h4>
+                   <p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p>
+               </div>`;
+           if (currentPartyHP < maxPartyHP) {
+               choicesHtml += `
+                   <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" id="btn-choice-camp">
+                       <h4>⛺ Set Up Camp</h4>
+                       <p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p>
+                   </div>`;
+           }
+           document.getElementById('direction-choices').innerHTML = choicesHtml;
+       }
+
+       // STREAMING_CHUNK: Initializing encounter selection models
+       async function selectPath(idx) {
+           let nextStage = stageCount + 1;
+           let chosen = currentOptions[idx];
+
+           let N = players.length || 1;
+           let M = 0.60 + 0.02 * (N - 8);
+           let d6 = Math.floor(Math.random() * 6) + 1;
+           let dc = 11 + d6 + Math.floor(nextStage * M);
+
+           let failDmg = Math.floor((6 + d6 + nextStage) * (N * 0.5));
+           let dynamicStoryText = constructGranularText(chosen.type, chosen.title);
+
+           const newEncounter = { 
+               type: chosen.type, 
+               stat: chosen.stat, 
+               title: chosen.header, 
+               desc: dynamicStoryText, 
+               dc: dc, 
+               failDmg: failDmg, 
+               isCamp: false 
+           };
+
+           await safeUpdateDoc({
+               stageCount: nextStage,
+               currentEncounter: newEncounter
+           });
+       }
+
+       async function selectCamp() {
+           let campDescription = constructGranularCampText();
+
+           let N = players.length || 1;
+           let M = 0.60 + 0.02 * (N - 8);
+           let d6 = Math.floor(Math.random() * 6) + 1;
+           let dc = 10 + d6 + Math.floor(stageCount * 0.4 * M);
+
+           const campEncounter = { 
+               type: "puzzle", 
+               stat: ["Brawn", "Brains", "Agility"][Math.floor(Math.random() * 3)], 
+               title: `Secure Rest Optimization`, 
+               desc: campDescription, 
+               dc: dc, 
+               isCamp: true 
+           };
+
+           await safeUpdateDoc({
+               currentEncounter: campEncounter
+           });
+       }
+
+       function updateHostDCReveal() {
+           if (!currentEncounter) return;
+           const selectEl = document.getElementById('active-player-select');
+           if (!selectEl || selectEl.value === "") return;
+           let player = players[selectEl.value];
+           if (!player) return;
+           let classOffset = 0;
+           if (classAffinities[player.avatar]) {
+               const category = currentEncounter.isCamp ? "camp" : currentEncounter.type;
+               classOffset = classAffinities[player.avatar][category] || 0;
+           }
+           let activeDC = currentEncounter.dc + classOffset;
+           currentActiveDC = activeDC;
+           document.getElementById('encounter-dc').innerHTML = `Base DC: ${currentEncounter.dc} <span style="display:block; font-size:11px; font-weight:normal; color:#aaa; margin-top:4px;">Active for ${player.name} (${player.avatar.split(" ")[0]}): <strong>${activeDC}</strong> due to hidden ${classOffset >= 0 ? '+' : ''}${classOffset} class offset</span>`;
+       }
+
+       // STREAMING_CHUNK: Managing attribute roll checking matrices
+       async function attemptEncounter(hostOverride = null) {
+           if (!currentEncounter) return;
+           let selectEl = document.getElementById('active-player-select');
+           if (!selectEl || selectEl.value === "") return;
+           let firstIdx = parseInt(selectEl.value);
+           let player = players[firstIdx];
+           if (!player) return;
+           
+           let modifier = player[currentEncounter.stat.toLowerCase()] || 0;
+           
+           let dieSize = (stageCount >= 124) ? 30 : 20;
+           let roll = Math.floor(Math.random() * dieSize) + 1;
+           let total = roll + modifier;
+
+           let classOffset = 0;
+           if (classAffinities[player.avatar]) {
+               const category = currentEncounter.isCamp ? "camp" : currentEncounter.type;
+               classOffset = classAffinities[player.avatar][category] || 0;
+           }
+           let activeDC = currentEncounter.dc + classOffset;
+           currentActiveDC = activeDC;
+
+           let success = (hostOverride !== null) ? hostOverride : (total >= activeDC);
+
+           if (success) {
+               let logText = "";
+               if (hostOverride === null) {
+                   logText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>PASS</strong>`;
+               } else {
+                   logText = `👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Pass</strong>.`;
+               }
+               resolveEncounterSuccess(logText);
+           } else {
+               if (hostOverride === false) {
+                   let logText = `👑 <strong>Host Intervention:</strong> Outcome manually set to <strong>Fail</strong>.`;
+                   resolveEncounterFailure(logText);
+               } else {
+                   let failText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): [${roll}] + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong>`;
+                   if (stageCount >= 58) {
+                       await safeUpdateDoc({
+                           backupRollActive: true,
+                           firstRollerIndex: firstIdx,
+                           firstRollTotal: total,
+                           diceLogUpdate: failText + `<br>🤝 <strong>Combined Effort Activated!</strong> Nominate a backup ally...`
+                       });
+                   } else {
+                       resolveEncounterFailure(failText + ` <span style="font-size:11px; color:#aaa; display:block;">(Combined Effort unlocks at Stage 58)</span>`);
+                   }
+               }
+           }
+       }
+
+       async function attemptBackup() {
+           if (!currentEncounter) return;
+           let backupIdx = parseInt(document.getElementById('backup-player-select').value);
+           let backupPlayer = players[backupIdx];
+           if (!backupPlayer) return;
+
+           let modifier = backupPlayer[currentEncounter.stat.toLowerCase()] || 0;
+           let dieSize = (stageCount >= 124) ? 30 : 20;
+           let roll = Math.floor(Math.random() * dieSize) + 1;
+           let p2Total = roll + modifier;
+           
+           let combinedTotal = firstRollTotal + p2Total;
+           let success = combinedTotal >= currentActiveDC;
+
+           let resultLog = `🤝 <strong>Combined Effort!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${backupPlayer.name} (${currentEncounter.stat} Check: [${roll}] + ${modifier} = ${p2Total}) = <span class="highlight">${combinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`;
+
+           if (success) {
+               resolveEncounterSuccess(resultLog);
+           } else {
+               if (stageCount >= 157) {
+                   await safeUpdateDoc({
+                       backupRollActive: false,
+                       weyrRollActive: true,
+                       secondRollerIndex: backupIdx,
+                       secondRollTotal: p2Total,
+                       diceLogUpdate: resultLog + `<br>🐲 <strong>Wyvern Weyr Triggered!</strong> Nominate a third operator...`
+                   });
+               } else {
+                   resolveEncounterFailure(resultLog);
+               }
+           }
+       }
+
+       async function declineBackup() {
+           resolveEncounterFailure(`💀 Fate accepted. Support intervention declined.`);
+       }
+
+       async function attemptWeyr() {
+           if (!currentEncounter) return;
+           let weyrIdx = parseInt(document.getElementById('weyr-player-select').value);
+           let weyrPlayer = players[weyrIdx];
+           if (!weyrPlayer) return;
+
+           let modifier = weyrPlayer[currentEncounter.stat.toLowerCase()] || 0;
+           let roll = Math.floor(Math.random() * 30) + 1;
+           let p3Total = roll + modifier;
+           let finalCombinedTotal = firstRollTotal + secondRollTotal + p3Total;
+           let success = finalCombinedTotal >= currentActiveDC;
+
+           let logText = `🐲 <strong>Wyvern Weyr!</strong> ${players[firstRollerIndex].name} (${firstRollTotal}) + ${players[secondRollerIndex].name} (${secondRollTotal}) + ${weyrPlayer.name} (d30: [${roll}] + ${modifier} = ${p3Total}) = <span class="highlight">${finalCombinedTotal}</span> -> <strong>${success ? 'PASS' : 'FAIL'}</strong>`;
+           if (success) resolveEncounterSuccess(logText); else resolveEncounterFailure(logText);
+       }
+
+       async function declineWeyr() {
+           resolveEncounterFailure(`💀 Fate accepted. Wyvern Weyr declined.`);
+       }
+
+       // STREAMING_CHUNK: Processing encounter resolution paths
+       async function resolveEncounterSuccess(actionLogMessage) {
+           if (!currentEncounter) return;
+           let heal = 0;
+           let wearAndTear = 0;
+           let updatedHP = currentPartyHP;
+
+           if (currentEncounter.isCamp) {
+               let baselineMin = Math.ceil(maxPartyHP * 0.15);
+               heal = Math.max(baselineMin, Math.floor((maxPartyHP - currentPartyHP) * 0.50) + 5);
+               updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
+           } else {
+               wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
+               updatedHP = Math.max(0, currentPartyHP - wearAndTear);
+           }
+
+           await safeUpdateDoc({
+               currentPartyHP: updatedHP,
+               currentEncounter: null,
+               currentOptions: [],
+               backupRollActive: false,
+               weyrRollActive: false,
+               diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Rest yields +${heal} vitality.` : `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`)
+           });
+       }
+
+       async function resolveEncounterFailure(actionLogMessage) {
+           if (!currentEncounter) return;
+           let heal = 0;
+           let damage = 0;
+           let updatedHP = currentPartyHP;
+
+           if (currentEncounter.isCamp) {
+               heal = Math.ceil(maxPartyHP * 0.15);
+               updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
+           } else {
+               damage = currentEncounter.failDmg || 10;
+               updatedHP = Math.max(0, currentPartyHP - damage);
+           }
+
+           await safeUpdateDoc({
+               currentPartyHP: updatedHP,
+               currentEncounter: null,
+               currentOptions: [],
+               backupRollActive: false,
+               weyrRollActive: false,
+               diceLogUpdate: actionLogMessage + `<br>` + (currentEncounter.isCamp ? `⛺ Perimeter breached. Minimal rest: +${heal} vitality.` : `⚔️ Strike landed! Group sustained -${damage} damage.`)
+           });
+       }
+
+       async function triggerHostTPK() {
+           await safeUpdateDoc({
+               currentPartyHP: 0,
+               isHostTPK: true,
+               currentEncounter: null,
+               currentOptions: [],
+               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced immediate TPK.`
+           });
+       }
+
+       async function undoTPK() {
+           await safeUpdateDoc({
+               currentPartyHP: Math.ceil(maxPartyHP * 0.25),
+               isHostTPK: false,
+               currentEncounter: null,
+               currentOptions: [],
+               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Redefined outcome. Rewound time to the portal.`
+           });
+       }
+
+       function logDice(msg) {
+           const log = document.getElementById('dice-log');
+           if (log) {
+               log.innerHTML = `<div style="margin-bottom:6px; border-bottom:1px solid #1c1c24; padding-bottom:4px;">${msg}</div>` + log.innerHTML;
+           }
+       }
+
+       function updateHPDisplay() {
+           document.getElementById('stage-counter').innerText = Math.floor(stageCount);
+           let container = document.getElementById('party-hp');
+           container.innerText = `${currentPartyHP} / ${maxPartyHP}`;
+           container.style.color = currentPartyHP < (maxPartyHP * 0.4) ? "var(--danger-color)" : "var(--success-color)";
+           
+           if (stageCount >= 124) {
+               document.getElementById('wyvern-alert').style.display = "inline";
+           } else {
+               document.getElementById('wyvern-alert').style.display = "none";
+           }
+       }
+
+       // STREAMING_CHUNK: Processing interface templates from state snapshot
+       function renderCharacterSheetsFromState() {
+           let html = "";
+           let dropDownHTML = "";
+           players.forEach((p, idx) => {
+               html += `<details class="sheet-row"><summary class="sheet-header"><span>${p.avatar.split(" ")[0]}</span> <strong>${p.name}</strong></summary> <div class="sheet-stats"><div class="stat-line"><span>Brawn Matrix:</span><strong>+${p.brawn}</strong></div> <div class="stat-line"><span>Brains Matrix:</span><strong>+${p.brains}</strong></div> <div class="stat-line"><span>Agility Matrix:</span><strong>+${p.agility}</strong></div></div></details>`;
+               dropDownHTML += `<option value="${idx}">${p.name}</option>`;
+           });
+           document.getElementById('sheets-list').innerHTML = html;
+           const activeSelect = document.getElementById('active-player-select');
+           const prevVal = activeSelect.value;
+           activeSelect.innerHTML = dropDownHTML;
+           if (prevVal !== "" && parseInt(prevVal) < players.length) {
+               activeSelect.value = prevVal;
+           }
+       }
+
+       function populateBackupSelect() {
+           let backupSelect = document.getElementById('backup-player-select');
+           let backupHtml = "";
+           players.forEach((p, idx) => {
+               if (players.length === 1 || idx !== firstRollerIndex) {
+                   backupHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
+               }
+           });
+           backupSelect.innerHTML = backupHtml;
+       }
+
+       function populateWeyrSelect() {
+           let weyrSelect = document.getElementById('weyr-player-select');
+           let weyrHtml = "";
+           players.forEach((p, idx) => {
+               if (players.length <= 2 || (idx !== firstRollerIndex && idx !== secondRollerIndex)) {
+                   weyrHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
+               }
+           });
+           weyrSelect.innerHTML = weyrHtml;
+       }
+
+       function handleEnd(isDecreedHostTPK = false) {
+           document.getElementById('navigation-block').style.display = 'none';
+           document.getElementById('encounter-interface').style.display = 'none';
+           document.getElementById('location-name').innerText = isDecreedHostTPK ? "💀 Host Doom Decree" : "💀 The Long Goodnight";
+           updateBoardImage("death");
+
+           let deathNarrative = "";
+           if (isDecreedHostTPK) {
+               deathNarrative = `
+                   <p class="story-paragraph" style="font-style: italic; color: var(--danger-color); font-weight: bold;">The host forces absolute doom upon your vanguard. The ground crumbles beneath your feet, plunging the squad into a bottomless caldera filled with boiling sulfur.</p>
+                   <p class="story-paragraph" style="color: var(--danger-color); font-weight: bold; text-align: center; margin-top: 15px; font-size: 16px;">💀 Unconditional Doom! Your party has been wiped out by host decree.</p>
+               `;
+           } else {
+               const randomDeathProse = getWord(resolutionTemplates.deathTemplates)();
+               deathNarrative = `
+                   <p class="story-paragraph"><strong>The Long Goodnight.</strong> ${randomDeathProse}</p>
+                   <p class="story-paragraph">The last of your torches sputters out, and the cold darkness consumes your party. Your bones will join the thousands who failed before you in Scene <strong>${stageCount}</strong>.</p>
+               `;
+           }
+
+           document.getElementById('story-text').innerHTML = `
+               <div style="padding: 15px; border: 2px dashed var(--danger-color); background: rgba(231,111,81,0.08); border-radius: 8px; margin-bottom: 20px;">
+                   ${deathNarrative}
+               </div>
+               <div id="tpk-undo-container" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--danger-color); border-radius: 8px; background: rgba(231, 111, 81, 0.05); text-align: center;">
+                   <p style="color: var(--danger-color); font-size: 13px; font-family: sans-serif; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">👑 Host Intervention Console</p>
+                   <p style="font-size: 13px; color: #bbb; margin-bottom: 15px; font-family: sans-serif;">Did the party carelessly stumble into their doom? You can rewind time to the last encounter and restore partial vitality.</p>
+                   <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
+               </div>
+           `;
+       }
+
+       function handleWin() {
+           document.getElementById('navigation-block').style.display = 'none';
+           document.getElementById('encounter-interface').style.display = 'none';
+           document.getElementById('location-name').innerText = "🏆 Victory & Escape!";
+           updateBoardImage("win");
+
+           let survivorNames = players.map(p => `<li><strong>${p.name}</strong> (${p.avatar})</li>`).join('');
+
+           document.getElementById('story-text').innerHTML = `
+               <div style="text-align: center; padding: 10px; border: 2px solid var(--success-color); border-radius: 8px; background: rgba(42, 157, 143, 0.1);">
+                   <h2 style="color: var(--success-color); font-size: 24px; margin-bottom: 10px; font-family: 'Georgia', serif;">🏆 Escaped the Oubliette!</h2>
+                   <p class="story-paragraph" style="text-align: center;">Against all mathematical odds, your valiant party has broken through the 180th stage and climbed back into the light of the upper world!</p>
+                   <p class="story-paragraph" style="text-align: center;">The dark hallways of the Oubliette crumble behind you. Your names will be sung in tavern halls for generations to come.</p>
+                   <div style="margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+                       <strong style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Legendary Survivors:</strong>
+                       <ul style="color: #ddd; font-family: sans-serif; font-size: 13px; margin-left: 20px; margin-top: 6px; line-height: 1.5;">
+                           ${survivorNames}
+                       </ul>
+                   </div>
+                   <p class="story-paragraph" style="text-align: center; font-size: 14px; color: var(--accent-color); font-weight: bold;">Final Score: Stage ${stageCount} Cleared!</p>
+                   <button id="btn-win-restart" class="success" style="margin-top: 15px; padding: 12px 24px;">Forge a New Lineage</button>
+               </div>`;
+       }
+
+       // STREAMING_CHUNK: Processing active Firebase state updates
+       function syncFromFirebaseData(data) {
+           if (!data) return;
+
+           tempPlayers = data.tempPlayers || {};
+           players = data.players || [];
+           maxPartyHP = data.maxPartyHP || 0;
+           currentPartyHP = data.currentPartyHP || 0;
+           stageCount = data.stageCount || 0;
+           currentEncounter = data.currentEncounter || null;
+           currentOptions = data.currentOptions || [];
+           backupRollActive = data.backupRollActive || false;
+           weyrRollActive = data.weyrRollActive || false;
+           firstRollerIndex = data.firstRollerIndex !== undefined ? data.firstRollerIndex : null;
+           firstRollTotal = data.firstRollTotal || 0;
+           secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
+           secondRollTotal = data.secondRollTotal || 0;
+           isHostTPK = data.isHostTPK || false;
+
+           if (data.diceLogUpdate) {
+               logDice(data.diceLogUpdate);
+               if (isMultiplayer && auth.currentUser && roomRef) {
+                   updateDoc(roomRef, { diceLogUpdate: deleteField() });
+               } else if (!isMultiplayer) {
+                   delete localRoomState.diceLogUpdate;
+               }
+           }
+
+           if (stageCount >= 1) {
+               document.getElementById('setup-screen').style.display = 'none';
+               document.getElementById('rolling-screen').style.display = 'none';
+               document.getElementById('game-view').style.display = 'block';
+               updateHPDisplay();
+               renderCharacterSheetsFromState();
+
+               if (currentEncounter) {
+                   document.getElementById('navigation-block').style.display = 'none';
+                   let encUI = document.getElementById('encounter-interface');
+                   encUI.className = `encounter-box ${currentEncounter.type}`;
+                   encUI.style.display = 'block';
+                   document.getElementById('story-text').innerHTML = currentEncounter.desc;
+                   document.getElementById('encounter-title').innerText = currentEncounter.title;
+                   document.getElementById('encounter-stat').innerText = currentEncounter.stat;
+                   updateHostDCReveal();
+                   updateBoardImage(currentEncounter.isCamp ? "camp" : currentEncounter.type);
+
+                   if (weyrRollActive) {
+                       document.getElementById('standard-roll-controls').style.display = 'none';
+                       document.getElementById('backup-roll-controls').style.display = 'none';
+                       populateWeyrSelect();
+                       document.getElementById('weyr-roll-controls').style.display = 'block';
+                   } else if (backupRollActive) {
+                       document.getElementById('standard-roll-controls').style.display = 'none';
+                       document.getElementById('backup-roll-controls').style.display = 'block';
+                       populateBackupSelect();
+                       document.getElementById('weyr-roll-controls').style.display = 'none';
+                   } else {
+                       document.getElementById('standard-roll-controls').style.display = 'block';
+                       document.getElementById('backup-roll-controls').style.display = 'none';
+                       document.getElementById('weyr-roll-controls').style.display = 'none';
+                   }
+               } else {
+                   document.getElementById('encounter-interface').style.display = 'none';
+                   if (currentPartyHP <= 0) {
+                       handleEnd(isHostTPK);
+                   } else if (stageCount >= 180) {
+                       handleWin();
+                   } else {
+                       document.getElementById('navigation-block').style.display = 'block';
+                       updateBoardImage("entrance");
+                       
+                       if (currentOptions.length === 0) {
+                           generateAdventureChoices();
+                       } else {
+                           renderSyncedChoices();
+                       }
+                   }
+               }
+           } else if (stageCount === 0.5) {
+               renderRollingListFromState();
+           } else {
+               document.getElementById('game-view').style.display = 'none';
+               document.getElementById('rolling-screen').style.display = 'none';
+               document.getElementById('setup-screen').style.display = 'block';
+               
+               const container = document.getElementById('dynamic-player-container');
+               const tempPlayersList = Object.values(tempPlayers).sort((a, b) => a.id.localeCompare(b.id));
+               
+               while (container.children.length < tempPlayersList.length) {
+                   const slot = document.createElement('div');
+                   slot.className = 'player-slot';
+                   container.appendChild(slot);
+               }
+               while (container.children.length > tempPlayersList.length) {
+                   container.removeChild(container.lastChild);
+               }
+
+               tempPlayersList.forEach((p, idx) => {
+                   const slot = container.children[idx];
+                   slot.id = `slot_${p.id}`;
+
+                   const isMySlot = p.owner === SESSION_ID;
+
+                   if (isMySlot) {
+                       slot.style.borderColor = "var(--success-color)";
+                       slot.style.boxShadow = "0 0 10px rgba(42,157,143,0.15)";
+                   } else {
+                       slot.style.borderColor = "var(--border-color)";
+                       slot.style.boxShadow = "none";
+                   }
+
+                   let nameInput = slot.querySelector('.p-name-input');
+                   let classSelect = slot.querySelector('.p-class-select');
+
+                   if (!nameInput) {
+                       let classOptions = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+                       slot.innerHTML = `
+                           <div class="lock-status-label" style="font-size: 11px; font-family: sans-serif; text-transform: uppercase; margin-bottom: 4px; color: #888; font-weight: bold;"></div>
+                           <button class="remove-btn" type="button" data-id="${p.id}">X</button>
+                           <label>Character Name:</label>
+                           <input type="text" class="p-name-input" data-id="${p.id}" placeholder="Character Name">
+                           <label style="display:block; margin-top:8px; font-size:13px;">Lineage Class:</label>
+                           <select class="p-class-select" data-id="${p.id}">
+                               ${classOptions}
+                           </select>
+                       `;
+                       nameInput = slot.querySelector('.p-name-input');
+                       classSelect = slot.querySelector('.p-class-select');
+                   }
+
+                   const statusLabel = slot.querySelector('.lock-status-label');
+                   const removeBtn = slot.querySelector('.remove-btn');
+
+                   let lockStatus = ``;
+                   if (isMySlot) {
+                       lockStatus = `👤 Your Character (Edit)`;
+                       statusLabel.style.color = "var(--success-color)";
+                       removeBtn.style.display = 'block';
+                   } else {
+                       lockStatus = `🔒 Ally's Character (View Only)`;
+                       statusLabel.style.color = "#888";
+                       removeBtn.style.display = 'none';
+                   }
+                   statusLabel.innerText = lockStatus;
+
+                   if (document.activeElement !== nameInput) {
+                       nameInput.value = p.name || '';
+                   }
+                   nameInput.disabled = !isMySlot;
+
+                   if (document.activeElement !== classSelect) {
+                       classSelect.value = p.avatar;
+                   }
+                   classSelect.disabled = !isMySlot;
+               });
+
+               const proceedBtn = document.getElementById('advance-to-rolling-btn');
+               if (proceedBtn) {
+                   if (tempPlayersList.length === 0) {
+                       proceedBtn.disabled = true;
+                       proceedBtn.innerText = "Add character(s) to proceed";
+                   } else {
+                       proceedBtn.disabled = false;
+                       proceedBtn.innerText = "Proceed to Attribute Allocation";
+                   }
+               }
+           }
+       }
+
+       // STREAMING_CHUNK: Setting up fallback authenticate actions
+       async function performAuth() {
+           let user = null;
+           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+               try {
+                   const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                   user = cred.user;
+               } catch (tokenErr) {
+                   console.warn("Custom token authentication bypassed.", tokenErr);
+               }
+           }
+           if (!user) {
+               try {
+                   const cred = await signInAnonymously(auth);
+                   user = cred.user;
+               } catch (anonErr) {
+                   console.error("Authentication failed completely:", anonErr);
+                   switchToLocalOnly();
+               }
+           }
+           return user;
+       }
+
+       function setupGlobalDelegation() {
+           document.addEventListener('input', (e) => {
+               if (e.target.classList.contains('p-name-input')) {
+                   const id = e.target.getAttribute('data-id');
+                   if (tempPlayers[id]) {
+                       tempPlayers[id].name = e.target.value;
+                       updatePlayerName(id, e.target.value);
+                   }
+               }
+           });
+
+           document.addEventListener('change', (e) => {
+               if (e.target.classList.contains('p-class-select')) {
+                   const id = e.target.getAttribute('data-id');
+                   updatePlayerClass(id, e.target.value);
+               }
+               if (e.target.classList.contains('stat-roll-input')) {
+                   const id = e.target.getAttribute('data-id');
+                   const stat = e.target.getAttribute('data-stat');
+                   updateTempStat(id, stat, e.target.value);
+               }
+           });
+
+           document.addEventListener('click', (e) => {
+               const rollBtn = e.target.closest('.roll-btn');
+               if (rollBtn) {
+                   const id = rollBtn.getAttribute('data-id');
+                   const stat = rollBtn.getAttribute('data-stat');
+                   const die = parseInt(rollBtn.getAttribute('data-die'));
+                   rollStat(id, stat, die);
+               }
+
+               const removeBtn = e.target.closest('.remove-btn');
+               if (removeBtn) {
+                   const id = removeBtn.getAttribute('data-id');
+                   removePlayerSlot(id);
+               }
+
+               if (e.target.closest('#btn-choice-0')) selectPath(0);
+               if (e.target.closest('#btn-choice-1')) selectPath(1);
+               if (e.target.closest('#btn-choice-camp')) selectCamp();
+
+               const revealBtn = e.target.closest('#btn-toggle-dc');
+               if (revealBtn) {
+                   const dcBox = document.getElementById('encounter-dc-box');
+                   if (dcBox) {
+                       if (dcBox.style.display === "none") {
+                           dcBox.style.display = "block";
+                           revealBtn.innerText = "🔑 [Host Only] Hide Target DC";
+                       } else {
+                           dcBox.style.display = "none";
+                           revealBtn.innerText = "🔍 [Host Only] Reveal Target DC";
+                       }
+                   }
+               }
+
+               if (e.target.closest('#roll-check-btn')) attemptEncounter();
+               if (e.target.closest('#backup-roll-btn')) attemptBackup();
+               if (e.target.closest('#decline-backup-btn')) declineBackup();
+               if (e.target.closest('#weyr-roll-btn')) attemptWeyr();
+               if (e.target.closest('#decline-weyr-btn')) declineWeyr();
+
+               if (e.target.closest('#btn-force-pass')) attemptEncounter(true);
+               if (e.target.closest('#btn-force-fail')) attemptEncounter(false);
+               if (e.target.closest('#tpk-btn')) triggerHostTPK();
+               if (e.target.closest('#btn-undo-tpk')) undoTPK();
+           });
+       }
+
+       // Link active rooms manually bypassing local SDK errors
+       async function linkRoomsManually() {
+           const inputEl = document.getElementById('input-sync-room-id');
+           if (!inputEl) return;
+           const targetRoomId = inputEl.value.trim().toUpperCase();
+           if (targetRoomId.length < 3) {
+               showNotification("Please enter a valid Room Code.");
+               return;
+           }
            if (unsubscribeSnapshot) unsubscribeSnapshot();
-           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', targetRoomId);
+           
+           document.getElementById('sync-room-display').innerText = targetRoomId;
+           
+           unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
+               isMultiplayer = true;
+               const indicator = document.getElementById('connection-indicator');
+               if (indicator) {
+                   indicator.innerText = "Linked Room Synchronized";
+                   indicator.style.background = "var(--success-color)";
+               }
+               if (snapshot.exists()) {
+                   syncFromFirebaseData(snapshot.data());
+               } else {
+                   setDoc(roomRef, localRoomState, { merge: true });
+               }
+           }, (err) => {
+               console.error("Direct link mapping failed:", err);
+               showNotification("Database rejected connection. Ensure your Discord URL Mappings are whitelisted.");
+               switchToLocalOnly();
+           });
+       }
+
+       // STREAMING_CHUNK: Initializing client hooks
+       async function init() {
+           document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
+           document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
+           document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
+           document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
+           document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
+           document.getElementById('btn-cancel-finalize').addEventListener('click', closeFinalizeModal);
+
+           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
+           
+           // Connection Panel binds
+           document.getElementById('btn-connect-sync').addEventListener('click', linkRoomsManually);
+           document.getElementById('btn-copy-room-id').addEventListener('click', () => {
+               const roomVal = document.getElementById('sync-room-display').innerText;
+               const tempIn = document.createElement("input");
+               tempIn.value = roomVal;
+               document.body.appendChild(tempIn);
+               tempIn.select();
+               document.execCommand('copy');
+               document.body.removeChild(tempIn);
+               showNotification("Room code copied to clipboard!");
+           });
+
+           setupGlobalDelegation();
+
+           // 1. Resolve Discord Profile username first
+           if (discordSdk) {
+               try {
+                   await Promise.race([
+                       discordSdk.ready(),
+                       new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
+                   ]);
+                   try {
+                       const authResult = await discordSdk.commands.authenticate();
+                       if (authResult && authResult.user) {
+                           myDiscordUsername = authResult.user.global_name || authResult.user.username;
+                       }
+                   } catch (authErr) {
+                       console.warn("Discord SDK authentication failed inside sandbox.", authErr);
+                   }
+               } catch (discordErr) {
+                   console.warn("Discord Handshake bypassed.", discordErr);
+               }
+           }
+
+           // Pre-spawns player character with solved credentials
+           initializeLocalState();
+
+           // 2. Perform authentications and link Firebase
+           const user = await performAuth();
+           if (!user) {
+               switchToLocalOnly();
+               return;
+           }
+
+           currentUser = user;
+
+           // 3. Resolve the active Room Key
+           const urlParams = new URLSearchParams(window.location.search);
+           let instanceId = urlParams.get('instance_id') || urlParams.get('channel_id');
+
+           if (!instanceId && discordSdk && discordSdk.instanceId) {
+               instanceId = discordSdk.instanceId;
+           }
+
+           // Fallback to random room code on first boot to allow cross-room linking
+           if (!instanceId) {
+               instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+           }
+
+           document.getElementById('sync-room-display').innerText = instanceId;
+
+           roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', instanceId);
 
            unsubscribeSnapshot = onSnapshot(roomRef, (snapshot) => {
                isMultiplayer = true; 
-               
-               const dot = document.getElementById('status-dot');
-               const statusText = document.getElementById('status-text');
-               
-               const hubDot = document.getElementById('connection-status-dot');
-               const hubStatusText = document.getElementById('connection-status-text');
-               const codeBadge = document.getElementById('room-code-badge');
-               const activeRoomCode = document.getElementById('active-room-code');
-               const copyBtn = document.getElementById('btn-copy-link');
-               const joinBtn = document.getElementById('btn-open-join-modal');
-               
-               const setConnected = (d, t) => {
-                   if (d) { d.style.background = "var(--success-color)"; d.style.animation = "none"; }
-                   if (t) { t.innerText = `Synchronized`; t.style.color = "var(--success-color)"; }
-               };
-
-               setConnected(dot, statusText);
-               setConnected(hubDot, hubStatusText);
-
-               if (codeBadge) {
-                   codeBadge.innerText = `ROOM CODE: ${lobbyId}`;
+               const indicator = document.getElementById('connection-indicator');
+               if (indicator) {
+                   indicator.innerText = "Synchronized Online";
+                   indicator.style.background = "var(--success-color)";
                }
-               if (activeRoomCode) {
-                   activeRoomCode.innerText = lobbyId;
-               }
-               if (copyBtn) copyBtn.classList.remove('hidden');
-               if (joinBtn) joinBtn.classList.remove('hidden');
 
                if (snapshot.exists()) {
                    const data = snapshot.data();
@@ -142,115 +1671,9 @@
                    setDoc(roomRef, localRoomState, { merge: true });
                }
            }, (err) => {
-               console.error("Lobby snapshot failed:", err);
+               console.error("Firebase Snapshot Connection rejected by sandbox proxy:", err);
                switchToLocalOnly();
            });
-       }
-
-       async function init() {
-           document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
-           document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
-           document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
-           document.getElementById('btn-finalize').addEventListener('click', confirmFinalize);
-           document.getElementById('btn-execute-finalize').addEventListener('click', executeFinalize);
-           document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
-
-           // Connection controller buttons
-           document.getElementById('btn-copy-link').addEventListener('click', copyLobbyLink);
-           document.getElementById('btn-open-join-modal').addEventListener('click', openJoinModal);
-           document.getElementById('btn-execute-join').addEventListener('click', executeJoinLobby);
-           document.getElementById('btn-cancel-join').addEventListener('click', closeJoinModal);
-
-           document.getElementById('btn-direct-join').addEventListener('click', () => {
-               const codeInput = document.getElementById('input-direct-join-code');
-               if (!codeInput) return;
-               const rawCode = codeInput.value.trim().toUpperCase();
-               if (rawCode.length < 3) {
-                   showNotification("Please enter a valid lobby code.");
-                   return;
-               }
-               window.location.hash = `room=${rawCode}`;
-               window.location.reload();
-           });
-
-           document.getElementById('btn-copy-room').addEventListener('click', () => {
-               const activeCode = document.getElementById('active-room-code').innerText;
-               const tempInput = document.createElement("input");
-               tempInput.style.position = "absolute";
-               tempInput.style.left = "-9999px";
-               tempInput.value = activeCode;
-               document.body.appendChild(tempInput);
-               tempInput.select();
-               try {
-                   document.execCommand("copy");
-                   showNotification(`Room Code ${activeCode} copied! Send to your friends.`);
-               } catch (err) {
-                   console.error("Copy failed", err);
-               }
-               document.body.removeChild(tempInput);
-           });
-
-           setupGlobalDelegation();
-
-           // 1. Authenticate with Firebase first
-           const user = await performAuth();
-
-           // 2. Authenticate with Discord SDK and extract display names if available
-           if (discordSdk) {
-               try {
-                   await Promise.race([
-                       discordSdk.ready(),
-                       new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
-                   ]);
-                   try {
-                       const authResult = await discordSdk.commands.authenticate();
-                       if (authResult && authResult.user) {
-                           myDiscordUsername = authResult.user.global_name || authResult.user.username;
-                       }
-                   } catch (authErr) {
-                       console.warn("Discord SDK authentication failed.", authErr);
-                   }
-               } catch (discordErr) {
-                   console.warn("Discord Handshake deferred. Continuing with browser params.");
-               }
-           }
-
-           // 3. Resolve Lobby ID (Auto-placing users in the exact same channel/room instantly)
-           const params = new URLSearchParams(window.location.search);
-           const channelId = params.get('channel_id') || params.get('channelId');
-           const instanceIdParam = params.get('instance_id') || params.get('instanceId');
-           
-           let resolvedLobbyId = "SANDBOX-LOBBY";
-           const hashMatch = window.location.hash.match(/room=([A-Z0-9-]+)/i);
-           if (hashMatch && hashMatch[1]) {
-               resolvedLobbyId = hashMatch[1].toUpperCase();
-           } else if (instanceIdParam || channelId) {
-               resolvedLobbyId = (instanceIdParam || channelId).toUpperCase();
-           } else {
-               resolvedLobbyId = Math.random().toString(36).substring(2, 7).toUpperCase();
-           }
-           window.location.hash = `room=${resolvedLobbyId}`;
-
-           // Instantly update UI Room Badge so they can always see the code
-           const codeBadge = document.getElementById('room-code-badge');
-           if (codeBadge) {
-               codeBadge.innerText = `ROOM CODE: ${resolvedLobbyId}`;
-           }
-           
-           const activeRoomCode = document.getElementById('active-room-code');
-           if (activeRoomCode) {
-               activeRoomCode.innerText = resolvedLobbyId;
-           }
-
-           // 4. Initialize Local State with verified, loaded Discord global name
-           initializeLocalState();
-
-           // 5. Connect to active multiplayer room
-           if (user) {
-               listenToLobby(resolvedLobbyId);
-           } else {
-               switchToLocalOnly();
-           }
        }
 
        window.onload = function () {
