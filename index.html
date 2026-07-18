@@ -23,7 +23,6 @@
        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
        h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
       
-       /* Status indicator bar animation */
        @keyframes pulse {
            0% { transform: scale(0.9); opacity: 0.5; }
            50% { transform: scale(1.15); opacity: 1; }
@@ -97,7 +96,6 @@
        summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
        summary.dc-reveal:hover { color: var(--accent-color); }
 
-       /* Diagnostics Terminal Styling */
        .diagnostic-terminal {
            background: #050507;
            border: 1px solid #1c1c24;
@@ -302,9 +300,9 @@
        let isMultiplayer = false; 
        let localRoomState = {};
        let insideDiscord = false; 
+       let connectionAttemptStarted = false;
 
        // Authentication variables
-       let currentUser = null;
        let roomRef = null;
 
        // Unique browser session identifier to establish character sheet authorship
@@ -708,7 +706,6 @@
                }
            }
 
-           // Instantly unlock UI controls to recover playability
            const addBtn = document.getElementById('btn-add-character');
            if (addBtn) {
                addBtn.removeAttribute('disabled');
@@ -720,7 +717,6 @@
                advanceBtn.innerText = "Proceed to Attribute Allocation";
            }
            
-           // Run local-only render
            syncFromFirebaseData(localRoomState);
        }
 
@@ -945,7 +941,6 @@
                });
                document.getElementById('rolling-list').innerHTML = listHtml;
 
-               // Programmatically bind changes and roll triggers
                document.querySelectorAll('.stat-roll-input').forEach(input => {
                    input.addEventListener('change', (e) => {
                        const id = e.target.getAttribute('data-id');
@@ -964,7 +959,6 @@
                });
            }
 
-           // Update actual inputs seamlessly preserving focused state
            sortedTempPlayers.forEach(p => {
                const bInput = document.getElementById(`roll_${p.id}_brawn`);
                const brInput = document.getElementById(`roll_${p.id}_brains`);
@@ -1418,8 +1412,8 @@
 
            if (data.diceLogUpdate) {
                logDice(data.diceLogUpdate);
-               if (isMultiplayer && auth.currentUser && roomRef) {
-                   updateDoc(roomRef, { diceLogUpdate: deleteField() });
+               if (isMultiplayer && roomRef) {
+                   updateDoc(roomRef, { diceLogUpdate: deleteField() }).catch(() => {});
                } else if (!isMultiplayer) {
                    delete localRoomState.diceLogUpdate;
                }
@@ -1599,7 +1593,7 @@
 
        async function joinAndListen(lobbyId) {
            roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
-           writeDiag(`⚡ Synchronizing with room: public/data/rooms/${lobbyId}`);
+           writeDiag(`⚡ Syncing with room: public/data/rooms/${lobbyId}`);
            
            const mySlotId = 'slot_' + SESSION_ID;
            const mySlot = {
@@ -1613,10 +1607,8 @@
            };
 
            try {
-               // Fetch room state once to see if it exists
                const snapshot = await getDoc(roomRef);
                if (!snapshot.exists()) {
-                   // Room is empty/new. Initialize it with our local character state.
                    const initialRoomState = {
                        tempPlayers: {
                            [mySlotId]: mySlot
@@ -1632,7 +1624,6 @@
                    await setDoc(roomRef, initialRoomState);
                    writeDiag("🟢 Created new adventure lobby room successfully.", "success");
                } else {
-                   // Room already exists. Safely APPEND our personal character to the active registry.
                    const data = snapshot.data();
                    if (!data.tempPlayers || !data.tempPlayers[mySlotId]) {
                        const count = Object.keys(data.tempPlayers || {}).length + 1;
@@ -1645,15 +1636,9 @@
                        writeDiag("🟢 Re-connected to active character slot.", "success");
                    }
                }
-           } catch (err) {
-               writeDiag(`❌ Registry error during join setup: ${err.message}`, "error");
-               throw err;
-           }
 
-           // Start clean real-time listener subscription
-           onSnapshot(roomRef, (snapshot) => {
-               if (!auth.currentUser) return;
                isMultiplayer = true;
+               connectionAttemptStarted = true;
 
                const dot = document.getElementById('status-dot');
                const statusText = document.getElementById('status-text');
@@ -1676,14 +1661,30 @@
                if (copyBtn) copyBtn.style.display = "inline-block";
                if (joinBtn) joinBtn.style.display = "inline-block";
 
-               if (snapshot.exists()) {
-                   const data = snapshot.data();
-                   syncFromFirebaseData(data);
+               const addBtn = document.getElementById('btn-add-character');
+               const advanceBtn = document.getElementById('advance-to-rolling-btn');
+               if (addBtn) {
+                   addBtn.removeAttribute('disabled');
+                   addBtn.innerText = "+ Add Character";
                }
-           }, (err) => {
-               writeDiag(`❌ Real-time synchronization lost: ${err.message}`, "error");
+               if (advanceBtn) {
+                   advanceBtn.removeAttribute('disabled');
+                   advanceBtn.innerText = "Proceed to Attribute Allocation";
+               }
+
+               onSnapshot(roomRef, (snap) => {
+                   if (snap.exists()) {
+                       syncFromFirebaseData(snap.data());
+                   }
+               }, (err) => {
+                   writeDiag(`❌ Real-time synchronization lost: ${err.message}`, "error");
+                   switchToLocalOnly();
+               });
+
+           } catch (err) {
+               writeDiag(`❌ Firestore registration failure: ${err.message}`, "error");
                switchToLocalOnly();
-           });
+           }
        }
 
        async function systemLaunch() {
@@ -1710,7 +1711,6 @@
                insideDiscord = false;
            }
 
-           // Programmatic event bindings
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
            document.getElementById('btn-finalize-stats').addEventListener('click', finalizeStatsAndStart);
@@ -1734,62 +1734,27 @@
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Initialize fallback local room state structure
            initializeLocalState();
 
-           // Quick-Gate Auth Race: If auth fails or takes > 2.5 seconds, start the local sandbox instantly
-           let authTimeoutTriggered = false;
-           const authTimeout = new Promise((resolve) => {
-               setTimeout(() => {
-                   authTimeoutTriggered = true;
-                   writeDiag("⚠️ Authentication handshake timed out (2.5s). Bypassing...", "warn");
-                   resolve(null);
-               }, 2500);
-           });
-
            writeDiag("⚡ Handshaking secure Firebase context connection...");
-           const authPromise = initAuth().catch((err) => {
-               writeDiag(`⚠️ Connection rejected during handshake: ${err.message}`, "warn");
-               return null;
-           });
-
-           // Race! Either auth completes in 2.5s, or we drop straight into safe sandbox immediately!
-           const resolvedUser = await Promise.race([authPromise, authTimeout]);
-
-           if (resolvedUser && !authTimeoutTriggered) {
-               currentUser = resolvedUser;
-               writeDiag("🟢 Authentication handshake completed. Syncing lobby database...", "success");
-               try {
-                   await joinAndListen(instanceId);
-               } catch (lobbyErr) {
-                   writeDiag(`⚠️ Lobby sync failed: ${lobbyErr.message}. Starting in offline mode.`, "warn");
-                   switchToLocalOnly();
-               }
-           } else {
-               switchToLocalOnly();
-           }
-
-           // Unlocks UI buttons completely
-           const addBtn = document.getElementById('btn-add-character');
-           const advanceBtn = document.getElementById('advance-to-rolling-btn');
-           if (addBtn) {
-               addBtn.removeAttribute('disabled');
-               addBtn.innerText = "+ Add Character";
-           }
-           if (advanceBtn) {
-               advanceBtn.removeAttribute('disabled');
-               advanceBtn.innerText = "Proceed to Attribute Allocation";
+           
+           try {
+               await initAuth();
+               writeDiag("🟢 Handshake complete. Accessing Firestore...", "success");
+               await joinAndListen(instanceId);
+           } catch (authErr) {
+               writeDiag(`⚠️ Connection rejected during handshake: ${authErr.message}`, "warn");
+               writeDiag("🤝 Bypassing Auth block! Attempting unauthenticated direct Firestore handshake...", "warn");
+               await joinAndListen(instanceId);
            }
        }
 
-       // Execute System Launch instantly without waiting for images/external scripts to block onload
        if (document.readyState === "loading") {
            document.addEventListener("DOMContentLoaded", systemLaunch);
        } else {
            systemLaunch();
        }
 
-       // Global exports
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
