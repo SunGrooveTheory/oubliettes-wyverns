@@ -96,6 +96,24 @@
       
        summary.dc-reveal { font-family: sans-serif; font-size: 12px; cursor: pointer; color: #888; margin-top: 5px; list-style: none;}
        summary.dc-reveal:hover { color: var(--accent-color); }
+
+       /* Diagnostics Terminal Styling */
+       .diagnostic-terminal {
+           background: #050507;
+           border: 1px solid #1c1c24;
+           border-radius: 6px;
+           padding: 10px;
+           margin-top: 15px;
+           font-family: monospace;
+           font-size: 11px;
+           color: #999;
+           max-height: 120px;
+           overflow-y: auto;
+       }
+       .diag-line { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px; }
+       .diag-success { color: #2a9d8f; }
+       .diag-warn { color: #f4a261; }
+       .diag-error { color: #e76f51; }
    </style>
 </head>
 <body>
@@ -123,6 +141,14 @@
                <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;" disabled>Connecting to server...</button>
                <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;" disabled>Waiting for connection...</button>
            </div>
+           
+           <!-- Real-Time Diagnostic Terminal -->
+           <details open style="margin-top: 15px;">
+               <summary style="font-family: sans-serif; font-size: 12px; color: #888; cursor: pointer; user-select: none;">⚙️ Core System Diagnostics Logs</summary>
+               <div id="diagnostic-log" class="diagnostic-terminal">
+                   <div class="diag-line">⏳ System ready. Awaiting initialization script launch...</div>
+               </div>
+           </details>
        </div>
 
        <!-- Attribute Matrix Stage -->
@@ -257,10 +283,25 @@
        import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+       // Real-time visible logger
+       function writeDiag(msg, status = '') {
+           const logBox = document.getElementById('diagnostic-log');
+           if (logBox) {
+               let classStr = "";
+               if (status === 'success') classStr = "class='diag-success'";
+               if (status === 'warn') classStr = "class='diag-warn'";
+               if (status === 'error') classStr = "class='diag-error'";
+               const timestamp = new Date().toLocaleTimeString();
+               logBox.innerHTML = `<div ${classStr}>[${timestamp}] ${msg}</div>` + logBox.innerHTML;
+           }
+       }
+
+       writeDiag("⚡ Module loaded successfully. Initializing parameters...", "success");
+
        // Local vs Server connectivity states
-       let isMultiplayer = true; 
+       let isMultiplayer = false; 
        let localRoomState = {};
-       let insideDiscord = false; // Track Discord environment globally
+       let insideDiscord = false; 
 
        // Authentication variables
        let currentUser = null;
@@ -268,6 +309,7 @@
 
        // Unique browser session identifier to establish character sheet authorship
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+       writeDiag(`⚡ Browser Session ID mapped: ${SESSION_ID}`);
 
        // Base configuration parameters
        let firebaseConfig = { 
@@ -287,11 +329,13 @@
                } else if (typeof __firebase_config === 'object' && __firebase_config !== null) {
                    firebaseConfig = __firebase_config;
                }
+               writeDiag("⚡ Custom workspace database configuration loaded.", "success");
            } catch(e) {
-               console.warn("Environmental configuration fallback bypassed.", e);
+               writeDiag("⚠️ Database config parsed from workspace defaulted to hardcoded fallbacks.", "warn");
            }
        }
 
+       // Core database and secure auth instantiations
        const app = initializeApp(firebaseConfig);
        const db = getFirestore(app);
        
@@ -302,14 +346,17 @@
        
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
+       writeDiag(`⚡ Firestore Client online. App Target ID: ${appId}`);
+
        // Safe Discord SDK registration
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
                discordSdk = new DiscordSDK("1521393614528450622");
+               writeDiag("🟢 Discord Embedded App SDK loaded in execution header.", "success");
            }
        } catch (discordErr) {
-           console.warn("Unable to initiate Discord SDK context constructor.", discordErr);
+           writeDiag("⚠️ Discord Activity Context SDK uninitialized.", "warn");
        }
 
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
@@ -615,6 +662,7 @@
            try {
                document.execCommand("copy");
                showNotification("Lobby invitation link copied! Share with your friends.");
+               writeDiag("📋 Invitation link copied to clipboard.");
            } catch (err) {
                console.error("Link copying fallback failed", err);
            }
@@ -641,7 +689,7 @@
 
        function switchToLocalOnly() {
            isMultiplayer = false;
-           console.log("Switching to offline/local-only backup mode.");
+           writeDiag("⚠️ Switching instantly to offline Sandbox Mode.", "warn");
            
            const connStatus = document.getElementById('room-connection-status');
            const dot = document.getElementById('status-dot');
@@ -698,6 +746,7 @@
                currentOptions: [],
                isHostTPK: false
            };
+           writeDiag("⚡ Local room state structure initialized.");
        }
 
        async function safeUpdateDoc(updates) {
@@ -705,8 +754,7 @@
                try {
                    await updateDoc(roomRef, updates);
                } catch (err) {
-                   console.error("Multiplayer broadcast failed, moving locally:", err);
-                   switchToLocalOnly();
+                   writeDiag(`⚠️ Sync broadcast failed: ${err.message}. Saving changes locally.`, "warn");
                    applyLocalUpdates(updates);
                }
            } else {
@@ -719,8 +767,7 @@
                try {
                    await setDoc(roomRef, data);
                } catch (err) {
-                   console.error("Multiplayer setup failed, moving locally:", err);
-                   switchToLocalOnly();
+                   writeDiag(`⚠️ Initial lobby write failed: ${err.message}. Falling back locally.`, "warn");
                    localRoomState = data;
                    syncFromFirebaseData(localRoomState);
                }
@@ -847,6 +894,7 @@
            if (isMultiplayer && auth.currentUser && roomRef) {
                try {
                    await deleteDoc(roomRef);
+                   writeDiag("🧹 Active room cleared in server registries. Reloading...");
                    window.location.reload();
                } catch (err) {
                    console.error("Dungeon state deletion rejected:", err);
@@ -1533,19 +1581,25 @@
        async function initAuth() {
            try {
                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                   await signInWithCustomToken(auth, __initial_auth_token);
+                   writeDiag("⚡ Attempting custom token validation...");
+                   const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                   writeDiag("🟢 Custom Token verification completed successfully.", "success");
+                   return userCredential.user;
                } else {
-                   await signInAnonymously(auth);
+                   writeDiag("⚡ Attempting Anonymous Sign-In registration...");
+                   const userCredential = await signInAnonymously(auth);
+                   writeDiag("🟢 Anonymous Sign-In established successfully.", "success");
+                   return userCredential.user;
                }
            } catch (err) {
-               console.error("Authentication handshake failure:", err);
-               showNotification("Authentication failed. Falling back to local Sandbox Mode.");
-               switchToLocalOnly();
+               writeDiag(`❌ Authentication failed: ${err.message}`, "error");
+               throw err;
            }
        }
 
        async function joinAndListen(lobbyId) {
            roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', lobbyId);
+           writeDiag(`⚡ Synchronizing with room: public/data/rooms/${lobbyId}`);
            
            const mySlotId = 'slot_' + SESSION_ID;
            const mySlot = {
@@ -1576,6 +1630,7 @@
                        isHostTPK: false
                    };
                    await setDoc(roomRef, initialRoomState);
+                   writeDiag("🟢 Created new adventure lobby room successfully.", "success");
                } else {
                    // Room already exists. Safely APPEND our personal character to the active registry.
                    const data = snapshot.data();
@@ -1585,10 +1640,14 @@
                        await updateDoc(roomRef, {
                            [`tempPlayers.${mySlotId}`]: mySlot
                        });
+                       writeDiag("🟢 Joined existing lobby and added character slot.", "success");
+                   } else {
+                       writeDiag("🟢 Re-connected to active character slot.", "success");
                    }
                }
            } catch (err) {
-               console.error("Multiplayer join setup failed:", err);
+               writeDiag(`❌ Registry error during join setup: ${err.message}`, "error");
+               throw err;
            }
 
            // Start clean real-time listener subscription
@@ -1598,6 +1657,10 @@
 
                const dot = document.getElementById('status-dot');
                const statusText = document.getElementById('status-text');
+               const badge = document.getElementById('room-code-badge');
+               const copyBtn = document.getElementById('btn-copy-link');
+               const joinBtn = document.getElementById('btn-open-join-modal');
+
                if (dot) {
                    dot.style.background = "var(--success-color)";
                    dot.style.animation = "none";
@@ -1606,18 +1669,47 @@
                    statusText.innerText = "Synchronized";
                    statusText.style.color = "var(--success-color)";
                }
+               if (badge) {
+                   badge.innerText = `ROOM: ${lobbyId}`;
+                   badge.style.display = "inline-block";
+               }
+               if (copyBtn) copyBtn.style.display = "inline-block";
+               if (joinBtn) joinBtn.style.display = "inline-block";
 
                if (snapshot.exists()) {
                    const data = snapshot.data();
                    syncFromFirebaseData(data);
                }
            }, (err) => {
-               console.error("Firestore sync subscription failed:", err);
+               writeDiag(`❌ Real-time synchronization lost: ${err.message}`, "error");
                switchToLocalOnly();
            });
        }
 
-       async function init() {
+       async function systemLaunch() {
+           writeDiag("⚡ Parsing Discord context parameters...");
+           const params = new URLSearchParams(window.location.search);
+           const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
+           
+           let instanceId = "";
+           if (discordInstanceId) {
+               instanceId = discordInstanceId.toUpperCase();
+               insideDiscord = true;
+               writeDiag(`🟢 Discord sandbox target verified: Channel/Instance ID ${instanceId}`);
+           } else {
+               const hash = window.location.hash;
+               const match = hash.match(/room=([A-Z0-9-]+)/i);
+               if (match && match[1]) {
+                   instanceId = match[1].toUpperCase();
+                   writeDiag(`🟢 Browser URL Hash Room parsed: ${instanceId}`);
+               } else {
+                   instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                   window.location.hash = `room=${instanceId}`;
+                   writeDiag(`🟢 Generated clean fallback browser Room: ${instanceId}`);
+               }
+               insideDiscord = false;
+           }
+
            // Programmatic event bindings
            document.getElementById('btn-add-character').addEventListener('click', addPlayerSlot);
            document.getElementById('advance-to-rolling-btn').addEventListener('click', goToRollingScreen);
@@ -1642,54 +1734,42 @@
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
-           // Initialize local backup state instantly
+           // Initialize fallback local room state structure
            initializeLocalState();
 
-           // Mark as initialized to coordinate safety recovery script
-           window.gameInitialized = true;
+           // Quick-Gate Auth Race: If auth fails or takes > 2.5 seconds, start the local sandbox instantly
+           let authTimeoutTriggered = false;
+           const authTimeout = new Promise((resolve) => {
+               setTimeout(() => {
+                   authTimeoutTriggered = true;
+                   writeDiag("⚠️ Authentication handshake timed out (2.5s). Bypassing...", "warn");
+                   resolve(null);
+               }, 2500);
+           });
 
-           // Safety fallback: if auth hangs for more than 4 seconds, fallback to local sandbox cleanly
-           const safetyAuthTimeout = setTimeout(() => {
-               if (!currentUser) {
-                   console.warn("Authentication timer expired. Fallback Sandbox Mode activated.");
+           writeDiag("⚡ Handshaking secure Firebase context connection...");
+           const authPromise = initAuth().catch((err) => {
+               writeDiag(`⚠️ Connection rejected during handshake: ${err.message}`, "warn");
+               return null;
+           });
+
+           // Race! Either auth completes in 2.5s, or we drop straight into safe sandbox immediately!
+           const resolvedUser = await Promise.race([authPromise, authTimeout]);
+
+           if (resolvedUser && !authTimeoutTriggered) {
+               currentUser = resolvedUser;
+               writeDiag("🟢 Authentication handshake completed. Syncing lobby database...", "success");
+               try {
+                   await joinAndListen(instanceId);
+               } catch (lobbyErr) {
+                   writeDiag(`⚠️ Lobby sync failed: ${lobbyErr.message}. Starting in offline mode.`, "warn");
                    switchToLocalOnly();
                }
-           }, 4000);
-
-           // Execute safe authentication setup
-           await initAuth();
-           
-           currentUser = auth.currentUser;
-           if (!currentUser) {
-               // Fallback auth triggered
-               switchToLocalOnly();
-               return;
-           }
-
-           clearTimeout(safetyAuthTimeout);
-
-           // Resolve lobby ID synchronously from Discord URL query params or fallback hash
-           const params = new URLSearchParams(window.location.search);
-           const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
-           
-           let instanceId = "";
-           if (discordInstanceId) {
-               instanceId = discordInstanceId.toUpperCase();
-               insideDiscord = true;
            } else {
-               const hash = window.location.hash;
-               const match = hash.match(/room=([A-Z0-9-]+)/i);
-               if (match && match[1]) {
-                   instanceId = match[1].toUpperCase();
-               } else {
-                   // Generate a clean 5-character randomized Lobby identifier
-                   instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                   window.location.hash = `room=${instanceId}`;
-               }
-               insideDiscord = false;
+               switchToLocalOnly();
            }
 
-           // Unlocks setup controls
+           // Unlocks UI buttons completely
            const addBtn = document.getElementById('btn-add-character');
            const advanceBtn = document.getElementById('advance-to-rolling-btn');
            if (addBtn) {
@@ -1700,50 +1780,24 @@
                advanceBtn.removeAttribute('disabled');
                advanceBtn.innerText = "Proceed to Attribute Allocation";
            }
+       }
 
-           // Connect to active room safely
-           await joinAndListen(instanceId);
+       // Execute System Launch instantly without waiting for images/external scripts to block onload
+       if (document.readyState === "loading") {
+           document.addEventListener("DOMContentLoaded", systemLaunch);
+       } else {
+           systemLaunch();
        }
 
        // Global exports
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
-
-       window.onload = function () {
-           init();
-       };
-   </script>
-
-   <!-- Absolute HTML Safety Recovery Gate (Guarantees playability even if scripts block) -->
-   <script>
-       setTimeout(function() {
-           var addBtn = document.getElementById('btn-add-character');
-           var advanceBtn = document.getElementById('advance-to-rolling-btn');
-           var statusText = document.getElementById('status-text');
-           var statusDot = document.getElementById('status-dot');
-           
-           if (!window.gameInitialized || (addBtn && addBtn.hasAttribute('disabled'))) {
-               console.warn("Main modular game sequence stalled or blocked by environment. Activating direct recovery.");
-               
-               if (addBtn) {
-                   addBtn.removeAttribute('disabled');
-                   addBtn.innerText = "+ Add Character";
-               }
-               if (advanceBtn) {
-                   advanceBtn.removeAttribute('disabled');
-                   advanceBtn.innerText = "Proceed to Attribute Allocation";
-               }
-               if (statusText) {
-                   statusText.innerText = "Sandbox Mode (Recovery)";
-                   statusText.style.color = "#ffb703";
-               }
-               if (statusDot) {
-                   statusDot.style.background = "#ffb703";
-                   statusDot.style.animation = "pulse 2.0s infinite";
-               }
-           }
-       }, 5000);
+       window.updateTempStat = updateTempStat;
+       window.rollStat = rollStat;
+       window.finalizeStatsAndStart = finalizeStatsAndStart;
+       window.goToRollingScreen = goToRollingScreen;
+       window.addPlayerSlot = addPlayerSlot;
    </script>
 </body>
 </html>
