@@ -4,6 +4,7 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Oubliettes & Wyverns</title>
+   <script src="https://cdn.tailwindcss.com"></script>
    <style>
        :root {
            --bg-color: #0c0c0e;
@@ -203,7 +204,7 @@
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
                                    <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-                                   <button id="roll-check-btn">Roll standard die</button>
+                                   <button id="roll-check-btn" class="w-full text-lg py-3 mt-2 shadow-lg bg-[#f4a261] hover:bg-[#ffb77d] transition-all rounded-lg font-bold text-black font-sans">Roll standard die</button>
                                </div>
 
                                <!-- Backup Combined Check Controller -->
@@ -211,8 +212,8 @@
                                    <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
                                    <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="backup-roll-btn" class="success" style="flex:1;">Roll and Combine</button>
-                                       <button id="decline-backup-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="backup-roll-btn" class="success font-sans" style="flex:1;">Roll and Combine</button>
+                                       <button id="decline-backup-btn" class="danger font-sans" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
 
@@ -221,29 +222,83 @@
                                    <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
                                    <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <div style="display:flex; gap:8px;">
-                                       <button id="weyr-roll-btn" class="success" style="flex:1;">Roll and Sum Weyr (D30)</button>
-                                       <button id="decline-weyr-btn" class="danger" style="flex:1;">Accept Fate</button>
+                                       <button id="weyr-roll-btn" class="success font-sans" style="flex:1;">Roll and Sum Weyr (D30)</button>
+                                       <button id="decline-weyr-btn" class="danger font-sans" style="flex:1;">Accept Fate</button>
                                    </div>
                                </div>
 
                                <!-- Resolved/Outcome Display Screen -->
                                <div id="resolved-outcome-area" style="display:none; background: rgba(42,157,143,0.05); border: 1px solid var(--success-color); padding: 15px; border-radius: 6px; margin-bottom: 12px;">
                                    <div id="resolved-log-text" style="font-family: sans-serif; font-size: 14px; margin-bottom: 10px;"></div>
-                                   <button id="btn-continue-adventure" class="success" style="width:100%;">Continue Adventure</button>
-                               </div>
-                              
-                               <label style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Host Overrides</label>
-                               <div class="host-controls">
-                                   <button id="btn-force-pass" class="success">Force Pass</button>
-                                   <button id="btn-force-fail" class="danger">Force Fail</button>
-                                   <button id="tpk-btn" style="background: #7a1d1d; color: white;">Force TPK</button>
+                                   <button id="btn-continue-adventure" class="success w-full py-3 font-sans font-bold">Continue Adventure</button>
                                </div>
                            </div>
                        </div>
 
+                       <!-- Intro Flow Element (Expose Gate before navigation) -->
+                       <div id="intro-block" style="display: none; background: rgba(244,162,97,0.05); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; text-align: center;">
+                           <p class="story-paragraph" style="text-align: center;">The massive iron doors crash shut behind your regiment, sealing the party inside <strong>Oubliette Depths</strong>. The air is cold, and the only way out is through the darkness.</p>
+                           <p class="story-paragraph" style="text-align: center;">Your torchlight flickers, casting long shadows across the ancient bricks. It is time to step forward and examine your choices.</p>
+                           <button id="btn-begin-descent" class="success px-8 py-3 mt-4 text-md font-sans">Begin Descent & Open Portals</button>
+                       </div>
+
+                       <!-- Navigation / Portal choices -->
                        <div id="navigation-block">
                            <div class="choice-container" id="direction-choices"></div>
                        </div>
+
+                       <!-- Host Command Deck (Mid-game modifiers, shelver, late joiner engine) -->
+                       <details class="bg-[#1c1c28]/80 border border-[#2a2a3a] rounded-lg p-4 mt-6">
+                           <summary class="cursor-pointer text-sm font-sans font-bold text-[#f4a261] hover:text-[#ffb77d] select-none">👑 Host Command Center & Roster Manager</summary>
+                           <div class="mt-4 pt-3 border-t border-[#2a2a3a]">
+                               <!-- Late Joiner Forge -->
+                               <div class="mb-5 bg-[#12121a] p-3 rounded border border-dashed border-[#2a9d8f]/30">
+                                   <strong class="text-xs font-sans text-[#2a9d8f] uppercase block mb-2">⚔️ Mid-Game Late Joiner Forge</strong>
+                                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                       <div>
+                                           <label class="text-[11px] text-gray-400 block font-sans">Name:</label>
+                                           <input type="text" id="host-add-name" placeholder="Name..." class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans">
+                                       </div>
+                                       <div>
+                                           <label class="text-[11px] text-gray-400 block font-sans">Class Lineage:</label>
+                                           <select id="host-add-class" class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans">
+                                               <!-- Populated dynamically -->
+                                           </select>
+                                       </div>
+                                   </div>
+                                   <div class="grid grid-cols-3 gap-2 text-center text-xs mb-3">
+                                       <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
+                                           <div class="text-gray-400 font-sans">Brawn (d6)</div>
+                                           <input type="number" id="host-add-brawn" value="3" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
+                                       </div>
+                                       <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
+                                           <div class="text-gray-400 font-sans">Brains (d10)</div>
+                                           <input type="number" id="host-add-brains" value="5" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
+                                       </div>
+                                       <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
+                                           <div class="text-gray-400 font-sans">Agility (d20)</div>
+                                           <input type="number" id="host-add-agility" value="10" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
+                                       </div>
+                                   </div>
+                                   <button id="btn-host-inject-player" class="success w-full text-xs py-2 font-sans font-bold">Forge & Inject Mid-Game</button>
+                               </div>
+
+                               <!-- Shelving & Eradication Manager -->
+                               <div class="mb-4 bg-[#12121a] p-3 rounded border border-[#2a2a3a]">
+                                   <strong class="text-xs font-sans text-gray-300 uppercase block mb-2">📋 Live Roster Desk (Store / Eradicate)</strong>
+                                   <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                                       <!-- Populated dynamically with active players -->
+                                   </div>
+                               </div>
+
+                               <label class="text-[11px] text-gray-400 uppercase tracking-wider block mb-1 font-sans">Traditional Host Overrides</label>
+                               <div class="host-controls">
+                                   <button id="btn-force-pass" class="success font-sans font-bold">Force Pass</button>
+                                   <button id="btn-force-fail" class="danger font-sans font-bold">Force Fail</button>
+                                   <button id="tpk-btn" class="font-sans font-bold" style="background: #7a1d1d; color: white;">Force TPK</button>
+                               </div>
+                           </div>
+                       </details>
                    </div>
                </div>
            </div>
@@ -325,7 +380,6 @@
            appId: "1:611704952225:web:eb11db1a5a2b17c02de7e0" 
        };
 
-       // Robust check for environmental configuration parameters
        if (typeof __firebase_config !== 'undefined') {
            try {
                if (typeof __firebase_config === 'string') {
@@ -604,6 +658,7 @@
        let secondRollTotal = 0;
        let currentActiveDC = 0;
        let isHostTPK = false; 
+       let introRead = false; // Prevents instantly launching portal selection before starting text
 
        function getFantasySVG(category) {
            const svgAttrs = `viewBox="0 0 300 400" width="100%" height="100%" style="display: block; background: #050507;"`;
@@ -645,7 +700,7 @@
            } else {
                const driveImgArray = driveImages[category];
                if (driveImgArray && driveImgArray.length > 0) {
-                   const primaryImg = driveImgArray[0]; // fallback to first
+                   const primaryImg = driveImgArray[0]; 
                    imgElement.src = primaryImg;
                    imgElement.style.display = 'block';
                    svgContainer.style.display = 'none';
@@ -741,7 +796,7 @@
 
        function switchToLocalOnly() {
            isMultiplayer = false;
-           writeDiag("⚠️ Switching instantly to offline Sandbox Mode.", "warn");
+           writeDiag("⚠️ Switching instantly to offline Sandbox Mode. This happens if network blockages or strict browser privacy containers prevent database handshakes (reference: Screenshot 2026-07-18 at 7.43.01 PM.png).", "warn");
            
            const connStatus = document.getElementById('room-connection-status');
            const dot = document.getElementById('status-dot');
@@ -794,7 +849,8 @@
                stageCount: 0,
                currentEncounter: null,
                currentOptions: [],
-               isHostTPK: false
+               isHostTPK: false,
+               introRead: false
            };
            writeDiag("⚡ Local room state structure initialized.");
        }
@@ -923,7 +979,7 @@
                let br = parseInt(document.getElementById(`roll_${tp.id}_brawn`).value) || 0;
                let bn = parseInt(document.getElementById(`roll_${tp.id}_brains`).value) || 0;
                let ag = parseInt(document.getElementById(`roll_${tp.id}_agility`).value) || 0;
-               derivedPlayers.push({ name: tp.name, avatar: tp.avatar, brawn: br, brains: bn, agility: ag });
+               derivedPlayers.push({ name: tp.name, avatar: tp.avatar, brawn: br, brains: bn, agility: ag, shelved: false });
                totalCapacity += (br + bn + ag);
            }
 
@@ -936,7 +992,106 @@
                stageCount: 1,
                currentEncounter: null,
                currentOptions: [],
-               isHostTPK: false
+               isHostTPK: false,
+               introRead: false
+           });
+       }
+
+       // Mid-Game Management: Late Joiner Injector
+       async function hostInjectPlayerMidGame() {
+           const name = document.getElementById('host-add-name').value.trim();
+           const lineage = document.getElementById('host-add-class').value;
+           const br = parseInt(document.getElementById('host-add-brawn').value) || 0;
+           const bn = parseInt(document.getElementById('host-add-brains').value) || 0;
+           const ag = parseInt(document.getElementById('host-add-agility').value) || 0;
+
+           if (!name) {
+               showNotification("Please specify a name for the late joiner.");
+               return;
+           }
+
+           // Clone players list, push new member
+           let updatedPlayers = [...players];
+           updatedPlayers.push({
+               name: name,
+               avatar: lineage,
+               brawn: br,
+               brains: bn,
+               agility: ag,
+               shelved: false
+           });
+
+           // Recalculate group HP proportionally
+           let statSum = br + bn + ag;
+           let hpIncrement = statSum + 10;
+           let updatedMaxHP = maxPartyHP + hpIncrement;
+           let updatedCurrentHP = currentPartyHP + hpIncrement;
+
+           await safeUpdateDoc({
+               players: updatedPlayers,
+               maxPartyHP: updatedMaxHP,
+               currentPartyHP: updatedCurrentHP,
+               diceLogUpdate: `👑 <strong>Host:</strong> Welcomed <strong>${name} (${lineage})</strong> to the vanguard mid-journey!`
+           });
+
+           // Clear input
+           document.getElementById('host-add-name').value = "";
+       }
+
+       // Mid-Game Management: Shelve / Store / Eradicate Actions
+       async function hostToggleShelvePlayer(index) {
+           let updatedPlayers = [...players];
+           let p = updatedPlayers[index];
+           if (!p) return;
+
+           let wasShelved = p.shelved;
+           p.shelved = !wasShelved;
+
+           // Recalculate max HP contribution: Shelving removes their quota so scaling doesn't break
+           let statSum = p.brawn + p.brains + p.agility;
+           let hpQuota = statSum + 10;
+           let updatedMaxHP = maxPartyHP;
+           let updatedCurrentHP = currentPartyHP;
+
+           if (p.shelved) {
+               updatedMaxHP = Math.max(50, maxPartyHP - hpQuota);
+               updatedCurrentHP = Math.max(1, currentPartyHP - hpQuota);
+           } else {
+               updatedMaxHP = maxPartyHP + hpQuota;
+               updatedCurrentHP = currentPartyHP + hpQuota;
+           }
+
+           const logMsg = p.shelved 
+               ? `👑 <strong>Host:</strong> Shelved <strong>${p.name}</strong> out of view. Maximum Party HP adjusted.`
+               : `👑 <strong>Host:</strong> Un-shelved <strong>${p.name}</strong>. Restored their active indicators!`;
+
+           await safeUpdateDoc({
+               players: updatedPlayers,
+               maxPartyHP: updatedMaxHP,
+               currentPartyHP: updatedCurrentHP,
+               diceLogUpdate: logMsg
+           });
+       }
+
+       async function hostDeletePlayer(index) {
+           let updatedPlayers = [...players];
+           let p = updatedPlayers[index];
+           if (!p) return;
+
+           // Recalculate party health
+           let statSum = p.brawn + p.brains + p.agility;
+           let hpQuota = statSum + 10;
+           let updatedMaxHP = Math.max(50, maxPartyHP - hpQuota);
+           let updatedCurrentHP = Math.max(1, currentPartyHP - hpQuota);
+
+           // Remove from list
+           updatedPlayers.splice(index, 1);
+
+           await safeUpdateDoc({
+               players: updatedPlayers,
+               maxPartyHP: updatedMaxHP,
+               currentPartyHP: updatedCurrentHP,
+               diceLogUpdate: `👑 <strong>Host:</strong> Eradicated <strong>${p.name}</strong> from the campaign rosters completely.`
            });
        }
 
@@ -944,7 +1099,7 @@
            if (isMultiplayer && auth.currentUser && roomRef) {
                try {
                    await deleteDoc(roomRef);
-                   writeDiag("🧹 Active room cleared in server registries. Reloading...");
+                   writeDiag("🧹 Active room cleared in registries. Reloading...");
                    window.location.reload();
                } catch (err) {
                    console.error("Dungeon state deletion rejected:", err);
@@ -1052,6 +1207,11 @@
            });
        }
 
+       // Restored: Triggers portal selection matrix screen after reading introductory narrative
+       async function handleReadIntro() {
+           await safeUpdateDoc({ introRead: true });
+       }
+
        function renderSyncedChoices() {
            let choicesHtml = `
                <div class="choice-card" id="btn-choice-0">
@@ -1084,15 +1244,15 @@
            let nextStage = stageCount + 1;
            let chosen = currentOptions[idx];
 
-           let N = players.length || 1;
-           let M = 0.60 + 0.02 * (N - 8);
+           // Filter out shelved players when computing scaling formulas
+           let activeCount = players.filter(p => !p.shelved).length || 1;
+           let M = 0.60 + 0.02 * (activeCount - 8);
            let d6 = Math.floor(Math.random() * 6) + 1;
            let dc = 11 + d6 + Math.floor(nextStage * M);
 
-           let failDmg = Math.floor((6 + d6 + nextStage) * (N * 0.5));
+           let failDmg = Math.floor((6 + d6 + nextStage) * (activeCount * 0.5));
            let dynamicStoryText = constructGranularText(chosen.type, chosen.title);
 
-           // Server-side selection of randomized Drive image URL
            const imagesAvailable = driveImages[chosen.type];
            const chosenImg = imagesAvailable[Math.floor(Math.random() * imagesAvailable.length)];
 
@@ -1118,12 +1278,11 @@
        async function selectCamp() {
            let campDescription = constructGranularCampText();
 
-           let N = players.length || 1;
-           let M = 0.60 + 0.02 * (N - 8);
+           let activeCount = players.filter(p => !p.shelved).length || 1;
+           let M = 0.60 + 0.02 * (activeCount - 8);
            let d6 = Math.floor(Math.random() * 6) + 1;
            let dc = 10 + d6 + Math.floor(stageCount * 0.4 * M);
 
-           // Server-side selection of randomized Drive camp image URL
            const imagesAvailable = driveImages.camp;
            const chosenImg = imagesAvailable[Math.floor(Math.random() * imagesAvailable.length)];
 
@@ -1278,6 +1437,8 @@
            let resolutionProse = "";
            let additionalLine = "";
 
+           let activeCount = players.filter(p => !p.shelved).length || 1;
+
            if (currentEncounter.isCamp) {
                if (success) {
                    let baselineMin = Math.ceil(maxPartyHP * 0.15);
@@ -1293,10 +1454,14 @@
                }
            } else {
                if (success) {
-                   wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
+                   // Dynamic Success Attrition scaling: Base (2 to 4) multiplied by active party factor
+                   let baseWear = Math.floor(Math.random() * 3) + 2; 
+                   let partyMultiplier = Math.max(1, Math.floor(activeCount / 3));
+                   wearAndTear = baseWear * partyMultiplier;
+
                    updatedHP = Math.max(0, currentPartyHP - wearAndTear);
                    resolutionProse = getWord(resolutionTemplates.obstacleSuccess)();
-                   additionalLine = `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`;
+                   additionalLine = `⚔️ Obstacle cleared. Physical strain (scaled to party size): -${wearAndTear} vitality.`;
                } else {
                    damage = currentEncounter.failDmg || 10;
                    updatedHP = Math.max(0, currentPartyHP - damage);
@@ -1373,11 +1538,28 @@
        function renderCharacterSheetsFromState() {
            let html = "";
            let dropDownHTML = "";
+           
            players.forEach((p, idx) => {
-               html += `<details class="sheet-row"><summary class="sheet-header"><span>${p.avatar.split(" ")[0]}</span> <strong>${p.name}</strong></summary> <div class="sheet-stats"><div class="stat-line"><span>Brawn Matrix:</span><strong>+${p.brawn}</strong></div> <div class="stat-line"><span>Brains Matrix:</span><strong>+${p.brains}</strong></div> <div class="stat-line"><span>Agility Matrix:</span><strong>+${p.agility}</strong></div></div></details>`;
+               // Shelved players are skipped from active visual tracking & drop downs
+               if (p.shelved) return;
+
+               html += `
+                   <details class="sheet-row">
+                       <summary class="sheet-header">
+                           <span>${p.avatar.split(" ")[0]}</span> 
+                           <strong>${p.name}</strong>
+                       </summary> 
+                       <div class="sheet-stats">
+                           <div class="stat-line"><span>Brawn Matrix:</span><strong>+${p.brawn}</strong></div> 
+                           <div class="stat-line"><span>Brains Matrix:</span><strong>+${p.brains}</strong></div> 
+                           <div class="stat-line"><span>Agility Matrix:</span><strong>+${p.agility}</strong></div>
+                       </div>
+                   </details>`;
                dropDownHTML += `<option value="${idx}">${p.name}</option>`;
            });
-           document.getElementById('sheets-list').innerHTML = html;
+           
+           document.getElementById('sheets-list').innerHTML = html || `<p class="text-xs text-gray-500 font-sans italic">All adventurers shelved.</p>`;
+           
            const activeSelect = document.getElementById('active-player-select');
            const prevVal = activeSelect.value;
            activeSelect.innerHTML = dropDownHTML;
@@ -1386,10 +1568,29 @@
            }
        }
 
+       // Live Roster manager desk population
+       function renderHostRosterControlList() {
+           let listHtml = "";
+           players.forEach((p, idx) => {
+               const shelveBtnLabel = p.shelved ? "Un-shelve (Return)" : "Shelve (Store)";
+               const labelClass = p.shelved ? "text-gray-500 line-through" : "text-[#f4a261]";
+               listHtml += `
+                   <div class="flex items-center justify-between bg-[#16161f] p-2 rounded text-xs">
+                       <span class="font-sans ${labelClass}">${p.avatar.split(" ")[0]} ${p.name} ${p.shelved ? '[STASHED]' : ''}</span>
+                       <div class="flex gap-1.5">
+                           <button onclick="window.hostToggleShelvePlayer(${idx})" class="text-[10px] bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white font-sans">${shelveBtnLabel}</button>
+                           <button onclick="window.hostDeletePlayer(${idx})" class="text-[10px] bg-[#e76f51] hover:bg-red-600 px-2 py-1 rounded text-white font-sans">Delete</button>
+                       </div>
+                   </div>`;
+           });
+           document.getElementById('host-roster-list').innerHTML = listHtml || `<p class="text-xs text-gray-500 italic font-sans">No roster members found.</p>`;
+       }
+
        function populateBackupSelect() {
            let backupSelect = document.getElementById('backup-player-select');
            let backupHtml = "";
            players.forEach((p, idx) => {
+               if (p.shelved) return;
                if (players.length === 1 || idx !== firstRollerIndex) {
                    backupHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
                }
@@ -1401,6 +1602,7 @@
            let weyrSelect = document.getElementById('weyr-player-select');
            let weyrHtml = "";
            players.forEach((p, idx) => {
+               if (p.shelved) return;
                if (players.length <= 2 || (idx !== firstRollerIndex && idx !== secondRollerIndex)) {
                    weyrHtml += `<option value="${idx}">${p.name} (${p.avatar.split(" ")[0]})</option>`;
                }
@@ -1410,6 +1612,7 @@
 
        function handleEnd(isDecreedHostTPK = false) {
            document.getElementById('navigation-block').style.display = 'none';
+           document.getElementById('intro-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = isDecreedHostTPK ? "💀 Host Doom Decree" : "💀 The Long Goodnight";
            updateBoardImageDirect("death");
@@ -1447,6 +1650,7 @@
 
        function handleWin() {
            document.getElementById('navigation-block').style.display = 'none';
+           document.getElementById('intro-block').style.display = 'none';
            document.getElementById('encounter-interface').style.display = 'none';
            document.getElementById('location-name').innerText = "🏆 Victory & Escape!";
            updateBoardImageDirect("win");
@@ -1489,6 +1693,7 @@
            secondRollerIndex = data.secondRollerIndex !== undefined ? data.secondRollerIndex : null;
            secondRollTotal = data.secondRollTotal || 0;
            isHostTPK = data.isHostTPK || false;
+           introRead = data.introRead || false;
 
            if (data.diceLogUpdate) {
                logDice(data.diceLogUpdate);
@@ -1505,8 +1710,10 @@
                document.getElementById('game-view').style.display = 'block';
                updateHPDisplay();
                renderCharacterSheetsFromState();
+               renderHostRosterControlList();
 
                if (currentEncounter) {
+                   document.getElementById('intro-block').style.display = 'none';
                    document.getElementById('navigation-block').style.display = 'none';
                    let encUI = document.getElementById('encounter-interface');
                    encUI.className = `encounter-box ${currentEncounter.type}`;
@@ -1521,12 +1728,12 @@
                    document.getElementById('roll-check-btn').innerText = `Roll standard d${dieSize}`;
 
                    if (currentEncounter.resolved) {
-                       // Hide all active rolling control layouts
+                       // Hide active rolling layouts
                        document.getElementById('standard-roll-controls').style.display = 'none';
                        document.getElementById('backup-roll-controls').style.display = 'none';
                        document.getElementById('weyr-roll-controls').style.display = 'none';
                        
-                       // Show the dice roll outcomes and story continuation blocks
+                       // Show outcomes and story continuation blocks
                        document.getElementById('story-text').innerHTML = currentEncounter.desc + 
                            `<hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">` +
                            `<p class="story-paragraph" style="font-style: italic; color: #b1b1b9;">${currentEncounter.resolutionProse}</p>`;
@@ -1563,14 +1770,23 @@
                    } else if (stageCount >= 180) {
                        handleWin();
                    } else {
-                       document.getElementById('navigation-block').style.display = 'block';
-                       document.getElementById('location-name').innerText = "Portal Selection Matrix";
-                       updateBoardImageDirect("entrance");
-                       
-                       if (currentOptions.length === 0) {
-                           generateAdventureChoices();
+                       // Correct Entrance Redundancy: Check if they read the intro yet!
+                       if (!introRead && stageCount === 1) {
+                           document.getElementById('location-name').innerText = "Vanguard Entryway";
+                           updateBoardImageDirect("entrance");
+                           document.getElementById('intro-block').style.display = 'block';
+                           document.getElementById('navigation-block').style.display = 'none';
                        } else {
-                           renderSyncedChoices();
+                           document.getElementById('intro-block').style.display = 'none';
+                           document.getElementById('navigation-block').style.display = 'block';
+                           document.getElementById('location-name').innerText = "Portal Selection Matrix";
+                           updateBoardImageDirect("entrance");
+                           
+                           if (currentOptions.length === 0) {
+                               generateAdventureChoices();
+                           } else {
+                               renderSyncedChoices();
+                           }
                        }
                    }
                }
@@ -1724,7 +1940,8 @@
                        stageCount: 0,
                        currentEncounter: null,
                        currentOptions: [],
-                       isHostTPK: false
+                       isHostTPK: false,
+                       introRead: false
                    };
                    await setDoc(roomRef, initialRoomState);
                    writeDiag("🟢 Created new adventure lobby room successfully.", "success");
@@ -1793,6 +2010,10 @@
        }
 
        async function systemLaunch() {
+           // Populate lineage selection lists
+           let selectHtml = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+           document.getElementById('host-add-class').innerHTML = selectHtml;
+
            writeDiag("⚡ Parsing Discord context parameters...");
            const params = new URLSearchParams(window.location.search);
            const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
@@ -1811,7 +2032,7 @@
                } else {
                    instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
                    window.location.hash = `room=${instanceId}`;
-                   writeDiag(`🟢 Generated clean fallback browser Room: ${instanceId}`);
+                   writeDiag(`🟢 Generated clean fallback room: ${instanceId}`);
                }
                insideDiscord = false;
            }
@@ -1842,6 +2063,12 @@
            document.getElementById('tpk-btn').addEventListener('click', triggerHostTPK);
            document.getElementById('active-player-select').addEventListener('change', updateHostDCReveal);
 
+           // Restored Intro gate action
+           document.getElementById('btn-begin-descent').addEventListener('click', handleReadIntro);
+
+           // Mid-game control inject trigger
+           document.getElementById('btn-host-inject-player').addEventListener('click', hostInjectPlayerMidGame);
+
            initializeLocalState();
 
            writeDiag("⚡ Handshaking secure Firebase context connection...");
@@ -1871,6 +2098,8 @@
        window.finalizeStatsAndStart = finalizeStatsAndStart;
        window.goToRollingScreen = goToRollingScreen;
        window.addPlayerSlot = addPlayerSlot;
+       window.hostToggleShelvePlayer = hostToggleShelvePlayer;
+       window.hostDeletePlayer = hostDeletePlayer;
    </script>
 </body>
 </html>
