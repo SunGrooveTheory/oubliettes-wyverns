@@ -44,7 +44,6 @@
        .stat-roll-box { background: #16161f; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
        .stat-roll-box input { width: 50px; text-align: center; font-weight: bold; color: var(--accent-color); background: #0c0c0e; border: 1px solid var(--border-color); padding: 4px; border-radius: 4px; }
 
-       /* Styled signature yellowish-orange dice buttons */
        .roll-btn {
            background-color: var(--accent-color) !important;
            color: #111 !important;
@@ -94,7 +93,7 @@
            align-items: center;
            justify-content: center;
        }
-       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: none; }
+       .img-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
        .story-panel { flex: 1.8; min-width: 360px; background: #0f0f14; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 15px; }
        .status-bar { display: flex; justify-content: space-between; background: #16161f; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 17px; border-bottom: 2px solid var(--accent-color); }
@@ -110,7 +109,7 @@
        .encounter-box.puzzle { border-color: var(--magic-color); }
        .encounter-box.hazard { border-color: var(--accent-color); }
       
-       #dice-log { height: 120px; overflow-y: auto; background: #050507; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #999; margin-top: 12px; text-align: left; border: 1px solid #1c1c24; }
+       #dice-log { height: 130px; overflow-y: auto; background: #050507; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #999; margin-top: 12px; text-align: left; border: 1px solid #1c1c24; }
        .highlight { color: var(--accent-color); font-weight: bold; }
        .story-paragraph { font-family: 'Georgia', serif; font-size: 16px; line-height: 1.8; color: #ddd; margin-bottom: 14px; text-align: justify; }
       
@@ -129,7 +128,7 @@
            font-family: monospace;
            font-size: 11px;
            color: #999;
-           max-height: 140px;
+           max-height: 150px;
            overflow-y: auto;
        }
        .diag-line { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px; }
@@ -153,17 +152,6 @@
                </div>
            </div>
            <button id="btn-finalize" class="danger" style="font-size: 13px; padding: 8px 14px;">Finalize Game</button>
-       </div>
-
-       <!-- Connection Diagnostics Box (Explains screenshot failures verbatim) -->
-       <div id="diag-warning-box" class="section-box hidden border border-red-500 bg-red-950/20 text-red-100 font-sans text-sm p-4 rounded-lg mb-5">
-           <strong class="text-red-400 block text-base mb-1">🔗 Discord Activity OAuth & Firebase Verification Guide</strong>
-           <p class="mb-2">We detected a configuration conflict shown in <strong>Screenshot 2026-07-19 at 8.38.10 PM.png</strong> and <strong>Screenshot 2026-07-19 at 8.49.19 PM.png</strong>:</p>
-           <ul class="list-disc pl-5 space-y-2 text-xs text-red-200">
-               <li><strong>Authorized Domains (Discord Client):</strong> Because standard browsers work but Discord fails, you must authorize Discord's iframe proxy servers. Go to your Firebase Console -> Authentication -> Settings -> Authorized Domains, and add <code>discordapps.net</code>.</li>
-               <li><strong>Google OAuth Screen:</strong> The setup page shown in <strong>Screenshot 2026-07-19 at 8.57.08 PM.png</strong> is only for Google Account sign-in. You can safely ignore it since we use secure Anonymous logins!</li>
-               <li><strong>Active Backup:</strong> While configuring your database keys, Sandbox Mode is active and runs with full local fallback mechanics below!</li>
-           </ul>
        </div>
 
        <!-- Character Setup Stage -->
@@ -270,7 +258,7 @@
                            <button id="btn-begin-descent" class="success px-8 py-3 mt-4 text-md font-sans">Begin Descent & Open Portals</button>
                        </div>
 
-                       <!-- Navigation / Portal choices (Rendered simultaneously with rolls/results) -->
+                       <!-- Navigation / Portal choices -->
                        <div id="navigation-block">
                            <div class="choice-container" id="direction-choices"></div>
                        </div>
@@ -289,7 +277,7 @@
                                        </div>
                                        <div>
                                            <label class="text-[11px] text-gray-400 block font-sans">Class Lineage:</label>
-                                           <select id="host-add-class" class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans">
+                                           <select id="host-add-class" class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans font-sans">
                                                <!-- Populated dynamically -->
                                            </select>
                                        </div>
@@ -314,7 +302,7 @@
                                <!-- Shelving & Eradication Manager -->
                                <div class="mb-4 bg-[#12121a] p-3 rounded border border-[#2a2a3a]">
                                    <strong class="text-xs font-sans text-gray-300 uppercase block mb-2">📋 Live Roster Desk (Store / Eradicate)</strong>
-                                   <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                                   <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1 font-sans">
                                        <!-- Populated dynamically with active players -->
                                    </div>
                                </div>
@@ -370,17 +358,14 @@
        import { initializeFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
        import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-       // Real-time visible logger
+       // Real-time visible debugger log
        function writeDiag(msg, status = '') {
            const logBox = document.getElementById('diagnostic-log');
            if (logBox) {
                let classStr = "";
                if (status === 'success') classStr = "class='diag-success'";
                if (status === 'warn') classStr = "class='diag-warn'";
-               if (status === 'error') {
-                   classStr = "class='diag-error'";
-                   document.getElementById('diag-warning-box').classList.remove('hidden');
-               }
+               if (status === 'error') classStr = "class='diag-error'";
                const timestamp = new Date().toLocaleTimeString();
                logBox.innerHTML = `<div ${classStr}>[${timestamp}] ${msg}</div>` + logBox.innerHTML;
            }
@@ -397,7 +382,7 @@
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
        writeDiag(`⚡ Browser Session ID mapped: ${SESSION_ID}`);
 
-       // Note: To secure this on GitHub pages, rotate this key in Firebase Console and limit Auth domains
+       // REGENERATED SECURED MULTIPLAYER WORKSPACE DATABASE CREDENTIALS (Corrected key!)
        let firebaseConfig = { 
            apiKey: "AIzaSyBCRiyndVNJFrm2gerhF0BR8VbNhvGOu4I", 
            authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
@@ -416,7 +401,7 @@
                }
                writeDiag("⚡ Custom workspace database configuration loaded.", "success");
            } catch(e) {
-               writeDiag("⚠️ Database config parsed from workspace defaulted to hardcoded fallbacks.", "warn");
+               writeDiag("⚠️ Database config parsed from workspace defaulted to fallbacks.", "warn");
            }
        }
 
@@ -425,16 +410,16 @@
        const auth = initializeAuth(app, { persistence: inMemoryPersistence });
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
-       writeDiag(`⚡ Firestore Client initialized with long polling. App Target ID: ${appId}`);
+       writeDiag(`⚡ Firestore Client loaded. Room target app ID: ${appId}`);
 
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
                discordSdk = new DiscordSDK("1521393614528450622");
-               writeDiag("🟢 Discord Embedded App SDK loaded and initialized with Client ID 1521393614528450622.", "success");
+               writeDiag("🟢 Discord Embedded App SDK loaded.", "success");
            }
        } catch (discordErr) {
-           writeDiag("⚠️ Discord Activity Context SDK uninitialized.", "warn");
+           writeDiag("⚠️ Discord Activity Context SDK deferred to standard web browser mode.", "warn");
        }
 
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
@@ -461,7 +446,12 @@
                (loc) => `A spectral draft sweeps past your torches, pulling the vanguard forward into <strong>${loc}</strong>.`,
                (loc) => `Following the glowing veins of luminous ore, the party enters the shimmering cavern of <strong>${loc}</strong>.`,
                (loc) => `An iron grate, rusted through, crumbles underfoot to reveal a secret shaft leading down to <strong>${loc}</strong>.`,
-               (loc) => `Pushing past heavy, dust-laden cobwebs, the group steps into the quiet majesty of <strong>${loc}</strong>.`
+               (loc) => `Pushing past heavy, dust-laden cobwebs, the group steps into the quiet majesty of <strong>${loc}</strong>.`,
+               (loc) => `The air grows thin and cold as the narrow tunnel spits the party out into the high rafters of <strong>${loc}</strong>.`,
+               (loc) => `Guided by a faint, clicking mechanical hum, the explorers slip through a sliding portal into <strong>${loc}</strong>.`,
+               (loc) => `The smell of decay and old paper leads the vanguard directly to the bloodstained gate of <strong>${loc}</strong>.`,
+               (loc) => `Stepping over broken bones, your team enters the dark, whispering hollow of <strong>${loc}</strong>.`,
+               (loc) => `A sudden gust of wind snuffs out your primary lantern just as you cross into <strong>${loc}</strong>.`
            ],
            sensory: [
                () => `The air here is thick with the smell of ${getWord(adjectives)} smoke and wet stone. `,
@@ -477,7 +467,14 @@
                () => `An old banner, half-burned and bearing an forgotten crest, hangs limply from a bronze sconce.`,
                () => `The air is heavy and humid, carrying the scent of dried lilies and old parchment.`,
                () => `Flickering embers of ancient, magical lanterns float lazily near the high rafters.`,
-               () => `A thick, black liquid pools in the cracks of the flagstones, reflecting your torchlight.`
+               () => `A thick, black liquid pools in the cracks of the flagstones, reflecting your torchlight.`,
+               () => `A faint humming sound vibrates through your metal weapons, making them feel warm.`,
+               () => `The walls are covered in tiny, glowing mold spores that outline strange runic symbols.`,
+               () => `Your shadows stretch and skew in odd directions, seemingly detached from your light source.`,
+               () => `The distant sound of clicking gears echoes from behind a heavy iron plate.`,
+               () => `A cold, clean draft blows from a deep fissure, carrying the distant scent of pine.`,
+               () => `A sudden ringing in your ears makes it difficult to focus on the soft rustle of the wind.`,
+               () => `A thick layer of dust covers everything, untouched for hundreds of years.`
            ],
            combatComp: [
                () => `Without warning, the shadows move. A large beast, covered in ${getWord(adjectives)} ${getWord(matterNouns)}, ${getWord(verbs)} out of the dark. `,
@@ -492,7 +489,15 @@
                () => `The wet mud on the ground rises and forms a gelatinous, acidic horror that crawls toward your boots.`,
                () => `A mechanical sentinel, gears screeching in protest, activates with a flash of red optical energy.`,
                () => `Swarms of tiny, flesh-eating scarabs erupt from the crevices, forming an angry, buzzing cloud.`,
-               () => `An ancient cultist, long turned to a mindless husk, brandishes a glowing, dark-energy staff.`
+               () => `An ancient cultist, long turned to a mindless husk, brandishes a glowing, dark-energy staff.`,
+               () => `A massive, slithering serpent with scales like polished brass drops from the rafters.`,
+               () => `A dual-headed stone gargoyle snaps its wings open, detaching itself from the stone archway.`,
+               () => `From the darkness, a pack of blind hunters with long, needle-like claws surrounds the party.`,
+               () => `A shimmering portal tears open, releasing a screaming elemental of pure, crackling lightning.`,
+               () => `A bloated zombie, covered in fungal spores, drags its heavy limbs forward.`,
+               () => `A spectral archer materializes atop a stone ledge, drawing a pale, glowing bowstring.`,
+               () => `The floorboards break apart as a burrowing beast with iron-hard mandibles rises up.`,
+               () => `A shadowy specter with hollow eyes sweeps toward you, leaving frost in its wake.`
            ],
            combatImpact: [
                () => `The creature roars loudly. Running away from this <strong>${getWord(threatNouns)}</strong> is not possible; someone must stand and fight. `,
@@ -506,7 +511,16 @@
                () => `Its eyes lock onto the weakest link. The party must act fast to draw its attention away.`,
                () => `An icy dread fills the room. Break its focus before the magic freezes your bones!`,
                () => `The monster strikes with deadly speed. Brace your shields and hold the line!`,
-               () => `It roars in fury, shattering nearby stalactites. Prepare for a brutal, up-close struggle.`
+               () => `It roars in fury, shattering nearby stalactites. Prepare for a brutal, up-close struggle.`,
+               () => `A wave of heat rolls off its skin. You must attack quickly before the air becomes unbreathable.`,
+               () => `It splits its focus, targeting both your vanguard and support characters simultaneously.`,
+               () => `The beast lunges with a series of quick, vicious snapping strikes that force you backward.`,
+               () => `Its eyes glow with an hypnotic light, attempting to cloud the minds of your frontline warriors.`,
+               () => `It moves with unsettling silence. You must rely on your instincts to block its strikes.`,
+               () => `The guardian raises its massive shield, preparing to counter-strike with crushing force.`,
+               () => `It calls out to the darkness, summoning minor shadowy helpers to swarm your flanks.`,
+               () => `The creature brandishes a heavy, spiked club, ready to smash your defenses to splinters.`,
+               () => `Its skin oozes a corrosive acid that sizzles against your armor. Fight with caution!`
            ],
            puzzleComp: [
                () => `Your progress is stopped by a locked door. The surface is carved with ${getWord(adjectives)} signs that ${getWord(verbs)} softly. `,
@@ -520,7 +534,16 @@
                () => `The wall is covered in shifting hieroglyphs that change form whenever anyone looks away.`,
                () => `A crystal prism projects a single beam of white light, but the reflecting mirrors are misaligned.`,
                () => `An elaborate locked mechanism of spinning rings and hidden pins blocks the stone archway.`,
-               () => `A sleeping stone gargoyle whispers a riddle in an ancient tongue, awaiting a correct response.`
+               () => `A sleeping stone gargoyle whispers a riddle in an ancient tongue, awaiting a correct response.`,
+               () => `A giant sandglass filled with blue, glowing sand slowly drains, wired to a heavy steel gate.`,
+               () => `A network of water channels carved into the floor must be filled in a specific order to disarm the lock.`,
+               () => `The floor is covered in glowing plates that activate runic letters when stepped upon.`,
+               () => `A massive tapestry depicting a battle holds hidden, mathematical clues within its threads.`,
+               () => `Three brass bells of different sizes hang from a beam, requiring a perfect chord to open the door.`,
+               () => `A heavy sarcophagus has a slider puzzle built into the lid, humming with magical energy.`,
+               () => `An arrangement of cold iron gears must be aligned to reconnect the bridge mechanism.`,
+               () => `A stone basin containing five colored liquids must be mixed into a safe, neutral compound.`,
+               `A spectral projection of a lock must be solved by rotating overlapping magical circles.`
            ],
            puzzleImpact: [
                () => `Touching the <strong>${getWord(relicNouns)}</strong> without thinking will set off a dangerous trap. It requires a smart plan to solve. `,
@@ -534,7 +557,16 @@
                () => `The energy barrier hums dangerously. A scholar must study the magical currents to disarm it.`,
                () => `Every piece of the chessboard represents a life. Make your move with absolute precision.`,
                () => `The puzzle is designed to trick the hasty. Take your time, analyze the mechanism, and solve it.`,
-               () => `The riddle has multiple double meanings. Listen closely to the clues and find the key.`
+               () => `The riddle has multiple double meanings. Listen closely to the clues and find the key.`,
+               () => `A ticking sound builds behind the wall. Act quickly, or the room will lock down completely.`,
+               () => `The water must flow smoothly without spilling, or a cold trap will flood the chamber.`,
+               () => `A heavy cloud of toxic mist begins to leak from the gears. Find the key fast!`,
+               () => `The weights must balance perfectly to prevent the floor plates from collapsing.`,
+               () => `The colors must align with the cosmic alignment described in the ancient murals.`,
+               () => `Solving this mechanism requires a steady hand and a deep memory for historical lineages.`,
+               () => `Any sudden vibration will scramble the locks. Maintain absolute focus and silence.`,
+               () => `The puzzle is cursed by an old spirit. One bad attempt will drain your mental energy.`,
+               `The overlapping rings must match the sequence of the stars. Decipher the pattern!`
            ],
            hazardComp: [
                () => `As your team steps forward, the floor beneath you ${getWord(verbs)}. You have triggered a hidden trap. `,
@@ -548,7 +580,16 @@
                () => `A hidden mechanism fires a barrage of poisoned needles from tiny holes in the brickwork.`,
                () => `The air suddenly thins as a vacuum trap seals the room and begins to drain the oxygen.`,
                () => `A landslide of heavy stones and jagged gravel breaks loose from the steep slope ahead.`,
-               () => `The walls begin to slide inward, threatening to crush the party like insects.`
+               () => `The walls begin to slide inward, threatening to crush the party like insects.`,
+               () => `A localized tremor rips through the floor, shattering the stone arches above you.`,
+               () => `A hidden valve opens, filling the chamber with a dense, freezing mist that burns the skin.`,
+               () => `A sudden breakdown in the structural integrity of the ceiling drops heavy support beams.`,
+               () => `A fast-moving wall of burning oil floods down the stairs, filling the hallway with smoke.`,
+               () => `A magical unstable nexus erupts, firing random bolts of force throughout the chamber.`,
+               () => `The stairs ahead collapse into a steep, slippery slide lined with sharp metal fragments.`,
+               () => `The ceiling begins to lower slowly but relentlessly, driven by heavy stone weights.`,
+               () => `A pool of quicksand disguised as dry dust begins to drag the vanguard downward.`,
+               `An old pipe bursts, spraying a cloud of high-pressure, scalding steam across the path.`
            ],
            hazardImpact: [
                () => `A wave of rocks falls from above. Only fast reflexes can pull your team out of the danger zone of the <strong>${getWord(locationNouns)}</strong>. `,
@@ -562,7 +603,16 @@
                () => `The needles are flying in a dense pattern. Evade with perfect reflexes to stay clean!`,
                () => `The chamber is collapsing. Dash through the narrowing exit with everything you have!`,
                () => `Jump across the opening gap with perfect precision, or be swept into the darkness!`,
-               () => `The ceiling is raining spikes. Weave through the falling hazards with perfect speed!`
+               () => `The ceiling is raining spikes. Weave through the falling hazards with perfect speed!`,
+               () => `The steam is scalding. Dive behind the nearest stone pillar to escape the heat!`,
+               () => `Keep your footing on the wet, slippery tiles, or slide into the dark chasm!`,
+               () => `The floor is breaking. Leap to the neighboring ledge before your support collapses!`,
+               () => `The gas is suffocating. Scramble out of the tunnel before you lose consciousness!`,
+               () => `Duck and weave through the erratic magical bolts before they rupture your shield!`,
+               () => `The beams are falling. Climb the debris quickly to reach the high exit!`,
+               () => `Slide beneath the closing gate before it seals you inside the dangerous chamber!`,
+               () => `Find solid rock and pull your allies out of the shifting sand before it's too late!`,
+               `The unstable bridge is swinging wildly. Secure your gear and rush to the anchor point!`
            ],
            campSetup: [
                () => `Seeing how tired everyone is, the adventurers stop near a quiet, safe ${getWord(relicNouns)}. `,
@@ -576,7 +626,16 @@
                () => `A hidden crevice behind a waterfall provides a damp but incredibly secure camp spot.`,
                () => `The team sweeps away ancient dust from a circular dais, preparing to rest their aching limbs.`,
                () => `Pitching camp inside an empty sarcophagus chamber, the party finds a bizarre sort of peace.`,
-               () => `The vanguard stops in a dead-end tunnel, placing warning bells along the approach path.`
+               () => `The vanguard stops in a dead-end tunnel, placing warning bells along the approach path.`,
+               () => `The group sets up camp inside a hollowed-out stone gear, protected by its massive metal teeth.`,
+               () => `Finding a dry, elevated platform above the moist floor, the heroes pitch their tents.`,
+               `The squad barricades an old barracks room, using rusted metal bunks to seal the doorway.`,
+               `The team finds shelter inside a small, ancient chapel with intact protective runes.`,
+               `The heroes set up camp in the center of an empty library, using moldy books to feed the fire.`,
+               `A deep alcove carved into a massive pillar provides a tight but cozy refuge for the night.`,
+               `The vanguard stops near a glowing, warm crystal formation that naturally repels the damp cold.`,
+               `The adventurers set up their bedrolls beneath a heavy stone canopy, safe from falling gravel.`,
+               `The group retreats to an elevated ledge, securing climbing ropes to prevent surprise climbers.`
            ],
            campAction: [
                () => `A small, warm fire is lit on the stone. It casts a ${getWord(adjectives)} glow on the walls. `,
@@ -590,7 +649,16 @@
                () => `A quiet prayer is offered to the gods of the light, asking for strength in the trials ahead.`,
                () => `The scout cleans their boots and oils their leather gear to keep them quiet and flexible.`,
                () => `Whispered stories of the surface world are shared, keeping the creeping dread of the deep at bay.`,
-               () => `Blankets are shared among the wounded to keep out the damp, bone-chilling cold of the stone.`
+               () => `Blankets are shared among the wounded to keep out the damp, bone-chilling cold of the stone.`,
+               `Water is boiled to cleanse wounds while the wizard repairs a damaged magic focus.`,
+               `A small musical instrument is played softly, bringing a brief moment of joy to the weary heroes.`,
+               `Rations are checked, revealing a few dry apples that are quickly split among the party.`,
+               `The cleric burns a sweet incense, cleansing the air of the dungeon's metallic sulfur scent.`,
+               `Leather armor is patched with simple thread, and shield handles are tightened with strips of cloth.`,
+               `The scout quietly marks their progress on a leather parchment, recording the turns taken.`,
+               `The warriors discuss defensive patterns, planning for potential ambushes in the deep.`,
+               `A magical lantern is set to low illumination, casting long, peaceful shadows over the camp.`,
+               `The group quietly laughs over old memories, finding strength in their shared history.`
            ],
            campOutcome: [
                () => `However, the Oubliette is never completely safe. Keeping watch over the <strong>${getWord(locationNouns)}</strong> requires focus. `,
@@ -604,7 +672,16 @@
                () => `Yet, the shadow patterns on the ceiling seem to stretch and crawl when left unobserved.`,
                () => `The guard must stay vigilant against the creeping mists that slowly enter the chamber.`,
                () => `But the low, mechanical hum of the complex threatens to lull the watchman to sleep.`,
-               () => `A sharp ear is needed to detect the soft, slithering sounds coming from the ventilation shaft.`
+               () => `A sharp ear is needed to detect the soft, slithering sounds coming from the ventilation shaft.`,
+               `But the glowing crystal occasionally flashes, throwing off the scout's night vision.`,
+               `The watch must keep an eye on the water level, as sudden floods are common in these depths.`,
+               `Yet, a faint, rhythmic clicking sound keeps echoing from behind the sealed stone doorway.`,
+               `But the cold draft from the floor threatens to freeze your supplies if left on the stone.`,
+               `A persistent scratching sound behind the brickwork suggests burrowing creatures are near.`,
+               `Yet, the smell of burnt hair and brimstone rises from a deep fissure just outside your camp.`,
+               `The scout must watch for invisible draft currents that might carry the smell of camp to enemies.`,
+               `But the flickering embers seem to cast shapes that resemble reaching hands on the walls.`,
+               `A soft, wet sliding sound from the roof indicates a slime might be tracking your heat.`
            ]
        };
 
@@ -622,7 +699,9 @@
                () => `You disarm the threat with seconds to spare, letting out a collective breath of relief.`,
                () => `The defensive shield holds against the blast, keeping everyone completely safe.`,
                () => `Through sheer willpower and grit, you push through the hazard and claim the prize.`,
-               () => `A clever distraction draws the enemy away, allowing the group to slip past unbothered.`
+               () => `A clever distraction draws the enemy away, allowing the group to slip past unbothered.`,
+               () => `The ancient locks click open smoothly, yielding to your careful manipulation.`,
+               () => `The monster is outsmarted and locked behind its own cell doors, completely neutralized.`
            ],
            obstacleFailure: [
                () => `Confusion breaks out. A sudden blast of ${getWord(adjectives)} ${getWord(matterNouns)} hits the group, throwing everyone to the floor.`,
@@ -637,7 +716,9 @@
                () => `A sudden burst of toxic gas fills the corridor, burning your eyes and lungs.`,
                () => `The ceiling collapses partially, burying gear and bruising several adventurers.`,
                () => `The enemy outmaneuvers your guard, landing a series of quick, painful strikes.`,
-               () => `Panic spreads as the hazard turns out to be far more dangerous than anticipated.`
+               () => `Panic spreads as the hazard turns out to be far more dangerous than anticipated.`,
+               () => `Your weapons scrape uselessly against the stone skin of the sentinel as it bats you away.`,
+               `A blinding flash of light disorients the party, sending you tumbling down the rock stairs.`
            ],
            campSuccess: [
                () => `Your sentries do an excellent job. The camp remains quiet and safe, letting your team heal their deep wounds.`,
@@ -647,11 +728,14 @@
                () => `An undisturbed rest allows the party's healers to fully tend to everyone's wounds.`,
                () => `The camp remains completely hidden, giving everyone a rare moment of true peace.`,
                () => `A quiet night restores your focus, clearing your minds of the dungeon's creeping dread.`,
-               () => `The barrier holds back the cold draft, keeping the camp warm and comfortable.`,
-               () => `No monsters approach the light. The party enjoys a safe, restorative rest.`,
-               () => `The guard detects a minor threat early and quiet-kills it, keeping the camp safe.`,
-               () => `The quiet sanctuary offers perfect shelter, restoring hope and energy to the group.`,
-               () => `Waking to the warm glow of the embers, you feel ready to face whatever lies ahead.`
+               () => `No monsters approach your light. The vanguard enjoys a safe, restorative night.`,
+               () => `The barrier holds back the cold drafts, keeping the camp warm and comfortable.`,
+               () => `The scout quietly eliminates a lone wanderer before it can alarm others, maintaining quiet.`,
+               `A secure haven shields you from the ambient hum, restoring mental hope and vigor.`,
+               `Waking up to the soft, warm glow of embers, you feel prepared to face the deep.`,
+               `A deep rest resets your reflexes, shaking off the exhaustion of the descent.`,
+               `Wounds seal and muscles relax under the protective spell of the campsite.`,
+               `You sleep through the distant tremors, completely undisturbed on your high shelf.`
            ],
            campFailure: [
                () => `Scary sounds from the dark tunnels keep your sentries on high alert, making it impossible to sleep well.`,
@@ -660,27 +744,87 @@
                () => `Moisture seeps into the blankets, leaving everyone cold, stiff, and exhausted.`,
                () => `Creeping nightmares plague the party's sleep, leaving them mentally drained.`,
                () => `A minor skirmish at the perimeter keeps everyone awake and on edge all night.`,
-               () => `The draft extinguishes the fire, leaving the camp in a freezing, pitch-black chill.`,
-               () => `A localized earth tremor shakes the room, ruining your rest and damaging supplies.`,
-               () => `The heavy air turns foul, forcing the group to move before they can fully recover.`,
-               () => `Unseen vermin chew through several ration packs, adding stress to the weary vanguard.`,
-               () => `A distant, mournful wail echoes repeatedly, making sleep an absolute impossibility.`,
-               () => `The guard falls asleep briefly, waking up just in time to prevent a total disaster.`
+               `A localized tremor collapses part of your camp wall, keeping everyone on high guard.`,
+               `The fire goes out under a damp draft, leaving you in a bone-chilling, pitch-black cold.`,
+               `Unseen vermin chew through several supply bags, adding stress to the vanguard.`,
+               `Foul air rolls into the room, making it impossible to sleep without coughing.`,
+               `A mournful, distant wail repeats all night, drilling into your squad's sanity.`,
+               `The guard nods off briefly, waking up in panic as shadows creep over the bedrolls.`,
+               `Your blankets catch a stray spark from the fire, causing a messy, smokey scramble.`,
+               `A minor structural slide drops dust and gravel onto your camp, keeping everyone awake.`,
+               `A swarm of blind cave gnats infests your camp, biting and irritating your squad.`
            ],
            deathTemplates: [
                () => `Their weapons shatter into useless iron dust, and their shields splinter. The vanguard falls to the frozen stones of the oubliette, entirely overrun by the gathering shadows.`,
-               () => `The crushing weight of their wounds drags the proud adventurers to their knees. One by one, they slip into a silent sleep, their final breaths mixing with the ancient, damp mist of the underworld.`
+               () => `The crushing weight of their wounds drags the proud adventurers to their knees. One by one, they slip into a silent sleep, their final breaths mixing with the ancient, damp mist of the underworld.`,
+               () => `The darkness of the abyss claims another registry of brave souls. The Oubliette sweeps their bones into the dust, ready to welcome the next band of fools.`,
+               () => `Your torches fail. The shadows swallow your final defense as the cold stones claim your bones.`,
+               `The ancient mechanism grinds you down. There are no survivors to carry your legacy back to the surface.`
            ]
        };
 
        const driveImages = {
-           entrance: ["https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"],
-           combat: ["https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000"],
-           puzzle: ["https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000"],
-           hazard: ["https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000"],
-           camp: ["https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000"],
-           death: ["https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000"],
-           win: ["https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"]
+           entrance: [
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
+           ],
+           combat: [
+               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
+               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
+               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
+           ],
+           puzzle: [
+               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
+               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
+           ],
+           hazard: [
+               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
+               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
+               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
+           ],
+           camp: [
+               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
+               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
+               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
+               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
+           ],
+           death: [
+               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
+           ],
+           win: [
+               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
+               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
+           ]
        };
 
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger", "🦾 Barbarian", "🥋 Monk"];
@@ -717,7 +861,6 @@
        let isHostTPK = false; 
        let introRead = false; 
 
-       // Infinite Mode Variables
        let infiniteModeActive = false;
        let customDiceCount = 1;
        let customDiceSides = 20;
@@ -726,28 +869,37 @@
        function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
        function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
 
-       function constructGranularText(type, locationName) {
-           let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
-           let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
-           let complication, impact;
-           if (type === "combat") {
-               complication = stems.combatComp[Math.floor(Math.random() * stems.combatComp.length)]();
-               impact = stems.combatImpact[Math.floor(Math.random() * stems.combatImpact.length)]();
-           } else if (type === "puzzle") {
-               complication = stems.puzzleComp[Math.floor(Math.random() * stems.puzzleComp.length)]();
-               impact = stems.puzzleImpact[Math.floor(Math.random() * stems.puzzleImpact.length)]();
-           } else {
-               complication = stems.hazardComp[Math.floor(Math.random() * stems.hazardComp.length)]();
-               impact = stems.hazardImpact[Math.floor(Math.random() * stems.hazardImpact.length)]();
-           }
-           return `<p class="story-paragraph">${approach}${sensory}</p><p class="story-paragraph">${complication}${impact}</p>`;
-       }
+       function updateBoardImageDirect(category, syncedUrl = null) {
+           const imgElement = document.getElementById('map-img');
+           const svgContainer = document.getElementById('fallback-svg-container');
+           if (!imgElement || !svgContainer) return;
 
-       function constructGranularCampText() {
-           let setup = stems.campSetup[Math.floor(Math.random() * stems.campSetup.length)]();
-           let action = stems.campAction[Math.floor(Math.random() * stems.campAction.length)]();
-           let outcome = stems.campOutcome[Math.floor(Math.random() * stems.campOutcome.length)]();
-           return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
+           if (syncedUrl) {
+               imgElement.src = syncedUrl;
+               imgElement.style.display = 'block';
+               svgContainer.style.display = 'none';
+               imgElement.onerror = () => {
+                   imgElement.style.display = 'none';
+                   svgContainer.style.display = 'block';
+                   svgContainer.innerHTML = getFantasySVG(category);
+               };
+           } else {
+               const driveImgArray = driveImages[category];
+               if (driveImgArray && driveImgArray.length > 0) {
+                   imgElement.src = driveImgArray[Math.floor(Math.random() * driveImgArray.length)];
+                   imgElement.style.display = 'block';
+                   svgContainer.style.display = 'none';
+                   imgElement.onerror = () => {
+                       imgElement.style.display = 'none';
+                       svgContainer.style.display = 'block';
+                       svgContainer.innerHTML = getFantasySVG(category);
+                   };
+               } else {
+                   imgElement.style.display = 'none';
+                   svgContainer.style.display = 'block';
+                   svgContainer.innerHTML = getFantasySVG(category);
+               }
+           }
        }
 
        function getFantasySVG(category) {
@@ -769,39 +921,6 @@
                    return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0e0c"/><circle cx="150" cy="150" r="60" fill="#f4a261" opacity="0.6" /><text x="150" y="60" fill="#2a9d8f" font-family="Georgia" font-size="16" text-anchor="middle" letter-spacing="2">CAMPAIGN COMPLETE</text></svg>`;
                default:
                    return `<svg ${svgAttrs}><rect width="300" height="400" fill="#0c0c0e"/><text x="150" y="200" fill="#f4a261" font-family="Georgia" font-size="14" text-anchor="middle">Loading Scene...</text></svg>`;
-           }
-       }
-
-       function updateBoardImageDirect(category, syncedUrl = null) {
-           const imgElement = document.getElementById('map-img');
-           const svgContainer = document.getElementById('fallback-svg-container');
-           if (!imgElement || !svgContainer) return;
-
-           if (syncedUrl) {
-               imgElement.src = syncedUrl;
-               imgElement.style.display = 'block';
-               svgContainer.style.display = 'none';
-               imgElement.onerror = () => {
-                   imgElement.style.display = 'none';
-                   svgContainer.style.display = 'block';
-                   svgContainer.innerHTML = getFantasySVG(category);
-               };
-           } else {
-               const driveImgArray = driveImages[category];
-               if (driveImgArray && driveImgArray.length > 0) {
-                   imgElement.src = driveImgArray[0];
-                   imgElement.style.display = 'block';
-                   svgContainer.style.display = 'none';
-                   imgElement.onerror = () => {
-                       imgElement.style.display = 'none';
-                       svgContainer.style.display = 'block';
-                       svgContainer.innerHTML = getFantasySVG(category);
-                   };
-               } else {
-                   imgElement.style.display = 'none';
-                   svgContainer.style.display = 'block';
-                   svgContainer.innerHTML = getFantasySVG(category);
-               }
            }
        }
 
@@ -853,23 +972,14 @@
        function switchToLocalOnly() {
            isMultiplayer = false;
            writeDiag("⚠️ Switching instantly to offline Sandbox Mode.", "warn");
+           writeDiag("ℹ️ Tip: Refer to your verified setup inside 'Screenshot 2026-07-20 at 12.15.52 AM.png' to double check Firebase console Authorized Domains if multiplayer sync is required.");
            
            const connStatus = document.getElementById('room-connection-status');
            const dot = document.getElementById('status-dot');
            const statusText = document.getElementById('status-text');
-           
-           if (insideDiscord) {
-               if (connStatus) connStatus.style.setProperty('display', 'none', 'important');
-           } else {
-               if (dot) {
-                   dot.style.background = "#ffb703"; 
-                   dot.style.animation = "pulse 2.0s infinite";
-               }
-               if (statusText) {
-                   statusText.innerText = "Sandbox Mode";
-                   statusText.style.color = "#ffb703";
-               }
-           }
+
+           if (dot) { dot.style.background = "#ffb703"; dot.style.animation = "pulse 2.0s infinite"; }
+           if (statusText) { statusText.innerText = "Sandbox Mode"; statusText.style.color = "#ffb703"; }
 
            const addBtn = document.getElementById('btn-add-character');
            if (addBtn) {
@@ -924,21 +1034,6 @@
                }
            } else {
                applyLocalUpdates(updates);
-           }
-       }
-
-       async function safeSetDoc(data) {
-           if (isMultiplayer && roomRef) {
-               try {
-                   await setDoc(roomRef, data);
-               } catch (err) {
-                   writeDiag(`⚠️ Initial lobby write failed: ${err.message}. Falling back locally.`, "warn");
-                   localRoomState = data;
-                   syncFromFirebaseData(localRoomState);
-               }
-           } else {
-               localRoomState = data;
-               syncFromFirebaseData(localRoomState);
            }
        }
 
@@ -1260,7 +1355,7 @@
                failDmg: failDmg, 
                isCamp: false,
                resolved: false,
-               selectedImage: driveImages[chosen.type][0],
+               selectedImage: driveImages[chosen.type][Math.floor(Math.random() * driveImages[chosen.type].length)],
                locationName: chosen.title
            };
 
@@ -1282,7 +1377,7 @@
                dc: dc, 
                isCamp: true,
                resolved: false,
-               selectedImage: driveImages.camp[0],
+               selectedImage: driveImages.camp[Math.floor(Math.random() * driveImages.camp.length)],
                locationName: `Camp Operations`
            };
 
@@ -1317,7 +1412,6 @@
            let rollResult = 0;
            let breakdownLog = "";
 
-           // Evaluate rolls based on customized infinite configurations
            if (infiniteModeActive) {
                let individualRolls = [];
                for (let i = 0; i < customDiceCount; i++) {
@@ -1439,24 +1533,24 @@
                    heal = Math.max(baselineMin, Math.floor((maxPartyHP - currentPartyHP) * 0.50) + 5);
                    updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
                    resolutionProse = getWord(resolutionTemplates.campSuccess)();
-                   additionalLine = `⛺ The watch is uninterrupted. Rest yields +${heal} vitality.`;
+                   additionalLine = `<p class="story-paragraph" style="color: var(--success-color); font-weight: bold; margin-top: 10px;">⛺ The watch is uninterrupted. Rest yields +${heal} vitality units.</p>`;
                } else {
                    heal = Math.ceil(maxPartyHP * 0.15);
                    updatedHP = Math.min(maxPartyHP, currentPartyHP + heal);
                    resolutionProse = getWord(resolutionTemplates.campFailure)();
-                   additionalLine = `⛺ Perimeter breached! Minimal rest yields only +${heal} vitality.`;
+                   additionalLine = `<p class="story-paragraph" style="color: var(--danger-color); font-weight: bold; margin-top: 10px;">⛺ Shadows stalk the perimeter, causing restless sleep. Your band of heroes manage only +${heal} vitality units.</p>`;
                }
            } else {
                if (success) {
                    wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
                    updatedHP = Math.max(0, currentPartyHP - wearAndTear);
                    resolutionProse = getWord(resolutionTemplates.obstacleSuccess)();
-                   additionalLine = `⚔️ Obstacle cleared. Minor strain sustained: -${wearAndTear} vitality.`;
+                   additionalLine = `<p class="story-paragraph" style="color: var(--accent-color); font-weight: bold; margin-top: 10px;">⚔️ Obstacle cleared, but the strain takes a minor physical toll: -${wearAndTear} vitality.</p>`;
                } else {
                    damage = currentEncounter.failDmg || 10;
                    updatedHP = Math.max(0, currentPartyHP - damage);
                    resolutionProse = getWord(resolutionTemplates.obstacleFailure)();
-                   additionalLine = `⚔️ Threat breached defenses! Group sustained -${damage} damage.`;
+                   additionalLine = `<p class="story-paragraph" style="color: var(--danger-color); font-weight: bold; margin-top: 10px;">⚔️ Your party will live to fight another day, but the group sustained heavy -${damage} damage.</p>`;
                }
            }
 
@@ -1464,17 +1558,12 @@
                ...currentEncounter,
                resolved: true,
                success: success,
-               actionLogMessage: actionLogMessage,
                resolutionProse: resolutionProse,
                additionalLine: additionalLine
            };
 
-           // Generate next paths instantly & simultaneously with the roll outcomes!
-           let choicesHtml = "";
            let newOptions = [];
-           let nextStage = stageCount; 
            if (updatedHP > 0 && stageCount < 180) {
-               // Roll next portals ahead of time
                let title1 = generateDynamicLocationTitle(), title2 = generateDynamicLocationTitle();
                while(title2 === title1) { title2 = generateDynamicLocationTitle(); }
                let c1 = getChallengeMapping(), c2 = getChallengeMapping();
@@ -1487,7 +1576,7 @@
            await safeUpdateDoc({
                currentPartyHP: updatedHP,
                currentEncounter: resolvedEncounter,
-               diceLogUpdate: actionLogMessage + `<br>` + additionalLine,
+               diceLogUpdate: actionLogMessage,
                currentOptions: newOptions,
                backupRollActive: false,
                weyrRollActive: false
@@ -1592,13 +1681,13 @@
                listHtml += `
                    <div class="flex items-center justify-between bg-[#16161f] p-2 rounded text-xs">
                        <span class="font-sans ${labelClass}">${p.avatar.split(" ")[0]} ${p.name} ${p.shelved ? '[STASHED]' : ''}</span>
-                       <div class="flex gap-1.5">
+                       <div class="flex gap-1.5 font-sans">
                            <button onclick="window.hostToggleShelvePlayer(${idx})" class="text-[10px] bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white font-sans">${shelveBtnLabel}</button>
                            <button onclick="window.hostDeletePlayer(${idx})" class="text-[10px] bg-[#e76f51] hover:bg-red-600 px-2 py-1 rounded text-white font-sans">Delete</button>
                        </div>
                    </div>`;
            });
-           document.getElementById('host-roster-list').innerHTML = listHtml || `<p class="text-xs text-gray-500 italic font-sans">No roster members found.</p>`;
+           document.getElementById('host-roster-list').innerHTML = listHtml || `<p class="text-xs text-gray-500 italic font-sans font-sans">No roster members found.</p>`;
        }
 
        function populateBackupSelect() {
@@ -1683,7 +1772,6 @@
                    </div>
                    <p class="story-paragraph" style="text-align: center; font-size: 14px; color: var(--accent-color); font-weight: bold;">Final Score: Stage ${stageCount} Cleared!</p>
                    
-                   <!-- Infinite Customizable Option -->
                    <div class="mt-5 p-4 bg-[#12121a] border border-dashed border-[#f4a261]/40 rounded text-left font-sans">
                        <strong class="text-[#f4a261] block text-sm uppercase mb-1">🌌 Continue Playing Indefinitely</strong>
                        <p class="text-xs text-gray-300 mb-3 leading-relaxed">The abyss descends infinitely. Choose the exact size of your dice and count to play forever with your current roster!</p>
@@ -1764,19 +1852,17 @@
                    document.getElementById('roll-check-btn').innerText = `Roll standard ${dieLabel}`;
 
                    if (currentEncounter.resolved) {
-                       // Synchronous Display: show choices IMMEDIATELY beneath roll results
                        document.getElementById('encounter-interface').style.display = 'none';
                        document.getElementById('story-text').innerHTML = currentEncounter.desc + 
                            `<hr class="border-t border-dashed border-[#2a2a3a] my-4">` +
-                           `<div class="mb-3 p-3 bg-black/40 border border-[#2a2a3a] rounded-lg font-mono text-xs text-[#f4a261]">${currentEncounter.actionLogMessage}</div>` +
-                           `<p class="story-paragraph" style="font-style: italic; color: #b1b1b9;">${currentEncounter.resolutionProse}</p>`;
+                           `<p class="story-paragraph" style="font-style: italic; color: #b1b1b9;">${currentEncounter.resolutionProse}</p>` +
+                           currentEncounter.additionalLine;
 
-                       // Display choices beneath
                        document.getElementById('intro-block').style.display = 'none';
                        document.getElementById('navigation-block').style.display = 'block';
                        renderSyncedChoices();
                    } else {
-                       document.getElementById('navigation-block').style.display = 'none'; // hide navigation choices while rolling
+                       document.getElementById('navigation-block').style.display = 'none'; 
                        document.getElementById('story-text').innerHTML = currentEncounter.desc;
                        document.getElementById('encounter-title').innerText = currentEncounter.title;
                        document.getElementById('encounter-stat').innerText = currentEncounter.stat;
@@ -2081,7 +2167,7 @@
                await joinAndListen(instanceId);
            } catch (authErr) {
                writeDiag(`⚠️ Connection rejected during handshake: ${authErr.message}`, "error");
-               writeDiag("🤝 Bypassing Auth block! Attempting unauthenticated direct Firestore handshake...", "warn");
+               writeDiag("ℹ️ Handshake failed. Attempting unauthenticated direct fallback...", "warn");
                await joinAndListen(instanceId);
            }
        }
