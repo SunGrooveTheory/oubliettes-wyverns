@@ -44,29 +44,6 @@
        .stat-roll-box { background: #16161f; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
        .stat-roll-box input { width: 50px; text-align: center; font-weight: bold; color: var(--accent-color); background: #0c0c0e; border: 1px solid var(--border-color); padding: 4px; border-radius: 4px; }
 
-       /* Styled signature yellowish-orange dice buttons */
-       .roll-btn {
-           background-color: var(--accent-color) !important;
-           color: #111 !important;
-           border: none;
-           border-radius: 4px;
-           padding: 6px 12px;
-           font-size: 12px;
-           font-weight: bold;
-           cursor: pointer;
-           transition: all 0.2s ease;
-           font-family: sans-serif;
-           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-       }
-       .roll-btn:hover {
-           opacity: 0.9;
-           transform: translateY(-1px);
-           box-shadow: 0 4px 8px rgba(244,162,97,0.2);
-       }
-       .roll-btn:active {
-           transform: translateY(1px);
-       }
-
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
        button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
@@ -270,7 +247,7 @@
                            <div class="choice-container" id="direction-choices"></div>
                        </div>
 
-                       <!-- Host Command Deck -->
+                       <!-- Host Command Deck (Mid-game modifiers, shelver, late joiner engine) -->
                        <details class="bg-[#1c1c28]/80 border border-[#2a2a3a] rounded-lg p-4 mt-6">
                            <summary class="cursor-pointer text-sm font-sans font-bold text-[#f4a261] hover:text-[#ffb77d] select-none">👑 Host Command Center & Roster Manager</summary>
                            <div class="mt-4 pt-3 border-t border-[#2a2a3a]">
@@ -306,7 +283,7 @@
                                    <button id="btn-host-inject-player" class="success w-full text-xs py-2 font-sans font-bold">Forge & Inject Mid-Game</button>
                                </div>
 
-                               <!-- Shelving & Eradication Manager (Referenced in Screenshot 2026-07-18 at 8.01.44 PM.png) -->
+                               <!-- Shelving & Eradication Manager -->
                                <div class="mb-4 bg-[#12121a] p-3 rounded border border-[#2a2a3a]">
                                    <strong class="text-xs font-sans text-gray-300 uppercase block mb-2">📋 Live Roster Desk (Store / Eradicate)</strong>
                                    <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
@@ -357,7 +334,7 @@
        </div>
    </div>
 
-   <!-- Discord Embedded SDK with custom client identifier fallback -->
+   <!-- Optional Discord Embedded SDK script fallback -->
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
 
    <script type="module">
@@ -432,12 +409,12 @@
 
        writeDiag(`⚡ Firestore Client initialized with long polling. App Target ID: ${appId}`);
 
-       // Verified Client ID as requested (Reference: Screenshot 2026-07-18 at 8.05.02 PM.png)
+       // Safe Discord SDK registration
        let discordSdk = null;
        try {
            if (typeof DiscordSDK !== 'undefined') {
                discordSdk = new DiscordSDK("1521393614528450622");
-               writeDiag("🟢 Discord Embedded App SDK loaded and initialized with Client ID 1521393614528450622.", "success");
+               writeDiag("🟢 Discord Embedded App SDK loaded in execution header.", "success");
            }
        } catch (discordErr) {
            writeDiag("⚠️ Discord Activity Context SDK uninitialized.", "warn");
@@ -650,8 +627,7 @@
            ]
        };
 
-       // Restored back to exactly 12 rich options as originally designed
-       const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger", "🦾 Barbarian", "🥋 Monk"];
+       const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger"];
 
        const classAffinities = {
            "🛡️ Paladin": { combat: -4, puzzle: 1, hazard: 2, camp: 0 },
@@ -663,9 +639,7 @@
            "🏡 Halfling": { combat: 1, puzzle: 0, hazard: -4, camp: 0 },
            "🐻 Druid": { combat: -1, puzzle: 0, hazard: -1, camp: -3 },
            "📜 Bard": { combat: -2, puzzle: -2, hazard: -2, camp: -1 },
-           "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 },
-           "🦾 Barbarian": { combat: -5, puzzle: 3, hazard: 1, camp: 0 },
-           "🥋 Monk": { combat: -2, puzzle: 1, hazard: -4, camp: -1 }
+           "🏹 Ranger": { combat: -1, puzzle: 0, hazard: -2, camp: -2 }
        };
 
        // Globals used by core mechanics
@@ -1064,21 +1038,37 @@
            document.getElementById('host-add-name').value = "";
        }
 
-       // Mid-Game Management: Shelving preserving HP Capacity (Referenced in Screenshot 2026-07-18 at 8.01.44 PM.png)
-       // RESTORED: As requested, shelving/stepping out does NOT destroy their HP pool contribution to avoid sudden group disadvantages!
+       // Mid-Game Management: Shelve / Store / Eradicate Actions
        async function hostToggleShelvePlayer(index) {
            let updatedPlayers = [...players];
            let p = updatedPlayers[index];
            if (!p) return;
 
-           p.shelved = !p.shelved;
+           let wasShelved = p.shelved;
+           p.shelved = !wasShelved;
+
+           // Recalculate max HP contribution: Shelving removes their quota so scaling doesn't break
+           let statSum = p.brawn + p.brains + p.agility;
+           let hpQuota = statSum + 10;
+           let updatedMaxHP = maxPartyHP;
+           let updatedCurrentHP = currentPartyHP;
+
+           if (p.shelved) {
+               updatedMaxHP = Math.max(50, maxPartyHP - hpQuota);
+               updatedCurrentHP = Math.max(1, currentPartyHP - hpQuota);
+           } else {
+               updatedMaxHP = maxPartyHP + hpQuota;
+               updatedCurrentHP = currentPartyHP + hpQuota;
+           }
 
            const logMsg = p.shelved 
-               ? `👑 <strong>Host:</strong> Shelved <strong>${p.name}</strong> out of immediate dropdown view. HP contribution remains preserved!`
-               : `👑 <strong>Host:</strong> Un-shelved <strong>${p.name}</strong> back to active registries.`;
+               ? `👑 <strong>Host:</strong> Shelved <strong>${p.name}</strong> out of view. Maximum Party HP adjusted.`
+               : `👑 <strong>Host:</strong> Un-shelved <strong>${p.name}</strong>. Restored their active indicators!`;
 
            await safeUpdateDoc({
                players: updatedPlayers,
+               maxPartyHP: updatedMaxHP,
+               currentPartyHP: updatedCurrentHP,
                diceLogUpdate: logMsg
            });
        }
@@ -1217,6 +1207,7 @@
            });
        }
 
+       // Restored: Triggers portal selection matrix screen after reading introductory narrative
        async function handleReadIntro() {
            await safeUpdateDoc({ introRead: true });
        }
@@ -1259,8 +1250,7 @@
            let d6 = Math.floor(Math.random() * 6) + 1;
            let dc = 11 + d6 + Math.floor(nextStage * M);
 
-           // Restored original failure damage calculation to avoid instant party wiping
-           let failDmg = Math.max(5, Math.floor(maxPartyHP * (0.12 + 0.005 * nextStage)));
+           let failDmg = Math.floor((6 + d6 + nextStage) * (activeCount * 0.5));
            let dynamicStoryText = constructGranularText(chosen.type, chosen.title);
 
            const imagesAvailable = driveImages[chosen.type];
@@ -1438,7 +1428,6 @@
            resolveEncounter(`💀 Fate accepted. Wyvern Weyr declined.`, false);
        }
 
-       // RESTORED: Direct classic mathematical formulas from the original codebase
        async function resolveEncounter(actionLogMessage, success) {
            if (!currentEncounter) return;
            let heal = 0;
@@ -1447,6 +1436,8 @@
            let updatedHP = currentPartyHP;
            let resolutionProse = "";
            let additionalLine = "";
+
+           let activeCount = players.filter(p => !p.shelved).length || 1;
 
            if (currentEncounter.isCamp) {
                if (success) {
@@ -1463,11 +1454,14 @@
                }
            } else {
                if (success) {
-                   // RESTORED: Perfect math formula - two people success now correctly scales to ~1 HP rather than -9 HP penalty!
-                   wearAndTear = Math.max(1, Math.floor((Math.floor(Math.random() * 2) + 1) * (players.length * 0.25)));
+                   // Dynamic Success Attrition scaling: Base (2 to 4) multiplied by active party factor
+                   let baseWear = Math.floor(Math.random() * 3) + 2; 
+                   let partyMultiplier = Math.max(1, Math.floor(activeCount / 3));
+                   wearAndTear = baseWear * partyMultiplier;
+
                    updatedHP = Math.max(0, currentPartyHP - wearAndTear);
                    resolutionProse = getWord(resolutionTemplates.obstacleSuccess)();
-                   additionalLine = `⚔️ Obstacle cleared. Minor physical strain: -${wearAndTear} vitality.`;
+                   additionalLine = `⚔️ Obstacle cleared. Physical strain (scaled to party size): -${wearAndTear} vitality.`;
                } else {
                    damage = currentEncounter.failDmg || 10;
                    updatedHP = Math.max(0, currentPartyHP - damage);
@@ -1492,7 +1486,6 @@
            });
        }
 
-       // FIXED: Clicking 'Continue Adventure' now gracefully routes the players back to choice matrix
        async function continueAdventure() {
            await safeUpdateDoc({
                currentEncounter: null,
@@ -1575,6 +1568,7 @@
            }
        }
 
+       // Live Roster manager desk population
        function renderHostRosterControlList() {
            let listHtml = "";
            players.forEach((p, idx) => {
@@ -2016,7 +2010,7 @@
        }
 
        async function systemLaunch() {
-           // Populate lineage selection lists with all 12 classes
+           // Populate lineage selection lists
            let selectHtml = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
            document.getElementById('host-add-class').innerHTML = selectHtml;
 
@@ -2025,7 +2019,7 @@
            const discordInstanceId = params.get('instance_id') || params.get('instanceId') || params.get('channel_id') || params.get('channelId');
            
            let instanceId = "";
-           if (discordSdk && discordInstanceId) {
+           if (discordInstanceId) {
                instanceId = discordInstanceId.toUpperCase();
                insideDiscord = true;
                writeDiag(`🟢 Discord sandbox target verified: Channel/Instance ID ${instanceId}`);
