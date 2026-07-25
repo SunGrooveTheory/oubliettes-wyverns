@@ -20,7 +20,8 @@
        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; }
 
        .container { max-width: 1050px; margin: 0 auto; background: var(--panel-color); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
-       
+       h1 { color: var(--accent-color); margin: 0; font-size: 34px; letter-spacing: 1px; font-weight: normal; }
+      
        @keyframes pulse {
            0% { transform: scale(0.9); opacity: 0.5; }
            50% { transform: scale(1.15); opacity: 1; }
@@ -40,25 +41,6 @@
        .rolling-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
        .stat-roll-box { background: #16161f; padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
        .stat-roll-box input { width: 50px; text-align: center; font-weight: bold; color: var(--accent-color); background: #0c0c0e; border: 1px solid var(--border-color); padding: 4px; border-radius: 4px; }
-
-       .roll-btn {
-           background-color: var(--accent-color) !important;
-           color: #111 !important;
-           border: none;
-           border-radius: 4px;
-           padding: 6px 12px;
-           font-size: 12px;
-           font-weight: bold;
-           cursor: pointer;
-           transition: all 0.2s ease;
-           font-family: sans-serif;
-           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-       }
-       .roll-btn:hover {
-           opacity: 0.9;
-           transform: translateY(-1px);
-           box-shadow: 0 4px 8px rgba(244,162,97,0.2);
-       }
 
        button { padding: 10px 16px; background: var(--accent-color); color: #111; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; font-family: sans-serif; }
        button:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -103,7 +85,7 @@
        .encounter-box.puzzle { border-color: var(--magic-color); }
        .encounter-box.hazard { border-color: var(--accent-color); }
       
-       #dice-log { height: 130px; overflow-y: auto; background: #050507; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #999; margin-top: 12px; text-align: left; border: 1px solid #1c1c24; }
+       #dice-log { height: 140px; overflow-y: auto; background: #050507; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #999; margin-top: 12px; text-align: left; border: 1px solid #1c1c24; }
        .highlight { color: var(--accent-color); font-weight: bold; }
        .story-paragraph { font-family: 'Georgia', serif; font-size: 16px; line-height: 1.8; color: #ddd; margin-bottom: 14px; text-align: justify; }
       
@@ -122,7 +104,7 @@
            font-family: monospace;
            font-size: 11px;
            color: #999;
-           max-height: 150px;
+           max-height: 140px;
            overflow-y: auto;
        }
        .diag-line { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px; }
@@ -134,18 +116,18 @@
 <body>
 
    <div class="container">
-       <div class="flex justify-between items-center border-b border-[#2a2a3a] pb-4 mb-5 flex-wrap gap-4">
+       <div class="flex justify-between items-center border-b border-[#2a2a3a] pb-[15px] mb-[20px] flex-wrap gap-[15px]">
            <div>
-               <h1 class="text-3xl font-normal text-[#f4a261]">Oubliettes & Wyverns</h1>
-               <div id="room-connection-status" class="flex items-center gap-2 mt-1.5 font-sans text-xs flex-wrap">
-                   <span id="status-dot" class="w-2 h-2 bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
-                   <span id="status-text" class="text-gray-400 font-bold">Connecting...</span>
-                   <span id="room-code-badge" class="bg-[#f4a261]/15 text-[#f4a261] px-2 py-0.5 rounded font-bold font-mono tracking-[0.5px]">ROOM: RESOLVING</span>
-                   <button id="btn-copy-link" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-2 py-0.5 rounded text-[10px] hover:bg-[#2a2a3a]">Copy Invitation</button>
-                   <button id="btn-open-join-modal" class="hidden bg-[#1c1c28] text-white border border-[#2a2a3a] px-2 py-0.5 rounded text-[10px] hover:bg-[#2a2a3a]">Switch Lobby</button>
+               <h1>Oubliettes & Wyverns</h1>
+               <div id="room-connection-status" class="flex items-center gap-[10px] mt-[6px] font-sans text-[13px] flex-wrap">
+                   <span id="status-dot" class="w-[8px] h-[8px] bg-[#e76f51] rounded-full inline-block" style="animation: pulse 1.5s infinite;"></span>
+                   <span id="status-text" class="text-[#aaa] font-bold">Authenticating...</span>
+                   <span id="room-code-badge" class="bg-[#f4a261]/15 text-[#f4a261] px-[8px] py-[2px] rounded font-bold font-mono tracking-[0.5px]">ROOM: ---</span>
+                   <button id="btn-copy-link" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Copy Share Link</button>
+                   <button id="btn-open-join-modal" style="display: none; background: #1c1c28; color: #fff; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Join Another Lobby</button>
                </div>
            </div>
-           <button id="btn-finalize" class="danger text-[13px] py-2 px-4 font-sans font-bold">Finalize Game</button>
+           <button id="btn-finalize" class="danger text-[13px] py-[8px] px-[14px]">Finalize Game</button>
        </div>
 
        <!-- Lobby Hub Widget -->
@@ -177,18 +159,17 @@
        <!-- Character Setup Stage -->
        <div class="section-box" id="setup-screen">
            <div class="section-title">Character Registry</div>
-           <p class="text-xs text-gray-400 font-sans mb-3">All joined adventurers are instantly registered as slots on-screen. Fully customize yours below.</p>
            <div class="setup-grid" id="dynamic-player-container"></div>
-           <div class="flex gap-2.5 mb-4">
-               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;">+ Add Character</button>
-               <button type="button" id="advance-to-rolling-btn" class="success flex-1" disabled>Connecting...</button>
+           <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+               <button type="button" id="btn-add-character" style="background: #2a2a35; color: white;" disabled>Connecting to server...</button>
+               <button type="button" id="advance-to-rolling-btn" class="success" style="flex: 1;" disabled>Waiting for connection...</button>
            </div>
            
-           <!-- Diagnostics Console -->
-           <details class="mt-4" open>
-               <summary class="font-sans text-xs text-gray-500 cursor-pointer select-none hover:text-[#f4a261]">⚙️ Developer Handshake & Diagnostics Console</summary>
+           <!-- System Diagnostics Logs -->
+           <details open style="margin-top: 15px;">
+               <summary style="font-family: sans-serif; font-size: 12px; color: #888; cursor: pointer; user-select: none;">⚙| System Handshake Diagnostics Console</summary>
                <div id="diagnostic-log" class="diagnostic-terminal">
-                   <div class="diag-line">⏳ Awaiting main module handshake...</div>
+                   <div class="diag-line">⏳ System ready. Awaiting initialization script launch...</div>
                </div>
            </details>
        </div>
@@ -196,15 +177,14 @@
        <!-- Attribute Matrix Stage -->
        <div class="section-box" id="rolling-screen" style="display: none;">
            <div class="section-title">Attribute Allocation Matrix</div>
-           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: Roll the digital dice or enter customized numeric stats manually (for physical dice users).</p>
+           <p style="font-family: sans-serif; font-size: 13px; color: #aaa; margin-bottom: 15px;">Note: You can roll the digital dice or manually type custom numbers into the attribute boxes (e.g., if rolling physical dice off-screen).</p>
            <div id="rolling-list"></div>
            <button id="btn-finalize-stats" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 10px;" class="success">Forge Party Line & Enter</button>
        </div>
 
-       <!-- Active Game Stage -->
        <div id="game-view" style="display:none;">
            <div class="status-bar">
-               <div>🗺️ Stage Count: <span id="stage-counter" style="color:var(--accent-color);">0</span> <span id="wyvern-alert" style="color: var(--danger-color); font-size: 12px; margin-left: 8px; display: none;">🔥 WYVERN TIER ACTIVATED</span></div>
+               <div>🗺| Stage Count: <span id="stage-counter" style="color:var(--accent-color);">0</span> <span id="wyvern-alert" style="color: var(--danger-color); font-size: 12px; margin-left: 8px; display: none;">🔥 WYVERN TIER ACTIVATED</span></div>
                <div>❤️ Current Group Vitality: <span id="party-hp" style="color:var(--success-color);">100</span></div>
            </div>
 
@@ -243,12 +223,14 @@
                            </div>
                           
                            <div id="action-area">
+                               <!-- Standard Check Controller -->
                                <div id="standard-roll-controls">
                                    <label style="font-size: 13px; color: #aaa;">Nominate active character:</label>
                                    <select id="active-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
                                    <button id="roll-check-btn" class="w-full text-lg py-3 mt-2 shadow-lg bg-[#f4a261] hover:bg-[#ffb77d] transition-all rounded-lg font-bold text-black font-sans">Roll standard die</button>
                                </div>
 
+                               <!-- Backup Combined Check Controller -->
                                <div id="backup-roll-controls" style="display:none; background: rgba(244,162,97,0.05); border: 1px dashed var(--accent-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
                                    <label style="font-size: 13px; color: var(--accent-color); font-weight: bold; display:block; margin-bottom:4px;">🤝 Combined Effort! Nominate a Backup Ally:</label>
                                    <select id="backup-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
@@ -258,6 +240,7 @@
                                    </div>
                                </div>
 
+                               <!-- Wyvern Weyr (Triple Check) Controller -->
                                <div id="weyr-roll-controls" style="display:none; background: rgba(162,97,244,0.05); border: 1px dashed var(--magic-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
                                    <label style="font-size: 13px; color: var(--magic-color); font-weight: bold; display:block; margin-bottom:4px;">🐲 Wyvern Weyr! Nominate a Third Operator:</label>
                                    <select id="weyr-player-select" style="padding: 8px; margin: 6px 0 10px 0; width: 100%; background: #16161f; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
@@ -269,61 +252,66 @@
                            </div>
                        </div>
 
-                       <!-- Intro Block -->
+                       <!-- Intro Flow Element -->
                        <div id="intro-block" style="display: none; background: rgba(244,162,97,0.05); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; text-align: center;">
                            <p class="story-paragraph" style="text-align: center;">The massive iron doors crash shut behind your regiment, sealing the party inside <strong>Oubliette Depths</strong>. The air is cold, and the only way out is through the darkness.</p>
                            <p class="story-paragraph" style="text-align: center;">Your torchlight flickers, casting long shadows across the ancient bricks. It is time to step forward and examine your choices.</p>
                            <button id="btn-begin-descent" class="success px-8 py-3 mt-4 text-md font-sans">Begin Descent & Open Portals</button>
                        </div>
 
-                       <!-- Exploration choice container -->
                        <div id="navigation-block">
                            <div class="choice-container" id="direction-choices"></div>
                        </div>
 
-                       <!-- Host Overrides -->
+                       <!-- Host Command Deck -->
                        <details class="bg-[#1c1c28]/80 border border-[#2a2a3a] rounded-lg p-4 mt-6">
                            <summary class="cursor-pointer text-sm font-sans font-bold text-[#f4a261] hover:text-[#ffb77d] select-none">👑 Host Command Center & Roster Manager</summary>
                            <div class="mt-4 pt-3 border-t border-[#2a2a3a]">
-                               <div class="mb-5 bg-[#12121a] p-3 rounded border border-dashed border-[#2a9d8f]/30 font-sans">
+                               <!-- Late Joiner Forge -->
+                               <div class="mb-5 bg-[#12121a] p-3 rounded border border-dashed border-[#2a9d8f]/30">
                                    <strong class="text-xs font-sans text-[#2a9d8f] uppercase block mb-2">⚔️ Mid-Game Late Joiner Forge</strong>
                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                                        <div>
-                                           <label class="text-[11px] text-gray-400 block">Name:</label>
-                                           <input type="text" id="host-add-name" placeholder="Name..." class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm">
+                                           <label class="text-[11px] text-gray-400 block font-sans">Name:</label>
+                                           <input type="text" id="host-add-name" placeholder="Name..." class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans">
                                        </div>
                                        <div>
-                                           <label class="text-[11px] text-gray-400 block">Class Lineage:</label>
-                                           <select id="host-add-class" class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm"></select>
+                                           <label class="text-[11px] text-gray-400 block font-sans">Class Lineage:</label>
+                                           <select id="host-add-class" class="w-full bg-[#1c1c28] text-white border border-[#2a2a3a] rounded px-2 py-1 text-sm font-sans">
+                                               <!-- Populated dynamically -->
+                                           </select>
                                        </div>
                                    </div>
                                    <div class="grid grid-cols-3 gap-2 text-center text-xs mb-3">
                                        <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
-                                           <div class="text-gray-400">Brawn</div>
+                                           <div class="text-gray-400 font-sans">Brawn</div>
                                            <input type="number" id="host-add-brawn" value="3" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
                                        </div>
                                        <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
-                                           <div class="text-gray-400">Brains</div>
+                                           <div class="text-gray-400 font-sans">Brains</div>
                                            <input type="number" id="host-add-brains" value="5" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
                                        </div>
                                        <div class="bg-[#0f0f14] p-1.5 rounded border border-[#2a2a3a]">
-                                           <div class="text-gray-400">Agility</div>
+                                           <div class="text-gray-400 font-sans">Agility</div>
                                            <input type="number" id="host-add-agility" value="10" class="w-12 text-center bg-[#1c1c28] text-white mt-1 border border-[#2a2a3a] rounded py-0.5">
                                        </div>
                                    </div>
                                    <button id="btn-host-inject-player" class="success w-full text-xs py-2 font-sans font-bold">Forge & Inject Mid-Game</button>
                                </div>
 
-                               <div class="mb-4 bg-[#12121a] p-3 rounded border border-[#2a2a3a] font-sans">
-                                   <strong class="text-xs text-gray-300 uppercase block mb-2">📋 Live Roster Desk</strong>
-                                   <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1"></div>
+                               <!-- Shelving & Eradication Manager -->
+                               <div class="mb-4 bg-[#12121a] p-3 rounded border border-[#2a2a3a]">
+                                   <strong class="text-xs font-sans text-gray-300 uppercase block mb-2">📋 Live Roster Desk (Store / Eradicate)</strong>
+                                   <div id="host-roster-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                                       <!-- Populated dynamically with active players -->
+                                   </div>
                                </div>
 
                                <label class="text-[11px] text-gray-400 uppercase tracking-wider block mb-1 font-sans">Traditional Host Overrides</label>
-                               <div class="host-controls font-sans">
-                                   <button id="btn-force-pass" class="success font-sans font-bold text-xs">Force Pass</button>
-                                   <button id="btn-force-fail" class="danger font-sans font-bold text-xs">Force Fail</button>
-                                   <button id="tpk-btn" class="font-sans font-bold text-xs" style="background: #7a1d1d; color: white;">Force TPK</button>
+                               <div class="host-controls">
+                                   <button id="btn-force-pass" class="success font-sans font-bold">Force Pass</button>
+                                   <button id="btn-force-fail" class="danger font-sans font-bold">Force Fail</button>
+                                   <button id="tpk-btn" class="font-sans font-bold" style="background: #7a1d1d; color: white;">Force TPK</button>
                                </div>
                            </div>
                        </details>
@@ -342,8 +330,8 @@
            </p>
            <input type="text" id="input-join-room-id" placeholder="e.g. AB12C" style="text-transform: uppercase; width: 100%; padding: 10px; font-size: 18px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0c0c0e; color: white; font-family: monospace; letter-spacing: 2px; margin-bottom: 20px;">
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="success" id="btn-execute-join">Join Lobby</button>
-               <button style="background: #333; color: #fff;" id="btn-cancel-join">Cancel</button>
+               <button class="success" id="btn-execute-join" style="padding: 10px 20px;">Join Lobby</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-join">Cancel</button>
            </div>
        </div>
    </div>
@@ -356,19 +344,19 @@
                This will wipe the active room state instantly and reset the multiplayer configuration back to setup. Do you proceed?
            </p>
            <div style="display: flex; justify-content: center; gap: 15px;">
-               <button class="danger" id="btn-execute-finalize">Yes, WIPE State</button>
-               <button style="background: #333; color: #fff;" id="btn-cancel-finalize">Cancel</button>
+               <button class="danger" id="btn-execute-finalize" style="padding: 10px 20px;">Yes, WIPE State</button>
+               <button style="background: #333; color: #fff; padding: 10px 20px;" id="btn-cancel-finalize">Cancel</button>
            </div>
        </div>
    </div>
 
-   <!-- Core Discord SDK -->
+   <!-- Discord Embedded SDK -->
    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@2.1.0/dist/umd/index.js" onerror="console.warn('Discord SDK script fetch skipped or offline.')"></script>
 
    <script type="module">
        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-       import { getFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-       import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+       import { initializeFirestore, doc, onSnapshot, updateDoc, setDoc, getDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+       import { initializeAuth, inMemoryPersistence, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
        // Connection Handshake diagnostics logging helper
        function writeDiag(msg, status = '') {
@@ -387,15 +375,17 @@
 
        let isMultiplayer = false; 
        let localRoomState = {};
+       let insideDiscord = false; 
+       let connectionAttemptStarted = false;
        let roomRef = null;
-       let unsubscribeSnapshot = null;
        let hasConnected = false;
 
        const SESSION_ID = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
-       writeDiag(`⚡ Session ID established: ${SESSION_ID}`);
+       writeDiag(`⚡ Browser Session ID mapped: ${SESSION_ID}`);
 
+       // EXPLICIT FIXED API KEY TARGET
        let firebaseConfig = { 
-           apiKey: "AIzaSyACEs_2wYMDVqRD6gvWRyfpM6YL6doaqHM", 
+           apiKey: "AIzaSyBCRiyndVNJFrm2gerhF0BR8VbNhvGOu4I", 
            authDomain: "oubliettes-and-wyverns.firebaseapp.com", 
            projectId: "oubliettes-and-wyverns", 
            storageBucket: "oubliettes-and-wyverns.firebasestorage.app", 
@@ -417,8 +407,8 @@
        }
 
        const app = initializeApp(firebaseConfig);
-       const db = getFirestore(app);
-       const auth = getAuth(app);
+       const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+       const auth = initializeAuth(app, { persistence: inMemoryPersistence });
        const appId = typeof __app_id !== 'undefined' ? __app_id : "oubliettes-wyverns-v1";
 
        writeDiag(`⚡ Firestore Client initialized. App Target Space: ${appId}`);
@@ -433,6 +423,7 @@
            writeDiag("⚠️ Discord Activity Context SDK uninitialized.", "warn");
        }
 
+       // ADVENTURE STORY STEMS & MATRICES
        const locationNouns = ["abyss", "cavern", "crypt", "vault", "corridor", "oubliette", "labyrinth", "tomb", "chasm", "spire", "sanctum", "citadel", "grotto", "shrine", "chamber", "cathedral", "pit", "mine", "sewer", "prison", "keep", "tower", "stronghold", "hollow", "alcove", "ruin", "temple", "maze", "hall", "passage", "bridge", "fortress", "cell", "gate", "cliff", "path"];
        const threatNouns = ["shadow", "gargoyle", "horror", "beast", "golem", "wraith", "fiend", "guardian", "mimic", "shade", "ghoul", "phantom", "monster", "warlock", "warrior", "titan", "giant", "scorpion", "spider", "hunter", "scout", "spirit", "soldier", "creature", "cryptid", "predator", "serpent"];
        const relicNouns = ["relic", "totem", "altar", "stone", "pedestal", "urn", "coffin", "mirror", "tablet", "hourglass", "gears", "crown", "anchor", "well", "archway", "gate", "barrier", "lens", "dial", "scepter", "key", "shield", "statue", "pillar", "monument", "staff", "goblet", "chalice", "grail", "throne"];
@@ -448,97 +439,75 @@
                (loc) => `A crack in the rock wall opens up, and your party steps through into <strong>${loc}</strong>. `,
                (loc) => `Pushing through a thick, ${getWord(adjectives)} mist, you see the strange shapes of <strong>${loc}</strong>. `,
                (loc) => `The passage suddenly becomes wider. Your torches light up the dark corners of <strong>${loc}</strong>. `,
-               (loc) => `Crawling through a narrow, dusty tunnel, you finally step out into <strong>${loc}</strong>. `,
-               (loc) => `A heavy silence fills the air as your boots touch the cold floor of <strong>${loc}</strong>. `,
-               (loc) => `The bad smell of old stone grows stronger as your team enters <strong>${loc}</strong>. `,
-               (loc) => `Slipping past a massive, ${getWord(adjectives)} gate, your party enters <strong>${loc}</strong>. `,
-               (loc) => `Strange whispers guide your path until you suddenly walk into the open space of <strong>${loc}</strong>. `
+               (loc) => `Treading carefully over damp moss, the party discovers the arched mouth of <strong>${loc}</strong>.`,
+               (loc) => `The cold echo of dripping water leads your weary party into the vaulted expanses of <strong>${loc}</strong>.`,
+               (loc) => `The rock wall yields to a narrow fissure, opening unexpectedly into the forgotten depths of <strong>${loc}</strong>.`,
+               (loc) => `Clambering down a slope of loose scree, you descend into the shadow-drenched floor of <strong>${loc}</strong>.`
            ],
            sensory: [
                () => `The air here is thick with the smell of ${getWord(adjectives)} smoke and wet stone. `,
                () => `The light from your torches is weak, but you can see a large, ${getWord(adjectives)} ${getWord(relicNouns)}. `,
                () => `A low, deep sound like a heartbeat ${getWord(verbs)} from under the stone floor. `,
                () => `The walls are wet with a ${getWord(adjectives)} liquid, dripping slowly onto a broken ${getWord(relicNouns)}. `,
-               () => `Strange, ${getWord(adjectives)} plants grow on the ceiling, casting a soft light over the room. `,
-               () => `The air suddenly becomes freezing cold, and you can see your own breath. `,
-               () => `You find the broken remains of a ${getWord(adjectives)} ${getWord(threatNouns)} on the ground. `,
-               () => `Every step you take ${getWord(verbs)} off the high ceiling, making it very hard to be quiet. `,
-               () => `Your metal weapons feel heavy, as if pulled by a force from a nearby ${getWord(relicNouns)}. `,
-               () => `Small pieces of ${getWord(adjectives)} dust float in the air around you. `,
-               () => `You feel a strange energy in the air as you cross the threshold of this chamber. `
+               () => `Faint, crystalline singing echoes from the walls, though no source can be seen.`,
+               () => `The moisture on the stone has a sweet, metallic tang that makes your throat dry.`,
+               () => `A layer of pale, powdery ash covers the floor, puffing up like tiny clouds around your boots.`
            ],
            combatComp: [
                () => `Without warning, the shadows move. A large beast, covered in ${getWord(adjectives)} ${getWord(matterNouns)}, ${getWord(verbs)} out of the dark. `,
                () => `The quiet is broken as a pack of ${getWord(adjectives)} monsters jumps from the dark, ready to attack. `,
                () => `A giant guardian, made of ${getWord(adjectives)} stone and iron, stands up and blocks your path. `,
-               () => `The ceiling suddenly ${getWord(verbs)}, and a fast, angry ${getWord(threatNouns)} drops directly into your group. `,
-               () => `A pool of dark liquid on the floor rises, turning into a dangerous, ${getWord(adjectives)} shape. `,
-               () => `Your team is surprised! A group of ${getWord(adjectives)} enemies comes out of hidden spaces with weapons ready. `,
-               () => `The air turns cold as a shadow warrior, holding a rusted weapon, rushes forward to fight. `,
-               () => `An angry sound ${getWord(verbs)} through the room just before a massive beast attacks your front line. `
+               () => `A terrifying shriek rips through the dark as a winged monstrosity swoops down from the ceiling.`,
+               () => `The earth splits open, and a hulking beast of jagged obsidian and flame crawls into view.`
            ],
            combatImpact: [
                () => `The creature roars loudly. Running away from this <strong>${getWord(threatNouns)}</strong> is not possible; someone must stand and fight. `,
                () => `To survive this sudden attack, your team must use raw physical power to push the enemy back. `,
-               () => `Draw your weapons immediately before the <strong>${getWord(threatNouns)}</strong> can break your armor. `,
-               () => `The monster moves incredibly fast, leaving a trail of ${getWord(matterNouns)}. Strong, quick force is your only way to survive. `,
-               () => `Falling rocks block your way back. Your team must face this <strong>${getWord(threatNouns)}</strong> and win. `,
-               () => `The enemy is very angry and fast. Your party must fight back with strength, or face defeat. `,
-               () => `Raise your shields! Stand strong against the <strong>${getWord(threatNouns)}</strong> and strike back with your swords. `
+               () => `The beast sweeps its tail, threatening to break the party's formation. You must fight!`,
+               () => `This foe knows no fear. Your frontline must coordinate a heavy defensive strike immediately.`,
+               () => `There is no negotiating with this ancient anger; draw your weapons and protect the flank!`
            ],
            puzzleComp: [
                () => `Your progress is stopped by a locked door. The surface is carved with ${getWord(adjectives)} signs that ${getWord(verbs)} softly. `,
                () => `A massive machine made of metal gears blocks the room, locked tight by a ${getWord(adjectives)} ${getWord(relicNouns)}. `,
-               () => `The exit is blocked by a wall of blue energy that ${getWord(verbs)} when you get close to it. `,
-               () => `Before you stands a stone pedestal with a locked puzzle box, smelling of ${getWord(adjectives)} herbs. `,
-               () => `The floor ahead is a grid of stone plates, each carved with a different, ${getWord(adjectives)} sign. `,
-               () => `A magical barrier blocks your path, powered by three ${getWord(adjectives)} crystals that are out of place. `,
-               () => `An ancient riddle is written on the stone wall, guarded by a sleeping ${getWord(threatNouns)}. `,
-               () => `To open the path, you must balance a set of heavy stone weights that are jammed with old ${getWord(matterNouns)}. `
+               () => `The exit door is sealed by a massive stone dial carved with phases of three distinct moons.`,
+               () => `A series of brass pipes runs along the wall, whistling in a complex, musical sequence.`,
+               () => `An ancient chessboard of white and black marble blocks your path, several pieces out of place.`
            ],
            puzzleImpact: [
                () => `Touching the <strong>${getWord(relicNouns)}</strong> without thinking will set off a dangerous trap. It requires a smart plan to solve. `,
                () => `Physical strength will not help you here. Your team must use logic and intellect to solve the ${getWord(adjectives)} puzzle. `,
-               () => `You need a deep understanding of magic and machines to bypass this <strong>${getWord(relicNouns)}</strong> safely. `,
-               () => `One wrong move will lock the <strong>${getWord(relicNouns)}</strong> forever. A careful mind is your best tool right now. `,
-               () => `The trap triggers are very small and hidden. You must be extremely smart to disarm the <strong>${getWord(relicNouns)}</strong>. `,
-               () => `The ${getWord(adjectives)} signs need a logical answer. Someone must step up and study the symbols carefully. `
+               () => `A single wrong configuration will cause the ceiling to drop. Think carefully before you act.`,
+               () => `The magic protecting this lock is highly sensitive. An intellect trained in ancient runes is needed here.`,
+               () => `Raw force will only break the mechanism forever. You must solve the puzzle to pass safely.`
            ],
            hazardComp: [
                () => `As your team steps forward, the floor beneath you ${getWord(verbs)}. You have triggered a hidden trap. `,
                () => `A sudden shaking moves the room, causing the ${getWord(adjectives)} ceiling to crack and drop stones. `,
-               () => `Your foot hits a thin wire. Suddenly, the walls fire a set of sharp, ${getWord(adjectives)} blades. `,
-               () => `The stone ground splits open, venting a dangerous cloud of ${getWord(adjectives)} poison gas. `,
-               () => `The floor suddenly tilts like a ship, threatening to slide your team into a deep <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Without warning, a stream of hot, boiling ${getWord(matterNouns)} shoots from the pipes in the wall. `,
-               () => `A giant stone block falls from the ceiling, dropping quickly toward your front line. `,
-               () => `The old stone bridge breaks under your weight, falling down into the dark abyss below. `
+               () => `A sharp click under your boot reveals a pressure plate. The ceiling begins to groan.`,
+               () => `The cavern walls suddenly crack, releasing a torrent of freezing, high-pressure water.`
            ],
            hazardImpact: [
                () => `A wave of rocks falls from above. Only fast reflexes can pull your team out of the danger zone of the <strong>${getWord(locationNouns)}</strong>. `,
                () => `Speed is everything! Your group must dodge the incoming ${getWord(adjectives)} trap before it strikes. `,
-               () => `There is no time to think, only to move. You need great agility to escape the collapsing <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Your team must jump across the falling stone path with perfect balance, or fall into the deep <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Nimble footwork is the only way to escape the crushing stones of the <strong>${getWord(locationNouns)}</strong>. `,
-               () => `The room is breaking apart. Quick movement is needed to reach safe ground on the other side. `
+               () => `You have only seconds to dive out of the way before the crushing block hits the floor!`,
+               () => `Speed is your only savior. Move with absolute agility to dodge the incoming danger!`,
+               () => `The ground is vanishing! Run, jump, and scramble to reach stable ground before you fall!`
            ],
            campSetup: [
                () => `Seeing how tired everyone is, the adventurers stop near a quiet, safe ${getWord(relicNouns)}. `,
                () => `The team retreats into a small cave, blocking the entrance with ${getWord(adjectives)} rocks. `,
-               () => `Your group finds a quiet spot inside an old, broken shrine, deciding to set up camp. `,
-               () => `Fatigue makes your arms heavy. Your party stops in a quiet stone vault to rest and sleep. `
+               () => `Exhausted and bruised, the vanguard sets down their gear in a dry, sandy alcove.`
            ],
            campAction: [
                () => `A small, warm fire is lit on the stone. It casts a ${getWord(adjectives)} glow on the walls. `,
                () => `Bedrolls are placed in a tight circle while the scout watches the dark tunnel. `,
-               () => `Armor is taken off and simple food is shared in quiet whispers to stay hidden. `,
-               () => `We begin to clean our wounds, using our limited supplies to heal our sore bodies. `
+               () => `A simple pot of broth is heated over a magic flame, filling the air with a warm scent.`
            ],
            campOutcome: [
                () => `However, the Oubliette is never completely safe. Keeping watch over the <strong>${getWord(locationNouns)}</strong> requires focus. `,
                () => `Rest is hard to find here. Someone must stay awake to watch for <strong>${getWord(threatNouns)}s</strong> in the dark. `,
-               () => `But the shadows seem to move closer to your fire. You must watch the <strong>${getWord(relicNouns)}</strong> carefully. `,
-               () => `Cold air begins to fill the room, threatening to keep your tired team from sleeping well. `
+               () => `But the echoes of the deep never truly fade. A watchful eye must guard the entrance.`
            ]
        };
 
@@ -547,25 +516,23 @@
                () => `Your team works together perfectly. With a final effort, you bypass the ${getWord(adjectives)} threat and secure the path.`,
                () => `Using fast teamwork, your group slips through the narrow passage just before the trap goes off.`,
                () => `A quick, smart action completely disables the trap before the ${getWord(adjectives)} ${getWord(relicNouns)} can harm anyone.`,
-               () => `With great discipline, your warriors protect the group, letting everyone pass the danger safely.`,
-               () => `You move as a single, coordinated team, escaping the danger zone without a single major mistake.`
+               () => `With a combined surge of energy, the vanguard shatters the barrier and secures the room.`
            ],
            obstacleFailure: [
                () => `Confusion breaks out. A sudden blast of ${getWord(adjectives)} ${getWord(matterNouns)} hits the group, throwing everyone to the floor.`,
                () => `A bad step triggers the main trap, venting hot, dangerous ${getWord(matterNouns)} that burns your armor.`,
                () => `The <strong>${getWord(threatNouns)}</strong> manages to isolate your team, dealing heavy damage before you can recover.`,
-               () => `The machine goes off with a loud sound, hitting several party members with sharp debris.`,
-               () => `The ceiling collapses in a shower of heavy stones, crushing your shields and hurting the party.`
+               () => `The defenses collapse under the weight of the blow, scattering the party in panic.`
            ],
            campSuccess: [
                () => `Your sentries do an excellent job. The camp remains quiet and safe, letting your team heal their deep wounds.`,
                () => `A quiet, peaceful night lets everyone sleep deeply under a hidden stone ledge.`,
-               () => `Protected by the walls of the old shrine, the team rests well, clearing their minds of fear.`
+               () => `The protective wards hold perfectly. The group wakes up feeling refreshed and strong.`
            ],
            campFailure: [
                () => `Scary sounds from the dark tunnels keep your sentries on high alert, making it impossible to sleep well.`,
                () => `A leak of poison gas forces your team to wake up in the dark and move your camp immediately.`,
-               () => `A cold wind sweeps through the chamber, keeping your tired adventurers awake and cold all night.`
+               () => `A sudden alarm forces everyone to scramble, ruining any chance of restorative rest.`
            ],
            deathTemplates: [
                () => `Their weapons shatter into useless iron dust, and their shields splinter. The vanguard falls to the frozen stones of the oubliette, entirely overrun by the gathering shadows.`,
@@ -573,68 +540,15 @@
            ]
        };
 
+       // IMAGE DATA PATHS
        const driveImages = {
-           entrance: [
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
-           ],
-           combat: [
-               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
-               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
-               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
-           ],
-           puzzle: [
-               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
-               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
-           ],
-           hazard: [
-               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
-               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
-               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
-           ],
-           camp: [
-               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
-               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
-               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
-               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
-           ],
-           death: [
-               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
-           ],
-           win: [
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
-           ]
+           entrance: ["https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"],
+           combat: ["https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000"],
+           puzzle: ["https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000"],
+           hazard: ["https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000"],
+           camp: ["https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000"],
+           death: ["https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000"],
+           win: ["https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"]
        };
 
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger", "🦾 Barbarian", "🥋 Monk"];
@@ -654,10 +568,56 @@
            "🥋 Monk": { combat: -2, puzzle: 1, hazard: -4, camp: -1 }
        };
 
+       let tempPlayers = {}; 
+       let players = [];
+       let maxPartyHP = 0;
+       let currentPartyHP = 0;
+       let stageCount = 0;
+       let currentEncounter = null;
+       let currentOptions = [];
+       let backupRollActive = false;
+       let weyrRollActive = false;
+       let firstRollerIndex = null;
+       let firstRollTotal = 0;
+       let secondRollerIndex = null;
+       let secondRollTotal = 0;
+       let currentActiveDC = 0;
+       let isHostTPK = false; 
+       let introRead = false; 
+
+       let infiniteModeActive = false;
+       let customDiceCount = 1;
+       let customDiceSides = 20;
+
        function getWord(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
        function capitalize(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ""; }
        function generateDynamicLocationTitle() { return `The ${capitalize(getWord(adjectives))} ${capitalize(getWord(locationNouns))}`; }
 
+       function constructGranularText(type, locationName) {
+           let approach = stems.approaches[Math.floor(Math.random() * stems.approaches.length)](locationName);
+           let sensory = stems.sensory[Math.floor(Math.random() * stems.sensory.length)]();
+           let complication, impact;
+           if (type === "combat") {
+               complication = stems.combatComp[Math.floor(Math.random() * stems.combatComp.length)]();
+               impact = stems.combatImpact[Math.floor(Math.random() * stems.combatImpact.length)]();
+           } else if (type === "puzzle") {
+               complication = stems.puzzleComp[Math.floor(Math.random() * stems.puzzleComp.length)]();
+               impact = stems.puzzleImpact[Math.floor(Math.random() * stems.puzzleImpact.length)]();
+           } else {
+               complication = stems.hazardComp[Math.floor(Math.random() * stems.hazardComp.length)]();
+               impact = stems.hazardImpact[Math.floor(Math.random() * stems.hazardImpact.length)]();
+           }
+           return `<p class="story-paragraph">${approach}${sensory}</p><p class="story-paragraph">${complication}${impact}</p>`;
+       }
+
+       function constructGranularCampText() {
+           let setup = stems.campSetup[Math.floor(Math.random() * stems.campSetup.length)]();
+           let action = stems.campAction[Math.floor(Math.random() * stems.campAction.length)]();
+           let outcome = stems.campOutcome[Math.floor(Math.random() * stems.campOutcome.length)]();
+           return `<p class="story-paragraph">${setup}${action}</p><p class="story-paragraph">${outcome}</p>`;
+       }
+
+       // Visual board fallback rendering pipeline
        function updateBoardImageDirect(category, syncedUrl = null) {
            const imgElement = document.getElementById('map-img');
            const svgContainer = document.getElementById('fallback-svg-container');
@@ -675,7 +635,7 @@
            } else {
                const driveImgArray = driveImages[category];
                if (driveImgArray && driveImgArray.length > 0) {
-                   imgElement.src = driveImgArray[Math.floor(Math.random() * driveImgArray.length)];
+                   imgElement.src = driveImgArray[0];
                    imgElement.style.display = 'block';
                    svgContainer.style.display = 'none';
                    imgElement.onerror = () => {
@@ -713,6 +673,7 @@
            }
        }
 
+       // Notification modal system
        function showNotification(text) {
            let box = document.getElementById('custom-notification');
            if (!box) {
@@ -744,37 +705,9 @@
            document.body.removeChild(tempInput);
        }
 
-       function copyActiveRoomCode() {
-           const activeCode = document.getElementById('active-room-code').innerText;
-           const tempInput = document.createElement("input");
-           tempInput.style.position = "absolute";
-           tempInput.style.left = "-9999px";
-           tempInput.value = activeCode;
-           document.body.appendChild(tempInput);
-           tempInput.select();
-           try {
-               document.execCommand("copy");
-               showNotification(`Room Code ${activeCode} copied! Send to your friends.`);
-           } catch (err) {
-               console.error("Copy failed", err);
-           }
-           document.body.removeChild(tempInput);
-       }
-
-       function executeDirectJoin() {
-           const codeInput = document.getElementById('input-direct-join-code');
-           if (!codeInput) return;
-           const rawCode = codeInput.value.trim().toUpperCase();
-           if (rawCode.length < 3) {
-               showNotification("Please enter a valid lobby code.");
-               return;
-           }
-           window.location.hash = `room=${rawCode}`;
-           window.location.reload();
-       }
-
        function openJoinModal() { document.getElementById('join-modal').style.display = 'flex'; }
        function closeJoinModal() { document.getElementById('join-modal').style.display = 'none'; }
+       
        function executeJoinLobby() {
            const codeInput = document.getElementById('input-join-room-id');
            if (!codeInput) return;
@@ -789,21 +722,24 @@
 
        function switchToLocalOnly() {
            isMultiplayer = false;
-           writeDiag("⚠️ Switching instantly to local Sandbox Mode. Updates are compiled synchronously.", "warn");
+           writeDiag("⚠️ Switching instantly to offline Sandbox Mode. Verify network bindings inside settings.", "warn");
            
            const connStatus = document.getElementById('room-connection-status');
            const dot = document.getElementById('status-dot');
            const statusText = document.getElementById('status-text');
-
+           
            const hubDot = document.getElementById('connection-status-dot');
            const hubStatusText = document.getElementById('connection-status-text');
 
-           if (dot) { dot.style.background = "#ffb703"; dot.style.animation = "pulse 2.0s infinite"; }
-           if (statusText) { statusText.innerText = "Sandbox Mode (Offline)"; statusText.style.color = "#ffb703"; }
+           const applyStatus = (d, t, bg, textVal) => {
+               if (d) { d.style.background = bg; d.style.animation = "pulse 2.0s infinite"; }
+               if (t) { t.innerText = textVal; t.style.color = bg; }
+           };
 
-           if (hubDot) { hubDot.style.background = "#ffb703"; hubDot.style.animation = "pulse 2.0s infinite"; }
-           if (hubStatusText) { hubStatusText.innerText = "Sandbox Mode (Offline)"; hubStatusText.style.color = "#ffb703"; }
+           applyStatus(dot, statusText, "#ffb703", "Sandbox Mode");
+           applyStatus(hubDot, hubStatusText, "#ffb703", "Sandbox Mode (Offline)");
 
+           // ENABLE SETUP CONTROLS IMMEDIATELY ON FALLBACK
            const addBtn = document.getElementById('btn-add-character');
            if (addBtn) {
                addBtn.removeAttribute('disabled');
@@ -847,32 +783,38 @@
            writeDiag("⚡ Local room state structure initialized.");
        }
 
-       async function updateRoomState(updates) {
-           const localUpdates = {};
-           const firebaseUpdates = {};
-           
-           for (const [key, val] of Object.entries(updates)) {
-               firebaseUpdates[key] = val;
-               if (val && typeof val === 'object' && val.constructor && (val.constructor.name === 'FieldValue' || val._methodName === 'deleteField')) {
-                   localUpdates[key] = '__DELETE__';
-               } else {
-                   localUpdates[key] = val;
-               }
-           }
-
-           applyLocalUpdates(localUpdates);
-
+       async function safeUpdateDoc(updates) {
            if (isMultiplayer && roomRef) {
                try {
-                   await updateDoc(roomRef, firebaseUpdates);
+                   await updateDoc(roomRef, updates);
                } catch (err) {
-                   writeDiag(`⚠️ Sync broadcast delayed: ${err.message}`, "warn");
+                   writeDiag(`⚠️ Sync broadcast failed: ${err.message}. Saving changes locally.`, "warn");
+                   applyLocalUpdates(updates);
                }
+           } else {
+               applyLocalUpdates(updates);
+           }
+       }
+
+       async function safeSetDoc(data) {
+           if (isMultiplayer && roomRef) {
+               try {
+                   await setDoc(roomRef, data);
+               } catch (err) {
+                   writeDiag(`⚠️ Initial lobby write failed: ${err.message}. Falling back locally.`, "warn");
+                   localRoomState = data;
+                   syncFromFirebaseData(localRoomState);
+               }
+           } else {
+               localRoomState = data;
+               syncFromFirebaseData(localRoomState);
            }
        }
 
        function applyLocalUpdates(updates) {
            for (const [key, val] of Object.entries(updates)) {
+               const isDelete = (val && typeof val === 'object' && val.constructor && val.constructor.name === 'FieldValue') || val === deleteField();
+
                if (key.includes('.')) {
                    const parts = key.split('.');
                    let current = localRoomState;
@@ -881,13 +823,13 @@
                        current = current[parts[i]];
                    }
                    const lastPart = parts[parts.length - 1];
-                   if (val === '__DELETE__') {
+                   if (isDelete) {
                        delete current[lastPart];
                    } else {
                        current[lastPart] = val;
                    }
                } else {
-                   if (val === '__DELETE__') {
+                   if (isDelete) {
                        delete localRoomState[key];
                    } else {
                        localRoomState[key] = val;
@@ -897,12 +839,13 @@
            syncFromFirebaseData(localRoomState);
        }
 
-       async function updatePlayerName(slotId, val) { await updateRoomState({ [`tempPlayers.${slotId}.name`]: val }); }
-       async function updatePlayerClass(slotId, val) { await updateRoomState({ [`tempPlayers.${slotId}.avatar`]: val }); }
-       async function updateTempStat(slotId, stat, val) { await updateRoomState({ [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0 }); }
+       async function updatePlayerName(slotId, val) { await safeUpdateDoc({ [`tempPlayers.${slotId}.name`]: val }); }
+       async function updatePlayerClass(slotId, val) { await safeUpdateDoc({ [`tempPlayers.${slotId}.avatar`]: val }); }
+       async function updateTempStat(slotId, stat, val) { await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: parseInt(val) || 0 }); }
+       
        async function rollStat(slotId, stat, max) {
            let r = Math.floor(Math.random() * max) + 1;
-           await updateRoomState({ [`tempPlayers.${slotId}.${stat}`]: r });
+           await safeUpdateDoc({ [`tempPlayers.${slotId}.${stat}`]: r });
        }
 
        async function addPlayerSlot() {
@@ -917,10 +860,10 @@
                agility: 0,
                owner: SESSION_ID
            };
-           await updateRoomState({ [`tempPlayers.${slotId}`]: newSlot });
+           await safeUpdateDoc({ [`tempPlayers.${slotId}`]: newSlot });
        }
 
-       async function removePlayerSlot(slotId) { await updateRoomState({ [`tempPlayers.${slotId}`]: deleteField() }); }
+       async function removePlayerSlot(slotId) { await safeUpdateDoc({ [`tempPlayers.${slotId}`]: deleteField() }); }
 
        async function goToRollingScreen() {
            const tempPlayersList = Object.values(tempPlayers);
@@ -935,7 +878,7 @@
                showNotification("Validation error: All characters must have a registered name.");
                return;
            }
-           await updateRoomState({ stageCount: 0.5 });
+           await safeUpdateDoc({ stageCount: 0.5 });
        }
 
        async function finalizeStatsAndStart() {
@@ -954,7 +897,7 @@
 
            let startingHP = Math.max(50, totalCapacity + (derivedPlayers.length * 10));
            
-           await updateRoomState({
+           await safeUpdateDoc({
                players: derivedPlayers,
                maxPartyHP: startingHP,
                currentPartyHP: startingHP,
@@ -987,7 +930,7 @@
            let statSum = br + bn + ag;
            let hpIncrement = statSum + 10;
            
-           await updateRoomState({
+           await safeUpdateDoc({
                players: updatedPlayers,
                maxPartyHP: maxPartyHP + hpIncrement,
                currentPartyHP: currentPartyHP + hpIncrement,
@@ -1005,7 +948,7 @@
                ? `👑 <strong>Host:</strong> Shelved <strong>${p.name}</strong>. HP contribution remains active!`
                : `👑 <strong>Host:</strong> Un-shelved <strong>${p.name}</strong> back to active list.`;
 
-           await updateRoomState({ players: updatedPlayers, diceLogUpdate: logMsg });
+           await safeUpdateDoc({ players: updatedPlayers, diceLogUpdate: logMsg });
        }
 
        async function hostDeletePlayer(index) {
@@ -1017,7 +960,7 @@
            let hpQuota = statSum + 10;
            updatedPlayers.splice(index, 1);
 
-           await updateRoomState({
+           await safeUpdateDoc({
                players: updatedPlayers,
                maxPartyHP: Math.max(50, maxPartyHP - hpQuota),
                currentPartyHP: Math.max(1, currentPartyHP - hpQuota),
@@ -1025,6 +968,7 @@
            });
        }
 
+       // Wipes current room out of Firestore, completely resyncing UI
        async function archiveAndFinalize() {
            if (isMultiplayer && auth.currentUser && roomRef) {
                try {
@@ -1080,20 +1024,20 @@
                document.getElementById('rolling-list').innerHTML = listHtml;
 
                document.querySelectorAll('.stat-roll-input').forEach(input => {
-                   input.onchange = (e) => {
+                   input.addEventListener('change', (e) => {
                        const id = e.target.getAttribute('data-id');
                        const stat = e.target.getAttribute('data-stat');
                        updateTempStat(id, stat, e.target.value);
-                   };
+                   });
                });
 
                document.querySelectorAll('.roll-btn').forEach(btn => {
-                   btn.onclick = () => {
+                   btn.addEventListener('click', (e) => {
                        const id = btn.getAttribute('data-id');
                        const stat = btn.getAttribute('data-stat');
                        const die = parseInt(btn.getAttribute('data-die'));
                        rollStat(id, stat, die);
-                   };
+                   });
                });
            }
 
@@ -1124,7 +1068,7 @@
                { title: title2, type: c2.type, stat: c2.stat, header: c2.header }
            ];
 
-           await updateRoomState({
+           await safeUpdateDoc({
                currentOptions: newOptions,
                currentEncounter: null,
                backupRollActive: false,
@@ -1136,26 +1080,34 @@
            });
        }
 
-       async function handleReadIntro() { await updateRoomState({ introRead: true }); }
+       async function handleReadIntro() { await safeUpdateDoc({ introRead: true }); }
 
        function renderSyncedChoices() {
            let choicesHtml = `
-               <div class="choice-card" onclick="window.selectPath(0)">
-                   <h4>➡️ Explore: ${currentOptions[0].title}</h4>
+               <div class="choice-card" id="btn-choice-0">
+                   <h4>➡️ Descend into ${currentOptions[0].title}</h4>
                    <p>Scouts register an active <strong>${currentOptions[0].header}</strong>. Requires strong <strong>${currentOptions[0].stat}</strong> profile.</p>
                </div>
-               <div class="choice-card" onclick="window.selectPath(1)">
-                   <h4>➡️ Route: ${currentOptions[1].title}</h4>
+               <div class="choice-card" id="btn-choice-1">
+                   <h4>➡️ Route toward ${currentOptions[1].title}</h4>
                    <p>Scouts register an active <strong>${currentOptions[1].header}</strong>. Requires strong <strong>${currentOptions[1].stat}</strong> profile.</p>
                </div>`;
            if (currentPartyHP < maxPartyHP) {
                choicesHtml += `
-                   <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" onclick="window.selectCamp()">
-                       <h4>⛺ Deploy Temporary Camp</h4>
-                       <p>Rest and recover health. Camping does not advance stage difficulty!</p>
+                   <div class="choice-card" style="grid-column: span 2; border-color: var(--success-color);" id="btn-choice-camp">
+                       <h4>⛺ Set Up Camp</h4>
+                       <p>Take a break to assess damage and recover health safely (Camping does not advance stage difficulty!).</p>
                    </div>`;
            }
            document.getElementById('direction-choices').innerHTML = choicesHtml;
+
+           const opt0 = document.getElementById('btn-choice-0');
+           const opt1 = document.getElementById('btn-choice-1');
+           const optCamp = document.getElementById('btn-choice-camp');
+
+           if (opt0) opt0.addEventListener('click', () => selectPath(0));
+           if (opt1) opt1.addEventListener('click', () => selectPath(1));
+           if (optCamp) optCamp.addEventListener('click', selectCamp);
        }
 
        async function selectPath(idx) {
@@ -1179,11 +1131,11 @@
                failDmg: failDmg, 
                isCamp: false,
                resolved: false,
-               selectedImage: driveImages[chosen.type][Math.floor(Math.random() * driveImages[chosen.type].length)],
+               selectedImage: driveImages[chosen.type][0],
                locationName: chosen.title
            };
 
-           await updateRoomState({ stageCount: nextStage, currentEncounter: newEncounter });
+           await safeUpdateDoc({ stageCount: nextStage, currentEncounter: newEncounter });
        }
 
        async function selectCamp() {
@@ -1201,11 +1153,11 @@
                dc: dc, 
                isCamp: true,
                resolved: false,
-               selectedImage: driveImages.camp[Math.floor(Math.random() * driveImages.camp.length)],
+               selectedImage: driveImages.camp[0],
                locationName: `Camp Operations`
            };
 
-           await updateRoomState({ currentEncounter: campEncounter });
+           await safeUpdateDoc({ currentEncounter: campEncounter });
        }
 
        function updateHostDCReveal() {
@@ -1276,7 +1228,7 @@
                } else {
                    let failText = `🎲 <strong>${player.name}</strong> (${currentEncounter.stat} Check): ${breakdownLog} + ${modifier} = <span class="highlight">${total}</span> -> <strong>FAIL</strong> (vs Target DC ${activeDC})`;
                    if (stageCount >= 58 && !infiniteModeActive) {
-                       await updateRoomState({
+                       await safeUpdateDoc({
                            backupRollActive: true,
                            firstRollerIndex: firstIdx,
                            firstRollTotal: total,
@@ -1309,7 +1261,7 @@
                resolveEncounter(resultLog, true);
            } else {
                if (stageCount >= 157) {
-                   await updateRoomState({
+                   await safeUpdateDoc({
                        backupRollActive: false,
                        weyrRollActive: true,
                        secondRollerIndex: backupIdx,
@@ -1397,7 +1349,7 @@
                ];
            }
 
-           await updateRoomState({
+           await safeUpdateDoc({
                currentPartyHP: updatedHP,
                currentEncounter: resolvedEncounter,
                diceLogUpdate: actionLogMessage,
@@ -1408,17 +1360,17 @@
        }
 
        async function triggerHostTPK() {
-           await updateRoomState({
+           await safeUpdateDoc({
                currentPartyHP: 0,
                isHostTPK: true,
                currentEncounter: null,
                currentOptions: [],
-               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced TPK.`
+               diceLogUpdate: `👑 <strong>Host Intervention:</strong> Forced immediate TPK.`
            });
        }
 
        async function undoTPK() {
-           await updateRoomState({
+           await safeUpdateDoc({
                currentPartyHP: Math.ceil(maxPartyHP * 0.25),
                isHostTPK: false,
                currentEncounter: null,
@@ -1431,7 +1383,7 @@
            let count = parseInt(document.getElementById('infinite-dice-count').value) || 1;
            let sides = parseInt(document.getElementById('infinite-dice-sides').value) || 20;
 
-           await updateRoomState({
+           await safeUpdateDoc({
                infiniteModeActive: true,
                customDiceCount: count,
                customDiceSides: sides,
@@ -1500,18 +1452,18 @@
        function renderHostRosterControlList() {
            let listHtml = "";
            players.forEach((p, idx) => {
-               const shelveBtnLabel = p.shelved ? "Un-shelve" : "Shelve";
+               const shelveBtnLabel = p.shelved ? "Un-shelve (Return)" : "Shelve (Store)";
                const labelClass = p.shelved ? "text-gray-500 line-through" : "text-[#f4a261]";
                listHtml += `
                    <div class="flex items-center justify-between bg-[#16161f] p-2 rounded text-xs">
                        <span class="font-sans ${labelClass}">${p.avatar.split(" ")[0]} ${p.name} ${p.shelved ? '[STASHED]' : ''}</span>
-                       <div class="flex gap-1.5 font-sans">
+                       <div class="flex gap-1.5">
                            <button onclick="window.hostToggleShelvePlayer(${idx})" class="text-[10px] bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-white font-sans">${shelveBtnLabel}</button>
                            <button onclick="window.hostDeletePlayer(${idx})" class="text-[10px] bg-[#e76f51] hover:bg-red-600 px-2 py-1 rounded text-white font-sans">Delete</button>
                        </div>
                    </div>`;
            });
-           document.getElementById('host-roster-list').innerHTML = listHtml || `<p class="text-xs text-gray-500 italic font-sans font-sans">No roster members found.</p>`;
+           document.getElementById('host-roster-list').innerHTML = listHtml || `<p class="text-xs text-gray-500 italic font-sans">No roster members found.</p>`;
        }
 
        function populateBackupSelect() {
@@ -1566,9 +1518,12 @@
                <div id="tpk-undo-container" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--danger-color); border-radius: 8px; background: rgba(231, 111, 81, 0.05); text-align: center;">
                    <p style="color: var(--danger-color); font-size: 13px; font-family: sans-serif; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">👑 Host Intervention Console</p>
                    <p style="font-size: 13px; color: #bbb; margin-bottom: 15px; font-family: sans-serif;">Did the party carelessly stumble into their doom? You can rewind time to the last encounter and restore partial vitality.</p>
-                   <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;" onclick="window.undoTPK()">Undo TPK & Rewind</button>
+                   <button id="btn-undo-tpk" class="success" style="padding: 10px 20px; font-size: 14px;">Undo TPK & Rewind</button>
                </div>
            `;
+
+           const undoBtn = document.getElementById('btn-undo-tpk');
+           if (undoBtn) undoBtn.addEventListener('click', undoTPK);
        }
 
        function handleWin() {
@@ -1606,11 +1561,17 @@
                                <input type="number" id="infinite-dice-sides" value="20" min="2" max="100" class="w-full bg-[#1c1c28] border border-[#2a2a3a] rounded p-1 text-white text-center">
                            </div>
                        </div>
-                       <button id="btn-continue-infinite" class="success w-full text-xs py-2" onclick="window.activateInfiniteJourney()">Set Rules & Continue Journey</button>
+                       <button id="btn-continue-infinite" class="success w-full text-xs py-2">Set Rules & Continue Journey</button>
                    </div>
 
-                   <button id="btn-win-restart" class="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white py-2 text-xs font-sans font-bold rounded" onclick="window.location.reload()">Forge a New Lineage</button>
+                   <button id="btn-win-restart" class="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white py-2 text-xs font-sans font-bold rounded">Forge a New Lineage</button>
                </div>`;
+           
+           const winRestart = document.getElementById('btn-win-restart');
+           if (winRestart) winRestart.addEventListener('click', () => window.location.reload());
+
+           const continueBtn = document.getElementById('btn-continue-infinite');
+           if (continueBtn) continueBtn.addEventListener('click', activateInfiniteJourney);
        }
 
        function syncFromFirebaseData(data) {
@@ -1714,7 +1675,7 @@
                        } else {
                            document.getElementById('intro-block').style.display = 'none';
                            document.getElementById('navigation-block').style.display = 'block';
-                           document.getElementById('location-name').innerText = infiniteModeActive ? `Infinite Portal Selection` : `Diverging Paths of Destiny`;
+                           document.getElementById('location-name').innerText = infiniteModeActive ? `Infinite Portal Selection` : `Portal Selection Matrix`;
                            updateBoardImageDirect("entrance");
                            
                            if (currentOptions.length === 0) {
@@ -1835,9 +1796,8 @@
                    return userCredential.user;
                }
            } catch (err) {
-               writeDiag(`⚠️ Auth block failed: ${err.message}`, "warn");
-               writeDiag("🤝 Direct Firestore connection bypass activated.", "success");
-               return null;
+               writeDiag(`❌ Authentication failed: ${err.message}`, "error");
+               throw err;
            }
        }
 
@@ -1881,13 +1841,14 @@
                        const count = Object.keys(data.tempPlayers || {}).length + 1;
                        mySlot.name = `Hero ${count}`;
                        await updateDoc(roomRef, { [`tempPlayers.${mySlotId}`]: mySlot });
-                       writeDiag("🟢 Joined existing lobby.", "success");
+                       writeDiag("🟢 Joined existing lobby and added character slot.", "success");
                    } else {
-                       writeDiag("🟢 Re-connected to active lobby.", "success");
+                       writeDiag("🟢 Re-connected to active character slot.", "success");
                    }
                }
 
                isMultiplayer = true;
+               connectionAttemptStarted = true;
                hasConnected = true;
 
                const dot = document.getElementById('status-dot');
@@ -1895,34 +1856,35 @@
                
                const hubDot = document.getElementById('connection-status-dot');
                const hubStatusText = document.getElementById('connection-status-text');
-
+               
                const badge = document.getElementById('room-code-badge');
                const activeRoomCode = document.getElementById('active-room-code');
                const copyBtn = document.getElementById('btn-copy-link');
                const joinBtn = document.getElementById('btn-open-join-modal');
 
-               const setSynced = (d, t) => {
+               const applySuccess = (d, t) => {
                    if (d) { d.style.background = "var(--success-color)"; d.style.animation = "none"; }
                    if (t) { t.innerText = "Synchronized"; t.style.color = "var(--success-color)"; }
                };
 
-               setSynced(dot, statusText);
-               setSynced(hubDot, hubStatusText);
+               applySuccess(dot, statusText);
+               applySuccess(hubDot, hubStatusText);
 
                if (badge) { badge.innerText = `ROOM CODE: ${lobbyId}`; badge.style.display = "inline-block"; }
                if (activeRoomCode) { activeRoomCode.innerText = lobbyId; }
-               if (copyBtn) copyBtn.classList.remove('hidden');
-               if (joinBtn) joinBtn.classList.remove('hidden');
+               if (copyBtn) copyBtn.style.display = "inline-block";
+               if (joinBtn) joinBtn.style.display = "inline-block";
 
+               // ENABLE ALL REGISTRY CONTROLS
                const addBtn = document.getElementById('btn-add-character');
                const advanceBtn = document.getElementById('advance-to-rolling-btn');
                if (addBtn) { addBtn.removeAttribute('disabled'); addBtn.innerText = "+ Add Character"; }
                if (advanceBtn) { advanceBtn.removeAttribute('disabled'); advanceBtn.innerText = "Proceed to Attribute Allocation"; }
 
-               unsubscribeSnapshot = onSnapshot(roomRef, (snap) => {
+               onSnapshot(roomRef, (snap) => {
                    if (snap.exists()) syncFromFirebaseData(snap.data());
                }, (err) => {
-                   writeDiag(`❌ Sync failed: ${err.message}`, "error");
+                   writeDiag(`❌ Real-time synchronization lost: ${err.message}`, "error");
                    switchToLocalOnly();
                });
 
@@ -1933,9 +1895,10 @@
        }
 
        async function systemLaunch() {
+           // Establish line-up selector options
            let selectHtml = classicClasses.map(c => `<option value="${c}">${c}</option>`).join('');
-           const classSelectHost = document.getElementById('host-add-class');
-           if (classSelectHost) classSelectHost.innerHTML = selectHtml;
+           const hostClassSelect = document.getElementById('host-add-class');
+           if (hostClassSelect) hostClassSelect.innerHTML = selectHtml;
 
            writeDiag("⚡ Parsing Discord context parameters...");
            const params = new URLSearchParams(window.location.search);
@@ -1944,58 +1907,90 @@
            let instanceId = "";
            if (discordSdk && discordInstanceId) {
                instanceId = discordInstanceId.toUpperCase();
-               writeDiag(`🟢 Discord Target matched: ${instanceId}`);
+               insideDiscord = true;
+               writeDiag(`🟢 Discord sandbox target verified: Channel/Instance ID ${instanceId}`);
            } else {
                const hash = window.location.hash;
                const match = hash.match(/room=([A-Z0-9-]+)/i);
                if (match && match[1]) {
                    instanceId = match[1].toUpperCase();
-                   writeDiag(`🟢 Hash matched: ${instanceId}`);
+                   writeDiag(`🟢 Browser URL Hash Room parsed: ${instanceId}`);
                } else {
                    instanceId = Math.random().toString(36).substring(2, 7).toUpperCase();
                    window.location.hash = `room=${instanceId}`;
-                   writeDiag(`🟢 Created fallback Lobby: ${instanceId}`);
+                   writeDiag(`🟢 Generated clean fallback room: ${instanceId}`);
                }
+               insideDiscord = false;
            }
 
-           // Failsafe connection handshake fallback timer
+           // FAILSAFE TIMEOUT - Switch to local offline sandbox if connection hangs for over 3.5 seconds
            setTimeout(() => {
                if (!hasConnected) {
-                   writeDiag("⏱️ Connection Handshake timed out. Running locally.", "warn");
+                   writeDiag("⏱️ Connection handshake timed out. Falling back to offline sandbox mode...", "warn");
                    switchToLocalOnly();
                }
-           }, 4000);
+           }, 3500);
 
-           const programBind = (elementId, eventName, handler) => {
-               const element = document.getElementById(elementId);
-               if (element) {
-                   element.addEventListener(eventName, handler);
-               }
+           // BIND INTERACTIVE ELEMENTS SAFELY
+           const safeBind = (id, evt, cb) => {
+               const el = document.getElementById(id);
+               if (el) el.addEventListener(evt, cb);
            };
 
-           programBind('btn-add-character', 'click', addPlayerSlot);
-           programBind('advance-to-rolling-btn', 'click', goToRollingScreen);
-           programBind('btn-finalize-stats', 'click', finalizeStatsAndStart);
-           programBind('btn-finalize', 'click', confirmFinalize);
-           programBind('btn-execute-finalize', 'click', executeFinalize);
-           programBind('btn-cancel-finalize', 'click', closeFinalizeModal);
-           programBind('btn-copy-link', 'click', copyLobbyLink);
-           programBind('btn-open-join-modal', 'click', openJoinModal);
-           programBind('btn-execute-join', 'click', executeJoinLobby);
-           programBind('btn-cancel-join', 'click', closeJoinModal);
-           programBind('roll-check-btn', 'click', () => attemptEncounter());
-           programBind('backup-roll-btn', 'click', attemptBackup);
-           programBind('decline-backup-btn', 'click', declineBackup);
-           programBind('weyr-roll-btn', 'click', attemptWeyr);
-           programBind('decline-weyr-btn', 'click', declineWeyr);
-           programBind('btn-force-pass', 'click', () => attemptEncounter(true));
-           programBind('btn-force-fail', 'click', () => attemptEncounter(false));
-           programBind('tpk-btn', 'click', triggerHostTPK);
-           programBind('active-player-select', 'change', updateHostDCReveal);
-           programBind('btn-begin-descent', 'click', handleReadIntro);
-           programBind('btn-host-inject-player', 'click', hostInjectPlayerMidGame);
-           programBind('btn-direct-join', 'click', executeDirectJoin);
-           programBind('btn-copy-room', 'click', copyActiveRoomCode);
+           safeBind('btn-add-character', 'click', addPlayerSlot);
+           safeBind('advance-to-rolling-btn', 'click', goToRollingScreen);
+           safeBind('btn-finalize-stats', 'click', finalizeStatsAndStart);
+           safeBind('btn-finalize', 'click', confirmFinalize);
+           safeBind('btn-execute-finalize', 'click', executeFinalize);
+           safeBind('btn-cancel-finalize', 'click', closeFinalizeModal);
+
+           safeBind('btn-copy-link', 'click', copyLobbyLink);
+           safeBind('btn-open-join-modal', 'click', openJoinModal);
+           safeBind('btn-execute-join', 'click', executeJoinLobby);
+           safeBind('btn-cancel-join', 'click', closeJoinModal);
+
+           safeBind('roll-check-btn', 'click', () => attemptEncounter());
+           safeBind('backup-roll-btn', 'click', attemptBackup);
+           safeBind('decline-backup-btn', 'click', declineBackup);
+           safeBind('weyr-roll-btn', 'click', attemptWeyr);
+           safeBind('decline-weyr-btn', 'click', declineWeyr);
+
+           safeBind('btn-force-pass', 'click', () => attemptEncounter(true));
+           safeBind('btn-force-fail', 'click', () => attemptEncounter(false));
+           safeBind('tpk-btn', 'click', triggerHostTPK);
+           safeBind('active-player-select', 'change', updateHostDCReveal);
+
+           safeBind('btn-begin-descent', 'click', handleReadIntro);
+           safeBind('btn-host-inject-player', 'click', hostInjectPlayerMidGame);
+
+           safeBind('btn-direct-join', 'click', () => {
+               const codeInput = document.getElementById('input-direct-join-code');
+               if (!codeInput) return;
+               const rawCode = codeInput.value.trim().toUpperCase();
+               if (rawCode.length < 3) {
+                   showNotification("Please enter a valid lobby code.");
+                   return;
+               }
+               window.location.hash = `room=${rawCode}`;
+               window.location.reload();
+           });
+
+           safeBind('btn-copy-room', 'click', () => {
+               const activeCode = document.getElementById('active-room-code').innerText;
+               const tempInput = document.createElement("input");
+               tempInput.style.position = "absolute";
+               tempInput.style.left = "-9999px";
+               tempInput.value = activeCode;
+               document.body.appendChild(tempInput);
+               tempInput.select();
+               try {
+                   document.execCommand("copy");
+                   showNotification(`Room Code ${activeCode} copied! Send to your friends.`);
+               } catch (err) {
+                   console.error("Copy failed", err);
+               }
+               document.body.removeChild(tempInput);
+           });
 
            initializeLocalState();
 
@@ -2003,9 +1998,10 @@
            
            try {
                await initAuth();
+               writeDiag("🟢 Handshake complete. Accessing Firestore...", "success");
                await joinAndListen(instanceId);
            } catch (authErr) {
-               writeDiag(`⚠️ Handshake rejected: ${authErr.message}`, "error");
+               writeDiag(`⚠️ Connection rejected during handshake: ${authErr.message}`, "error");
                switchToLocalOnly();
            }
        }
@@ -2016,7 +2012,7 @@
            systemLaunch();
        }
 
-       // Globally exposing all functions so both programmatic and inline bindings work flawlessly
+       // REGISTER WORLD SCOPE HANDLERS FOR DYNAMIC INLINE ELEMENTS
        window.removePlayerSlot = removePlayerSlot;
        window.updatePlayerName = updatePlayerName;
        window.updatePlayerClass = updatePlayerClass;
@@ -2028,26 +2024,6 @@
        window.hostToggleShelvePlayer = hostToggleShelvePlayer;
        window.hostDeletePlayer = hostDeletePlayer;
        window.activateInfiniteJourney = activateInfiniteJourney;
-       window.copyLobbyLink = copyLobbyLink;
-       window.copyActiveRoomCode = copyActiveRoomCode;
-       window.executeDirectJoin = executeDirectJoin;
-       window.openJoinModal = openJoinModal;
-       window.closeJoinModal = closeJoinModal;
-       window.executeJoinLobby = executeJoinLobby;
-       window.confirmFinalize = confirmFinalize;
-       window.closeFinalizeModal = closeFinalizeModal;
-       window.executeFinalize = executeFinalize;
-       window.hostInjectPlayerMidGame = hostInjectPlayerMidGame;
-       window.handleReadIntro = handleReadIntro;
-       window.selectPath = selectPath;
-       window.selectCamp = selectCamp;
-       window.updateHostDCReveal = updateHostDCReveal;
-       window.attemptEncounter = attemptEncounter;
-       window.attemptBackup = attemptBackup;
-       window.declineBackup = declineBackup;
-       window.attemptWeyr = attemptWeyr;
-       window.declineWeyr = declineWeyr;
-       window.triggerHostTPK = triggerHostTPK;
        window.undoTPK = undoTPK;
    </script>
 </body>
