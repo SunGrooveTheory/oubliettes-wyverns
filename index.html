@@ -473,12 +473,7 @@
                (loc) => `The cold echo of dripping water leads your weary party into the vaulted expanses of <strong>${loc}</strong>.`,
                (loc) => `The rock wall yields to a narrow fissure, opening unexpectedly into the forgotten depths of <strong>${loc}</strong>.`,
                (loc) => `Clambering down a slope of loose scree, you descend into the shadow-drenched floor of <strong>${loc}</strong>.`
-	       (loc) => `Crawling through a narrow, dusty tunnel, you finally step out into <strong>${loc}</strong>. `,
-               (loc) => `A heavy silence fills the air as your boots touch the cold floor of <strong>${loc}</strong>. `,
-               (loc) => `The bad smell of old stone grows stronger as your team enters <strong>${loc}</strong>. `,
-               (loc) => `Slipping past a massive, ${getWord(adjectives)} gate, your party enters <strong>${loc}</strong>. `,
-               (loc) => `Strange whispers guide your path until you suddenly walk into the open space of <strong>${loc}</strong>. `
-		],
+           ],
            sensory: [
                () => `The air here is thick with the smell of ${getWord(adjectives)} smoke and wet stone. `,
                () => `The light from your torches is weak, but you can see a large, ${getWord(adjectives)} ${getWord(relicNouns)}. `,
@@ -487,14 +482,6 @@
                () => `Faint, crystalline singing echoes from the walls, though no source can be seen.`,
                () => `The moisture on the stone has a sweet, metallic tang that makes your throat dry.`,
                () => `A layer of pale, powdery ash covers the floor, puffing up like tiny clouds around your boots.`
-		               () => `Strange, ${getWord(adjectives)} plants grow on the ceiling, casting a soft light over the room. `,
-               () => `The air suddenly becomes freezing cold, and you can see your own breath. `,
-               () => `You find the broken remains of a ${getWord(adjectives)} ${getWord(threatNouns)} on the ground. `,
-               () => `Every step you take ${getWord(verbs)} off the high ceiling, making it very hard to be quiet. `,
-               () => `Your metal weapons feel heavy, as if pulled by a force from a nearby ${getWord(relicNouns)}. `,
-               () => `Small pieces of ${getWord(adjectives)} dust float in the air around you. `,
-               () => `You feel a strange energy in the air as you cross the threshold of this chamber. `
-
            ],
            combatComp: [
                () => `Without warning, the shadows move. A large beast, covered in ${getWord(adjectives)} ${getWord(matterNouns)}, ${getWord(verbs)} out of the dark. `,
@@ -502,25 +489,13 @@
                () => `A giant guardian, made of ${getWord(adjectives)} stone and iron, stands up and blocks your path. `,
                () => `A terrifying shriek rips through the dark as a winged monstrosity swoops down from the ceiling.`,
                () => `The earth splits open, and a hulking beast of jagged obsidian and flame crawls into view.`
-		               () => `The ceiling suddenly ${getWord(verbs)}, and a fast, angry ${getWord(threatNouns)} drops directly into your group. `,
-               () => `A pool of dark liquid on the floor rises, turning into a dangerous, ${getWord(adjectives)} shape. `,
-               () => `Your team is surprised! A group of ${getWord(adjectives)} enemies comes out of hidden spaces with weapons ready. `,
-               () => `The air turns cold as a shadow warrior, holding a rusted weapon, rushes forward to fight. `,
-               () => `An angry sound ${getWord(verbs)} through the room just before a massive beast attacks your front line. `
-
            ],
            combatImpact: [
                () => `The creature roars loudly. Running away from this <strong>${getWord(threatNouns)}</strong> is not possible; someone must stand and fight. `,
                () => `To survive this sudden attack, your team must use raw physical power to push the enemy back. `,
                () => `The beast sweeps its tail, threatening to break the party's formation. You must fight!`,
                () => `This foe knows no fear. Your frontline must coordinate a heavy defensive strike immediately.`,
-               () => `There is no negotiating with this ancient anger; draw your weapons and protect the flank!
-		               () => `Draw your weapons immediately before the <strong>${getWord(threatNouns)}</strong> can break your armor. `,
-               () => `The monster moves incredibly fast, leaving a trail of ${getWord(matterNouns)}. Strong, quick force is your only way to survive. `,
-               () => `Falling rocks block your way back. Your team must face this <strong>${getWord(threatNouns)}</strong> and win. `,
-               () => `The enemy is very angry and fast. Your party must fight back with strength, or face defeat. `,
-               () => `Raise your shields! Stand strong against the <strong>${getWord(threatNouns)}</strong> and strike back with your swords. `
-
+               () => `There is no negotiating with this ancient anger; draw your weapons and protect the flank!`
            ],
            puzzleComp: [
                () => `Your progress is stopped by a locked door. The surface is carved with ${getWord(adjectives)} signs that ${getWord(verbs)} softly. `,
@@ -528,13 +503,6 @@
                () => `The exit door is sealed by a massive stone dial carved with phases of three distinct moons.`,
                () => `A series of brass pipes runs along the wall, whistling in a complex, musical sequence.`,
                () => `An ancient chessboard of white and black marble blocks your path, several pieces out of place.`
-		               () => `The exit is blocked by a wall of blue energy that ${getWord(verbs)} when you get close to it. `,
-               () => `Before you stands a stone pedestal with a locked puzzle box, smelling of ${getWord(adjectives)} herbs. `,
-               () => `The floor ahead is a grid of stone plates, each carved with a different, ${getWord(adjectives)} sign. `,
-               () => `A magical barrier blocks your path, powered by three ${getWord(adjectives)} crystals that are out of place. `,
-               () => `An ancient riddle is written on the stone wall, guarded by a sleeping ${getWord(threatNouns)}. `,
-               () => `To open the path, you must balance a set of heavy stone weights that are jammed with old ${getWord(matterNouns)}. `
-
            ],
            puzzleImpact: [
                () => `Touching the <strong>${getWord(relicNouns)}</strong> without thinking will set off a dangerous trap. It requires a smart plan to solve. `,
@@ -542,24 +510,12 @@
                () => `A single wrong configuration will cause the ceiling to drop. Think carefully before you act.`,
                () => `The magic protecting this lock is highly sensitive. An intellect trained in ancient runes is needed here.`,
                () => `Raw force will only break the mechanism forever. You must solve the puzzle to pass safely.`
-		               () => `You need a deep understanding of magic and machines to bypass this <strong>${getWord(relicNouns)}</strong> safely. `,
-               () => `One wrong move will lock the <strong>${getWord(relicNouns)}</strong> forever. A careful mind is your best tool right now. `,
-               () => `The trap triggers are very small and hidden. You must be extremely smart to disarm the <strong>${getWord(relicNouns)}</strong>. `,
-               () => `The ${getWord(adjectives)} signs need a logical answer. Someone must step up and study the symbols carefully. `
-
            ],
            hazardComp: [
                () => `As your team steps forward, the floor beneath you ${getWord(verbs)}. You have triggered a hidden trap. `,
                () => `A sudden shaking moves the room, causing the ${getWord(adjectives)} ceiling to crack and drop stones. `,
                () => `A sharp click under your boot reveals a pressure plate. The ceiling begins to groan.`,
                () => `The cavern walls suddenly crack, releasing a torrent of freezing, high-pressure water.`
-		               () => `Your foot hits a thin wire. Suddenly, the walls fire a set of sharp, ${getWord(adjectives)} blades. `,
-               () => `The stone ground splits open, venting a dangerous cloud of ${getWord(adjectives)} poison gas. `,
-               () => `The floor suddenly tilts like a ship, threatening to slide your team into a deep <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Without warning, a stream of hot, boiling ${getWord(matterNouns)} shoots from the pipes in the wall. `,
-               () => `A giant stone block falls from the ceiling, dropping quickly toward your front line. `,
-               () => `The old stone bridge breaks under your weight, falling down into the dark abyss below. `
-
            ],
            hazardImpact: [
                () => `A wave of rocks falls from above. Only fast reflexes can pull your team out of the danger zone of the <strong>${getWord(locationNouns)}</strong>. `,
@@ -567,11 +523,6 @@
                () => `You have only seconds to dive out of the way before the crushing block hits the floor!`,
                () => `Speed is your only savior. Move with absolute agility to dodge the incoming danger!`,
                () => `The ground is vanishing! Run, jump, and scramble to reach stable ground before you fall!`
-		               () => `There is no time to think, only to move. You need great agility to escape the collapsing <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Your team must jump across the falling stone path with perfect balance, or fall into the deep <strong>${getWord(locationNouns)}</strong>. `,
-               () => `Nimble footwork is the only way to escape the crushing stones of the <strong>${getWord(locationNouns)}</strong>. `,
-               () => `The room is breaking apart. Quick movement is needed to reach safe ground on the other side. `
-
            ],
            campSetup: [
                () => `Seeing how tired everyone is, the adventurers stop near a quiet, safe ${getWord(relicNouns)}. `,
@@ -582,17 +533,11 @@
                () => `A small, warm fire is lit on the stone. It casts a ${getWord(adjectives)} glow on the walls. `,
                () => `Bedrolls are placed in a tight circle while the scout watches the dark tunnel. `,
                () => `A simple pot of broth is heated over a magic flame, filling the air with a warm scent.`
-	       () => `Armor is taken off and simple food is shared in quiet whispers to stay hidden. `,
-               () => `We begin to clean our wounds, using our limited supplies to heal our sore bodies. `
-
            ],
            campOutcome: [
                () => `However, the Oubliette is never completely safe. Keeping watch over the <strong>${getWord(locationNouns)}</strong> requires focus. `,
                () => `Rest is hard to find here. Someone must stay awake to watch for <strong>${getWord(threatNouns)}s</strong> in the dark. `,
                () => `But the echoes of the deep never truly fade. A watchful eye must guard the entrance.`
-	       () => `But the shadows seem to move closer to your fire. You must watch the <strong>${getWord(relicNouns)}</strong> carefully. `,
-               () => `Cold air begins to fill the room, threatening to keep your tired team from sleeping well. `
-
            ]
        };
 
@@ -602,32 +547,22 @@
                () => `Using fast teamwork, your group slips through the narrow passage just before the trap goes off.`,
                () => `A quick, smart action completely disables the trap before the ${getWord(adjectives)} ${getWord(relicNouns)} can harm anyone.`,
                () => `With a combined surge of energy, the vanguard shatters the barrier and secures the room.`
-	       () => `With great discipline, your warriors protect the group, letting everyone pass the danger safely.`,
-               () => `You move as a single, coordinated team, escaping the danger zone without a single major mistake.`
-
            ],
            obstacleFailure: [
                () => `Confusion breaks out. A sudden blast of ${getWord(adjectives)} ${getWord(matterNouns)} hits the group, throwing everyone to the floor.`,
                () => `A bad step triggers the main trap, venting hot, dangerous ${getWord(matterNouns)} that burns your armor.`,
                () => `The <strong>${getWord(threatNouns)}</strong> manages to isolate your team, dealing heavy damage before you can recover.`,
                () => `The defenses collapse under the weight of the blow, scattering the party in panic.`
-	       () => `The machine goes off with a loud sound, hitting several party members with sharp debris.`,
-               () => `The ceiling collapses in a shower of heavy stones, crushing your shields and hurting the party.`
-
            ],
            campSuccess: [
                () => `Your sentries do an excellent job. The camp remains quiet and safe, letting your team heal their deep wounds.`,
                () => `A quiet, peaceful night lets everyone sleep deeply under a hidden stone ledge.`,
-	       () => `Protected by the walls of the old shrine, the team rests well, clearing their minds of fear.`
-
                () => `The protective wards hold perfectly. The group wakes up feeling refreshed and strong.`
            ],
            campFailure: [
                () => `Scary sounds from the dark tunnels keep your sentries on high alert, making it impossible to sleep well.`,
                () => `A leak of poison gas forces your team to wake up in the dark and move your camp immediately.`,
                () => `A sudden alarm forces everyone to scramble, ruining any chance of restorative rest.`
-	       () => `A cold wind sweeps through the chamber, keeping your tired adventurers awake and cold all night.`
-
            ],
            deathTemplates: [
                () => `Their weapons shatter into useless iron dust, and their shields splinter. The vanguard falls to the frozen stones of the oubliette, entirely overrun by the gathering shadows.`,
@@ -637,70 +572,16 @@
 
 
        // IMAGE DATA PATHS
-              const driveImages = {
-           entrance: [
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1GLy1yLOp7XKNhhwRSNN9A7ev9lZzmPtQ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PY__qKZmR_KGBEDdxDTJprE5Wdj9HJW0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1OztP5FMtctC9ydVziuwvprr8W0jiWP5-&sz=w1000"
-           ],
-           combat: [
-               "https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1zR2Cnb-4V_YYKjfcdkG-sQanGILRnRYH&sz=w1000",
-               "https://drive.google.com/thumbnail?id=15bBjH37n7O_0VezMBWjREEitXiVbQv3G&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1akHq6lEAe4N-lff8AjMRTsM516Mge6CT&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1_disbt2Oxs0y0AqrrmBrViTThRWQ7aba&sz=w1000",
-               "https://drive.google.com/thumbnail?id=18eXk4w3Fuw1pWZa1J_6Nho1Rpkcj20mK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1rdQLmAibpIqeOW6WQCDKvG17laIk-SR0&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1iiI04WwdRJWkWiQLtdJH3CyUEXAYUCYZ&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WSSk1gzFUun_k3UmNGKdBiaUA1tYg7l&sz=w1000"
-           ],
-           puzzle: [
-               "https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-LM_CFgjKlRtFLtDa8DpoM-_vhmKhLCu&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1guf8g2JP2bDdytkKGnnYbtIdWHDx1QLy&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1HD33NRudPu16RKtQx4Y0cMfdBFWfBcCU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1MRLsQ2r_4CKQ4iaP0gvWkdPJPcy9cKNx&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qUuld6oUEozR1CeiVGtFqJX2uBOwLlNG&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1KyiFsebjIMJVYSTnwx6T1lg-1ZPsdC51&sz=w1000",
-               "https://drive.google.com/thumbnail?id=140-lgdL1krzmxOJVTXyOS6_rNxwTaaZU&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1vGPabN5-zAyIw2QJRAcZDoPskrkGfdgB&sz=w1000"
-           ],
-           hazard: [
-               "https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1LN_TU4PpTvfAtr3whsj5FosSi9OT8aLN&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1WHvCpelN1AWeLw5ie2IWAlwe14HbeIDg&sz=w1000",
-               "https://drive.google.com/thumbnail?id=11PlzilHZRNgId0hOYgWAMCccGPriXn-z&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0vU64pzpImDjxnGbRBfnoseEK69UY3L&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1qW7bpFIcsjX0Rdo96I6x6xTPh3XshS1a&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1-zAT1dzkpn4wYIOBtvlIr4xcFi11Xhc_&sz=w1000",
-               "https://drive.google.com/thumbnail?id=19bptiufFZ75f1TLxQmEhOQToGM0ft5xr&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1xhcVPwkJ6M2eOSCSxJTLVcJHiEvmj5l1&sz=w1000"
-           ],
-           camp: [
-               "https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000",
-               "https://drive.google.com/thumbnail?id=16QIoHMOeHPg6JhHkAUgJFQI92ONkx2nt&sz=w1000",
-               "https://drive.google.com/thumbnail?id=13kiNeHszhCUf9goZSWqwJtExF1xb7EWo&sz=w1000",
-               "https://drive.google.com/thumbnail?id=12gbbmpj__5t54_07YuTp9JOUrh7abDov&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1C0IImjD5gX82qItdu86TRpjjMG_txzV7&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1XTGqYTRfbl7q9nSPNImAXyRtFM2f02ZK&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1c5nRwtJXH_D92fZ_nLiPK1270A1Fv-64&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1QwGwAwbQXt8XhwaNCcXXOZcGN8dLTPRF&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1b9yqszDhNG3cjoY4vhVYTsVCemHjJHnd&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"
-           ],
-           death: [
-               "https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1On9sgsZECxsYA6AopMKEwAXsmglMZ1pa&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1l1BOsUXIlrsZWKX1CZAS--OZlc18Bwy6&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1Btl3cLRmoWt4UpKenJbMLpn6Fgv5_VAY&sz=w1000"
-           ],
-           win: [
-               "https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000",
-               "https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"
-           ]
+       const driveImages = {
+           entrance: ["https://drive.google.com/thumbnail?id=1sPdhC859EjVHgSrABOgWSeC9Evd8__pU&sz=w1000"],
+           combat: ["https://drive.google.com/thumbnail?id=142cROzNHEXgTgT4rX8xTDs2a1ayVhNQJ&sz=w1000"],
+           puzzle: ["https://drive.google.com/thumbnail?id=1YNtSjzNMk1GRL8f7UgqD1lgVhanzeZBb&sz=w1000"],
+           hazard: ["https://drive.google.com/thumbnail?id=15qKrqCSPfS6ER_3NwKWryVgzAwOmuNPX&sz=w1000"],
+           camp: ["https://drive.google.com/thumbnail?id=1zHkYdl4AOJAdV1qrymY3GJlnKywOZtcP&sz=w1000"],
+           death: ["https://drive.google.com/thumbnail?id=1eL6ubocp-8zE0E4CIWDHJhUpY9Blq9x2&sz=w1000"],
+           win: ["https://drive.google.com/thumbnail?id=1PSCaoAmPQTOQC0SR60cS1ooDlTrBID9X&sz=w1000"]
        };
-      
+
        const classicClasses = ["🛡️ Paladin", "🧙 Wizard", "🎴 Cleric", "👣 Thief", "🧝‍♀️ Elf", "⛏️ Dwarf", "🏡 Halfling", "🐻 Druid", "📜 Bard", "🏹 Ranger", "🦾 Barbarian", "🥋 Monk"];
 
        const classAffinities = {
@@ -2195,3 +2076,7 @@
    </script>
 </body>
 </html>
+```
+eof
+
+All requested features and components are now fully implemented, synchronized, and ready to play!
